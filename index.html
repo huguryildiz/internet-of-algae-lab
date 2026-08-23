@@ -252,6 +252,9 @@ button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 
 .readout--live .readout__value { color: var(--accent-cyan); }
 .readout--warn .readout__value { color: var(--warn); }
 
+.readout__label .katex, .panel__title .katex, .masthead__kicker .katex { text-transform: none; }
+.katex { font-size: 1.05em; }
+
 /* ── Theory box ── */
 .theory-box { background: var(--surface-2); border-radius: var(--radius); padding: 8px 16px; margin-bottom: 16px; }
 .theory-box summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; padding: 4px 0; }
@@ -344,9 +347,9 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <details class="theory-box">
       <summary>Model equations (paper §IV)</summary>
       <div class="eq">\[ \frac{dN}{dt}=\mu N\Bigl(1-\frac{N}{K}\Bigr) \qquad \frac{\partial C}{\partial t}=D\,\nabla^{2}C+\alpha N-\delta C \qquad v(t)=v_0+v_{\max}\,\frac{C_{\mathrm{RX}}-C_{\mathrm{th}}}{K_m+C_{\mathrm{RX}}} \;\; \bigl(C_{\mathrm{RX}}\ge C_{\mathrm{th}}\bigr) \]</div>
-      <p>Cell density N(t) grows logistically; molecules diffuse (coefficient D) and are lost at rate δ = 1/τ_loss.
+      <p>Cell density N(t) grows logistically; molecules diffuse (coefficient \(D\)) and are lost at rate \(\delta = 1/\tau_{\mathrm{loss}}\).
       The receiver maps concentration to swimming speed through a thresholded Michaelis–Menten nonlinearity.
-      Channel-only attenuation A_C(d) compares peak concentration at the receiver vs. the transmitter; end-to-end
+      Channel-only attenuation \(A_C(d)\) compares peak concentration at the receiver vs. the transmitter; end-to-end
       metrics are defined on the decoded swimming speed. Parameters follow Table&nbsp;I of the paper.</p>
     </details>
 
@@ -354,20 +357,20 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <div>
         <div class="panel">
           <h3 class="panel__title">Parameters</h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="qs-d-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance \(d\)</span><span class="ctl-slider__val" id="qs-d-val"></span></span>
             <input type="range" id="qs-d" min="0.25" max="6" step="0.25" value="3"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Diffusion D (×10⁻¹⁰ m²/s)</span><span class="ctl-slider__val" id="qs-D-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Diffusion \(D\;(\times10^{-10}\,\mathrm{m^2/s})\)</span><span class="ctl-slider__val" id="qs-D-val"></span></span>
             <input type="range" id="qs-D" min="2" max="10" step="1" value="5"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Loss time τ_loss</span><span class="ctl-slider__val" id="qs-tl-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Loss time \(\tau_{\mathrm{loss}}\)</span><span class="ctl-slider__val" id="qs-tl-val"></span></span>
             <input type="range" id="qs-tl" min="1" max="4" step="0.5" value="2"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Threshold C_th</span><span class="ctl-slider__val" id="qs-th-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Threshold \(C_{\mathrm{th}}\)</span><span class="ctl-slider__val" id="qs-th-val"></span></span>
             <input type="range" id="qs-th" min="0.5" max="2" step="0.25" value="1"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Saturation K_m</span><span class="ctl-slider__val" id="qs-km-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Saturation \(K_m\)</span><span class="ctl-slider__val" id="qs-km-val"></span></span>
             <input type="range" id="qs-km" min="0.5" max="2" step="0.25" value="1"></label>
         </div>
         <div class="panel">
           <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise σ</span><span class="ctl-slider__val" id="qs-sg-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise \(\sigma\)</span><span class="ctl-slider__val" id="qs-sg-val"></span></span>
             <input type="range" id="qs-sg" min="0.01" max="0.3" step="0.01" value="0.06"></label>
           <p class="scope-caption">On–off keying over the peak-concentration amplitude with additive Gaussian noise;
           \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). The paper's models are deliberately deterministic — this noise layer is added for teaching.</p>
@@ -385,24 +388,24 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           </div>
           <canvas id="qs-canvas" class="scope" width="860" height="300"></canvas>
           <p class="scope-caption">Each dot is a signaling molecule performing the random walk behind the diffusion
-          equation; dots fade out as molecules degrade (τ_loss). The RX cell's tail beats faster once enough molecules
+          equation; dots fade out as molecules degrade \((\tau_{\mathrm{loss}})\). The RX cell's tail beats faster once enough molecules
           accumulate. Particle view is a stochastic visualization of the same physics; the curves below are the paper's
           deterministic model.</p>
           <div class="readouts">
             <div class="readout readout--live"><div class="readout__label">Molecules emitted</div><div class="readout__value" id="qs-emit">0</div></div>
             <div class="readout readout--live"><div class="readout__label">Reached RX</div><div class="readout__value" id="qs-arr">0</div></div>
             <div class="readout readout--live"><div class="readout__label">RX swim speed</div><div class="readout__value" id="qs-speed">15 µm/s</div></div>
-            <div class="readout"><div class="readout__label">Channel att. A_C(d)</div><div class="readout__value" id="qs-ac">–</div></div>
-            <div class="readout"><div class="readout__label">Channel delay τ_C(d)</div><div class="readout__value" id="qs-tc">–</div></div>
+            <div class="readout"><div class="readout__label">Channel att. \(A_C(d)\)</div><div class="readout__value" id="qs-ac">–</div></div>
+            <div class="readout"><div class="readout__label">Channel delay \(\tau_C(d)\)</div><div class="readout__value" id="qs-tc">–</div></div>
             <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="qs-ber">–</div></div>
           </div>
         </div>
 
         <div class="charts-grid">
           <div class="panel"><h3 class="panel__title">Attenuation vs distance</h3><div class="chart-box" id="qs-chart-att"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel-only A_C(d)</span><span><i style="background:var(--color-y)"></i>end-to-end A_v(d)</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel-only \(A_C(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(A_v(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="qs-chart-del"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel τ_C(d)</span><span><i style="background:var(--color-y)"></i>end-to-end τ_v(d)</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_C(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\tau_v(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="qs-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
@@ -421,8 +424,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <details class="theory-box">
       <summary>Model equations (paper §V)</summary>
       <div class="eq">\[ h_{\mathrm{ch}}(t;d)=\frac{M_0}{\sqrt{4\pi D t}}\,\exp\!\Bigl(-\frac{(d-vt)^{2}}{4Dt}\Bigr)\,e^{-\lambda t} \qquad \frac{dR_b}{dt}=k_{\mathrm{on}}\,C(d,t)\,\bigl(R_T-R_b\bigr)-k_{\mathrm{off}}\,R_b \]</div>
-      <p>An impulse of M₀ molecules released at the surface propagates by wind advection (speed v) plus diffusion in
-      air, decaying at rate λ. Receptor binding at the receiver adds its own latency: the end-to-end peak arrives
+      <p>An impulse of \(M_0\) molecules released at the surface propagates by wind advection (speed \(v\)) plus diffusion in\n      air, decaying at rate \(\lambda\). Receptor binding at the receiver adds its own latency: the end-to-end peak arrives
       later than the airborne concentration peak. Parameters follow Table&nbsp;II of the paper.</p>
     </details>
 
@@ -430,18 +432,18 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <div>
         <div class="panel">
           <h3 class="panel__title">Parameters</h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="voc-d-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance \(d\)</span><span class="ctl-slider__val" id="voc-d-val"></span></span>
             <input type="range" id="voc-d" min="0.5" max="10" step="0.5" value="5"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Wind speed v</span><span class="ctl-slider__val" id="voc-v-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Wind speed \(v\)</span><span class="ctl-slider__val" id="voc-v-val"></span></span>
             <input type="range" id="voc-v" min="0.05" max="1" step="0.05" value="0.2"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Decay τ_loss</span><span class="ctl-slider__val" id="voc-tl-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Decay \(\tau_{\mathrm{loss}}\)</span><span class="ctl-slider__val" id="voc-tl-val"></span></span>
             <input type="range" id="voc-tl" min="5" max="50" step="5" value="25"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Binding k_on (×10⁶ M⁻¹s⁻¹)</span><span class="ctl-slider__val" id="voc-kon-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Binding \(k_{\mathrm{on}}\;(\times10^{6}\,\mathrm{M^{-1}s^{-1}})\)</span><span class="ctl-slider__val" id="voc-kon-val"></span></span>
             <input type="range" id="voc-kon" min="0.2" max="3" step="0.2" value="1"></label>
         </div>
         <div class="panel">
           <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise σ</span><span class="ctl-slider__val" id="voc-sg-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise \(\sigma\)</span><span class="ctl-slider__val" id="voc-sg-val"></span></span>
             <input type="range" id="voc-sg" min="0.01" max="0.3" step="0.01" value="0.06"></label>
           <p class="scope-caption">OOK over the normalized airborne channel amplitude, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). Teaching
           extension; the reference models are deterministic.</p>
@@ -465,17 +467,17 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <div class="readout readout--live"><div class="readout__label">Molecules emitted</div><div class="readout__value" id="voc-emit">0</div></div>
             <div class="readout readout--live"><div class="readout__label">Reached RX</div><div class="readout__value" id="voc-arr">0</div></div>
             <div class="readout readout--live"><div class="readout__label">Receptor occupancy</div><div class="readout__value" id="voc-occ">0%</div></div>
-            <div class="readout"><div class="readout__label">Channel att. α_ch(d)</div><div class="readout__value" id="voc-ac">–</div></div>
-            <div class="readout"><div class="readout__label">Peak delay τ_ch(d)</div><div class="readout__value" id="voc-tc">–</div></div>
+            <div class="readout"><div class="readout__label">Channel att. \(\alpha_{\mathrm{ch}}(d)\)</div><div class="readout__value" id="voc-ac">–</div></div>
+            <div class="readout"><div class="readout__label">Peak delay \(\tau_{\mathrm{ch}}(d)\)</div><div class="readout__value" id="voc-tc">–</div></div>
             <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="voc-ber">–</div></div>
           </div>
         </div>
 
         <div class="charts-grid">
-          <div class="panel"><h3 class="panel__title">Attenuation vs distance <span class="subnote">ref. d = 0.5 m</span></h3><div class="chart-box" id="voc-chart-att"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel α_ch(d)</span><span><i style="background:var(--color-y)"></i>end-to-end α_e2e(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Attenuation vs distance <span class="subnote">ref. \(d = 0.5\) m</span></h3><div class="chart-box" id="voc-chart-att"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\alpha_{\mathrm{ch}}(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\alpha_{\mathrm{e2e}}(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">peak arrival</span></h3><div class="chart-box" id="voc-chart-del"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel τ_ch(d)</span><span><i style="background:var(--color-y)"></i>end-to-end τ_e2e(d)</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_{\mathrm{ch}}(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\tau_{\mathrm{e2e}}(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="voc-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
@@ -494,8 +496,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <details class="theory-box">
       <summary>Model equations (paper §VI)</summary>
       <div class="eq">\[ \tau_m\frac{\partial V}{\partial t}=\lambda^{2}\frac{\partial^{2}V}{\partial x^{2}}-V \qquad V(0,t)=A_0\exp\!\Bigl(-\frac{(t-t_0)^{2}}{2\sigma^{2}}\Bigr) \qquad P_o=\frac{1}{1+e^{-(V-V_{1/2})/k}} \]</div>
-      <p>The reduced cable equation with space constant λ and membrane time constant τ_m; a Gaussian voltage pulse is
-      injected at x = 0 and a sealed end is imposed at the branch tip. The receiver converts the arriving voltage into
+      <p>The reduced cable equation with space constant \(\lambda\) and membrane time constant \(\tau_m\); a Gaussian voltage pulse is\n      injected at \(x = 0\) and a sealed end is imposed at the branch tip. The receiver converts the arriving voltage into
       a gate open probability. Parameters follow Table&nbsp;III of the paper. Solved here live by finite differences.</p>
     </details>
 
@@ -503,20 +504,20 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <div>
         <div class="panel">
           <h3 class="panel__title">Parameters</h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="el-d-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance \(d\)</span><span class="ctl-slider__val" id="el-d-val"></span></span>
             <input type="range" id="el-d" min="0.05" max="1" step="0.05" value="0.4"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Space constant λ</span><span class="ctl-slider__val" id="el-lam-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Space constant \(\lambda\)</span><span class="ctl-slider__val" id="el-lam-val"></span></span>
             <input type="range" id="el-lam" min="0.08" max="0.18" step="0.01" value="0.12"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Membrane τ_m</span><span class="ctl-slider__val" id="el-tm-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Membrane \(\tau_m\)</span><span class="ctl-slider__val" id="el-tm-val"></span></span>
             <input type="range" id="el-tm" min="0.02" max="0.1" step="0.01" value="0.05"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Half-activation V½</span><span class="ctl-slider__val" id="el-vh-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Half-activation \(V_{1/2}\)</span><span class="ctl-slider__val" id="el-vh-val"></span></span>
             <input type="range" id="el-vh" min="0.1" max="0.3" step="0.02" value="0.2"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Gate slope k</span><span class="ctl-slider__val" id="el-k-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Gate slope \(k\)</span><span class="ctl-slider__val" id="el-k-val"></span></span>
             <input type="range" id="el-k" min="0.03" max="0.08" step="0.01" value="0.05"></label>
         </div>
         <div class="panel">
           <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise σ</span><span class="ctl-slider__val" id="el-sg-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise \(\sigma\)</span><span class="ctl-slider__val" id="el-sg-val"></span></span>
             <input type="range" id="el-sg" min="0.005" max="0.15" step="0.005" value="0.03"></label>
           <p class="scope-caption">OOK over the peak received voltage, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). Teaching extension.</p>
         </div>
@@ -532,23 +533,23 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <span class="sim-clock">t = <b id="el-clock">0 ms</b></span>
           </div>
           <canvas id="el-canvas" class="scope" width="860" height="300"></canvas>
-          <p class="scope-caption">Top: the branch, colored by instantaneous membrane voltage V(x,t) from a live
+          <p class="scope-caption">Top: the branch, colored by instantaneous membrane voltage \(V(x,t)\) from a live
           finite-difference solution of the cable equation. Bottom: the voltage waveform arriving at the receiver
-          (marker) and the gate open probability P_o it produces.</p>
+          (marker) and the gate open probability \(P_o\) it produces.</p>
           <div class="readouts">
-            <div class="readout readout--live"><div class="readout__label">V at RX (now)</div><div class="readout__value" id="el-vrx">0.00</div></div>
-            <div class="readout readout--live"><div class="readout__label">Gate open P_o</div><div class="readout__value" id="el-po">0%</div></div>
-            <div class="readout"><div class="readout__label">Channel att. A_V(d)</div><div class="readout__value" id="el-av">–</div></div>
-            <div class="readout"><div class="readout__label">Channel delay τ_V(d)</div><div class="readout__value" id="el-tv">–</div></div>
+            <div class="readout readout--live"><div class="readout__label">\(V\) at RX (now)</div><div class="readout__value" id="el-vrx">0.00</div></div>
+            <div class="readout readout--live"><div class="readout__label">Gate open \(P_o\)</div><div class="readout__value" id="el-po">0%</div></div>
+            <div class="readout"><div class="readout__label">Channel att. \(A_V(d)\)</div><div class="readout__value" id="el-av">–</div></div>
+            <div class="readout"><div class="readout__label">Channel delay \(\tau_V(d)\)</div><div class="readout__value" id="el-tv">–</div></div>
             <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="el-ber">–</div></div>
           </div>
         </div>
 
         <div class="charts-grid">
           <div class="panel"><h3 class="panel__title">Attenuation vs distance</h3><div class="chart-box" id="el-chart-att"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel A_V(d)</span><span><i style="background:var(--color-y)"></i>end-to-end A_P(d)</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(A_V(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(A_P(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="el-chart-del"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel τ_V(d)</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_V(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="el-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
@@ -567,8 +568,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <details class="theory-box">
       <summary>Model equations (paper §VII)</summary>
       <div class="eq">\[ A_{\mathrm{ch}}(d)=\frac{A_r}{4\pi d^{2}}\,e^{-(a+b)d} \qquad f(t)=\bigl(1-e^{-t/\tau_r}\bigr)e^{-t/\tau_d} \qquad \tau_{\mathrm{rec}}\frac{dS}{dt}=-S+S_0+S_{\max}\frac{R}{K_R+R} \]</div>
-      <p>The channel gain is closed-form: inverse-square spreading times exponential extinction (a: absorption, b:
-      scattering — Petzold water types). The emitted flash has rise/decay constants τ_r, τ_d; the photoreceptor
+      <p>The channel gain is closed-form: inverse-square spreading times exponential extinction (\(a\): absorption, \(b\):\n      scattering — Petzold water types). The emitted flash has rise/decay constants \(\tau_r\), \(\tau_d\); the photoreceptor
       integrates with a saturating Hill nonlinearity, which buffers tens of dB of channel loss down to a few percent
       of end-to-end loss. Parameters follow Table&nbsp;IV of the paper.</p>
     </details>
@@ -584,18 +584,18 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
               <option value="0.305" selected>Coastal ocean (0.305 m⁻¹)</option>
               <option value="2.170">Turbid harbor (2.170 m⁻¹)</option>
             </select></div>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="op-d-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance \(d\)</span><span class="ctl-slider__val" id="op-d-val"></span></span>
             <input type="range" id="op-d" min="0.1" max="5" step="0.1" value="2"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Flash rise τ_r</span><span class="ctl-slider__val" id="op-tr-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Flash rise \(\tau_r\)</span><span class="ctl-slider__val" id="op-tr-val"></span></span>
             <input type="range" id="op-tr" min="5" max="40" step="5" value="10"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver τ_rec</span><span class="ctl-slider__val" id="op-trec-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver \(\tau_{\mathrm{rec}}\)</span><span class="ctl-slider__val" id="op-trec-val"></span></span>
             <input type="range" id="op-trec" min="0.02" max="0.15" step="0.01" value="0.05"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Half-saturation K_R (log₁₀)</span><span class="ctl-slider__val" id="op-kr-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Half-saturation \(K_R\) \((\log_{10})\)</span><span class="ctl-slider__val" id="op-kr-val"></span></span>
             <input type="range" id="op-kr" min="4" max="5.7" step="0.1" value="5"></label>
         </div>
         <div class="panel">
           <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Noise (log₁₀ σ, dB-domain)</span><span class="ctl-slider__val" id="op-sg-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Noise \(\log_{10}\sigma\) (dB-domain)</span><span class="ctl-slider__val" id="op-sg-val"></span></span>
             <input type="range" id="op-sg" min="-14" max="-9" step="0.25" value="-12"></label>
           <p class="scope-caption">OOK over received optical power with additive Gaussian noise of std σ (same units as
           the normalized channel gain), \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). Teaching extension; a physically rigorous treatment would use a
@@ -615,13 +615,13 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           <canvas id="op-canvas" class="scope" width="860" height="300"></canvas>
           <p class="scope-caption">The transmitter emits flash trains; each photon travels in a straight line and may be
           absorbed or scattered out of the path (probability set by the water's extinction coefficient). The eyespot
-          counts surviving photons; the response bar S(t) shows the decoded photobiological output.</p>
+          counts surviving photons; the response bar \(S(t)\) shows the decoded photobiological output.</p>
           <div class="readouts">
             <div class="readout readout--live"><div class="readout__label">Photons emitted</div><div class="readout__value" id="op-emit">0</div></div>
             <div class="readout readout--live"><div class="readout__label">Reached eyespot</div><div class="readout__value" id="op-arr">0</div></div>
-            <div class="readout readout--live"><div class="readout__label">Response S(t)</div><div class="readout__value" id="op-s">0%</div></div>
+            <div class="readout readout--live"><div class="readout__label">Response \(S(t)\)</div><div class="readout__value" id="op-s">0%</div></div>
             <div class="readout"><div class="readout__label">Channel gain (dB)</div><div class="readout__value" id="op-ac">–</div></div>
-            <div class="readout"><div class="readout__label">E2E delay τ_S</div><div class="readout__value" id="op-tc">–</div></div>
+            <div class="readout"><div class="readout__label">E2E delay \(\tau_S\)</div><div class="readout__value" id="op-tc">–</div></div>
             <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="op-ber">–</div></div>
           </div>
         </div>
@@ -629,8 +629,8 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
         <div class="charts-grid">
           <div class="panel"><h3 class="panel__title">Channel gain vs distance <span class="subnote">dB, all water types</span></h3><div class="chart-box" id="op-chart-att"></div>
             <div class="legend"><span><i style="background:var(--color-x)"></i>pure sea</span><span><i style="background:var(--color-h)"></i>clear ocean</span><span><i style="background:var(--color-y)"></i>coastal</span><span><i style="background:var(--color-marker)"></i>turbid harbor</span></div></div>
-          <div class="panel"><h3 class="panel__title">End-to-end attenuation A_S(d)</h3><div class="chart-box" id="op-chart-e2e"></div>
-            <div class="legend"><span><i style="background:var(--color-y)"></i>A_S(d) — receiver saturation buffers channel loss</span></div></div>
+          <div class="panel"><h3 class="panel__title">End-to-end attenuation \(A_S(d)\)</h3><div class="chart-box" id="op-chart-e2e"></div>
+            <div class="legend"><span><i style="background:var(--color-y)"></i>\(A_S(d)\) — receiver saturation buffers channel loss</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="op-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
