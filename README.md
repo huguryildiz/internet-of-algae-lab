@@ -1,5 +1,7 @@
 # Internet of Algae Lab
 
+**Live: <https://algae-molecular-communication.vercel.app>**
+
 Interactive, browser-based teaching simulations of the four communication channels that algae
 colonies use — built as an educational companion to:
 
@@ -13,7 +15,7 @@ colonies use — built as an educational companion to:
 One self-contained page (`index.html`) with a tab per signaling modality:
 
 | Tab | Physics simulated | Range / latency niche |
-|---|---|---|
+| --- | --- | --- |
 | **Quorum Sensing** | 1-D diffusion–reaction PDE with a logistic source; thresholded Michaelis–Menten receiver | mm — minutes-to-hours |
 | **VOC · Airborne** | Closed-form advection–diffusion–decay Green's function; ligand–receptor binding ODE | m–km — seconds-to-minutes |
 | **Electrical · Cable** | Reduced cable equation (live finite-difference solve); sigmoidal voltage-gated receiver | cm–m — ms-to-s |
