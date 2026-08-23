@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactive teaching simulations of the four algae communication channels — quorum sensing, VOC, electrical, and optical — from Akyildiz et al., IEEE TMBMC 2026.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<script defer src="assets/katex/katex.min.js"></script>
+<script defer src="assets/katex/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters: [{left: '\\[', right: '\\]', display: true}, {left: '\\(', right: '\\)', display: false}]});"></script>
+<title>Internet of Algae Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+/* ============================================================
+   CommSysLab visual language — glassmorphism + neon glow.
+   Dark-first: bare :root = dark tokens (site default), light
+   tokens under prefers-color-scheme:light and [data-theme=light].
+   ============================================================ */
+:root {
+  /* Deep-sea night: bioluminescent greens/teals on blue-black water */
+  --bg: #040a10;
+  --bg-panel: rgba(8, 20, 30, 0.72);
+  --surface: rgba(8, 20, 30, 0.72);
+  --surface-2: rgba(10, 26, 38, 0.85);
+  --canvas-bg: rgba(2, 8, 14, 0.55);
+  --scope-bg: #020810;
+  --text: #dcebe8;
+  --text-dim: #7da39d;
+  --text-faint: #46655f;
+  --border: rgba(80, 220, 190, 0.16);
+  --border-strong: rgba(90, 230, 200, 0.34);
+  --slider-track: rgba(80, 220, 190, 0.12);
+  --accent: #3ef2a0;
+  --accent-2: #ffb54d;
+  --accent-blue: #6ea8ff;
+  --accent-cyan: #35e0d0;
+  --color-x: #3ef2a0;
+  --color-h: #ffb54d;
+  --color-y: #6ea8ff;
+  --color-marker: #ff6aa9;
+  --ok: #3ef2a0;
+  --err: #ff5b6b;
+  --warn: #ffb54d;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --glass-blur: 18px;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-card: none;
+  --shadow-lift: 0 18px 40px rgba(0, 0, 0, 0.45);
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-head: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --mono: 'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --halo: radial-gradient(ellipse 60% 40% at 15% 0%, rgba(62,242,160,0.07), transparent 60%),
+          radial-gradient(ellipse 60% 40% at 85% 0%, rgba(53,224,208,0.05), transparent 60%);
+  --hero-display: block;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f7f9fc; --bg-panel: #ffffff; --surface: #ffffff; --surface-2: #f4f6fb;
+    --canvas-bg: #eef1f8; --scope-bg: #eef1f8;
+    --text: #161b2e; --text-dim: #4d5470; --text-faint: #868ca6;
+    --border: rgba(24, 34, 68, 0.12); --border-strong: rgba(44, 72, 180, 0.3);
+    --slider-track: rgba(24, 34, 68, 0.14);
+    --accent: #0a6428; --accent-2: #c2410c; --accent-blue: #3a4fd0; --accent-cyan: #0d9488;
+    --color-x: #0a6428; --color-h: #c2410c; --color-y: #3a4fd0; --color-marker: #d11d6b;
+    --ok: #0a6428; --err: #cc2b2b; --warn: #c2410c;
+    --shadow-card: 0 2px 10px rgba(30,45,90,0.07), 0 1px 2px rgba(30,45,90,0.05);
+    --shadow-lift: 0 16px 40px rgba(28,40,86,0.16);
+    --halo: none;
+    --hero-display: none;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f7f9fc; --bg-panel: #ffffff; --surface: #ffffff; --surface-2: #f4f6fb;
+  --canvas-bg: #eef1f8; --scope-bg: #eef1f8;
+  --text: #161b2e; --text-dim: #4d5470; --text-faint: #868ca6;
+  --border: rgba(24, 34, 68, 0.12); --border-strong: rgba(44, 72, 180, 0.3);
+  --slider-track: rgba(24, 34, 68, 0.14);
+  --accent: #0a6428; --accent-2: #c2410c; --accent-blue: #3a4fd0; --accent-cyan: #0d9488;
+  --color-x: #0a6428; --color-h: #c2410c; --color-y: #3a4fd0; --color-marker: #d11d6b;
+  --ok: #0a6428; --err: #cc2b2b; --warn: #c2410c;
+  --shadow-card: 0 2px 10px rgba(30,45,90,0.07), 0 1px 2px rgba(30,45,90,0.05);
+  --shadow-lift: 0 16px 40px rgba(28,40,86,0.16);
+  --halo: none;
+  --hero-display: none;
+}
+
+* { box-sizing: border-box; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  margin: 0; min-height: 100vh; color: var(--text);
+  font-family: var(--font); font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  background: var(--halo), var(--bg);
+  background-attachment: fixed;
+}
+a { color: var(--accent); text-decoration: none; transition: color var(--transition); }
+a:hover { color: var(--accent-2); }
+h1, h2, h3 { margin: 0 0 16px; font-family: var(--font-head); font-optical-sizing: auto; font-weight: 700; }
+code, kbd { font-family: var(--mono); }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 24px 20px 64px; }
+
+/* ── Hero shader (dark theme only; hidden on light "paper lab") ── */
+.hero { position: relative; border-radius: var(--radius); overflow: clip; }
+.hero-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: var(--hero-display, block); pointer-events: auto; z-index: 0;
+}
+.hero-fade {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  display: var(--hero-display, block);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--bg) 82%, transparent) 0%,
+                    color-mix(in srgb, var(--bg) 55%, transparent) 48%, transparent 78%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 25%, transparent) 0%,
+                    transparent 35%, color-mix(in srgb, var(--bg) 90%, transparent) 100%);
+}
+.hero .masthead__sub, .hero .masthead__kicker { text-shadow: 0 1px 14px rgba(0, 6, 10, 0.75); }
+.hero > .masthead { position: relative; z-index: 2; padding: 40px 28px 26px; }
+@media (max-width: 700px) { .hero > .masthead { padding: 26px 14px 18px; } }
+
+/* ── Header ── */
+.masthead { padding: 26px 0 8px; }
+.masthead__kicker {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
+}
+.masthead__title {
+  font-family: var(--font-head); font-weight: 600; line-height: 1.05;
+  font-size: clamp(2rem, 5vw, 3.3rem); letter-spacing: -0.015em; margin: 0 0 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-cyan), var(--accent-blue));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  text-wrap: balance;
+}
+.masthead__sub { color: var(--text-dim); max-width: 64ch; line-height: 1.55; margin: 0 0 18px; }
+.cite-strip {
+  display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem;
+  color: var(--text-dim); line-height: 1.5; max-width: 900px;
+}
+.cite-strip b { color: var(--text); font-weight: 600; }
+.cite-strip .tag {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); border: 1px solid var(--border-strong); border-radius: 99px;
+  padding: 2px 9px; white-space: nowrap; margin-top: 2px;
+}
+
+/* ── Tab bar ── */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 20px; position: sticky; top: 0; z-index: 30;
+  padding: 10px 0; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); }
+.tab-btn {
+  font-family: var(--mono); font-size: 0.8rem; cursor: pointer; color: var(--text-dim);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 99px;
+  padding: 8px 16px; transition: all var(--transition);
+}
+.tab-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(62,242,160,0.18); }
+.tab-btn[aria-selected="true"] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+.tab-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent-cyan); outline-offset: 2px;
+}
+.tab-panel { display: none; }
+.tab-panel.is-active { display: block; }
+
+/* ── Panels ── */
+.panel {
+  position: relative; overflow: clip; background: var(--surface);
+  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-card); padding: 16px; margin-bottom: 16px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.panel:hover { border-color: var(--border-strong); box-shadow: var(--shadow-lift); }
+.panel__title {
+  font-family: var(--font-head); font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 12px;
+  display: flex; align-items: baseline; gap: 0.5em; flex-wrap: wrap;
+}
+.panel__title .subnote { font-family: var(--font); text-transform: none; letter-spacing: 0; font-size: 0.78rem; color: var(--text-faint); font-weight: 400; }
+.badge-ext {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
+  border-radius: 99px; padding: 2px 8px; white-space: nowrap;
+}
+.module-title {
+  font-family: var(--font-head); font-weight: 600; font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+  line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 6px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-cyan), var(--accent-blue));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.module-sub { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 18px; max-width: 78ch; line-height: 1.55; }
+
+/* ── Layout ── */
+.mod-grid { display: grid; grid-template-columns: 288px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .mod-grid { grid-template-columns: 1fr; } }
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
+.charts-grid .panel { margin-bottom: 0; }
+
+/* ── Controls ── */
+.ctl-slider { display: block; margin-bottom: 14px; font-size: 0.88rem; }
+.ctl-slider__row { display: flex; justify-content: space-between; margin-bottom: 4px; gap: 8px; }
+.ctl-slider__label { color: var(--text-dim); }
+.ctl-slider__val { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+.ctl-select { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; font-size: 0.88rem; }
+.ctl-select span { color: var(--text-dim); }
+select {
+  font-family: var(--mono); color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; outline: none;
+  transition: border-color var(--transition); width: 100%;
+}
+select:focus { border-color: var(--accent); }
+input[type='range'] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 4px;
+  background: var(--slider-track); outline: none; margin: 6px 0;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(62,242,160,0.4);
+}
+input[type='range']::-moz-range-thumb {
+  width: 15px; height: 15px; border: none; border-radius: 50%;
+  background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(62,242,160,0.4);
+}
+button {
+  font-family: var(--mono); cursor: pointer; color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 16px;
+  transition: all var(--transition); font-size: 0.85rem;
+}
+button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(62,242,160,0.18); }
+.transport { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.transport .btn-start { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.sim-clock { font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim); margin-left: auto; }
+.sim-clock b { color: var(--accent-cyan); font-weight: 500; }
+
+/* ── Scope canvas ── */
+.scope { width: 100%; border-radius: var(--radius-sm); background: var(--scope-bg); display: block; border: 1px solid var(--border); }
+.scope-caption { font-size: 0.75rem; color: var(--text-faint); margin: 8px 0 0; line-height: 1.5; }
+
+/* ── Readouts ── */
+.readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 8px; margin-top: 12px; }
+.readout {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+.readout__label { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); font-family: var(--mono); }
+.readout__value { font-family: var(--mono); font-size: 1.05rem; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.readout--live .readout__value { color: var(--accent-cyan); }
+.readout--warn .readout__value { color: var(--warn); }
+
+/* ── Theory box ── */
+.theory-box { background: var(--surface-2); border-radius: var(--radius); padding: 8px 16px; margin-bottom: 16px; }
+.theory-box summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; padding: 4px 0; }
+.theory-box .eq {
+  font-size: 0.95rem; background: var(--canvas-bg);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 16px; margin: 10px 0; overflow-x: auto; line-height: 1.7;
+}
+.theory-box .eq .katex-display { margin: 0; }
+.theory-box p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; max-width: 78ch; }
+
+/* ── Charts ── */
+.chart-box { position: relative; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+.chart-tip {
+  position: absolute; pointer-events: none; display: none; z-index: 5;
+  background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  padding: 6px 10px; font-family: var(--mono); font-size: 0.72rem; color: var(--text);
+  white-space: nowrap; box-shadow: var(--shadow-lift);
+}
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 0.75rem; color: var(--text-dim); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+/* ── Tables ── */
+.tbl-wrap { overflow-x: auto; }
+table.cmp { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+table.cmp th, table.cmp td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+table.cmp th { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
+table.cmp td:first-child { font-weight: 600; }
+table.cmp td { font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 0.7rem; border-radius: 99px; padding: 2px 10px; border: 1px solid var(--border); }
+
+/* ── Footer / about ── */
+.about p { color: var(--text-dim); line-height: 1.65; max-width: 78ch; }
+.about .cite-block {
+  font-family: var(--mono); font-size: 0.82rem; background: var(--canvas-bg);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px;
+  line-height: 1.7; overflow-x: auto;
+}
+footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--text-faint); line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto; }
+}
+</style>
+
+<div class="wrap">
+  <div class="hero">
+  <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-fade" aria-hidden="true"></div>
+  <header class="masthead">
+    <div class="masthead__kicker">Interactive channel models · molecular communication</div>
+    <h1 class="masthead__title">The Internet of Algae, Live</h1>
+    <p class="masthead__sub">
+      Algae colonies are nature's own molecular network. This page turns the end-to-end channel models of
+      Akyildiz&nbsp;et&nbsp;al. into live simulations: press <b>Start</b> to watch molecules, voltage pulses and photons
+      travel from a transmitting cell to a receiving cell, and explore how distance, diffusion, wind, and receiver
+      biology shape attenuation, delay — and, in a teaching extension, bit error rate.
+    </p>
+    <div class="cite-strip">
+      <span class="tag">Reference</span>
+      <span>
+        <b>I. F. Akyildiz, S. H. Sayin, E. I. Saygili, and B. D. Unluturk</b>, “The Internet of Algae: End-to-End
+        Communication-Theoretic Models for Photosynthetic Molecular Networks,” <i>IEEE Trans. Mol. Biol. Multi-Scale
+        Commun.</i>, vol. 12, pp. 796–816, 2026.
+        <a href="https://doi.org/10.1109/TMBMC.2026.3711050" target="_blank" rel="noopener">doi:10.1109/TMBMC.2026.3711050</a>
+      </span>
+    </div>
+  </header>
+  </div><!-- /.hero -->
+
+  <nav class="tabs" role="tablist" aria-label="Signaling modalities">
+    <button class="tab-btn" role="tab" aria-selected="true"  data-tab="qs">Quorum Sensing</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="voc">VOC · Airborne</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="elec">Electrical · Cable</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="opt">Optical · Bioluminescence</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="cmp">Compare</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="about">About &amp; Citation</button>
+  </nav>
+
+  <!-- ══════════════════ QS TAB ══════════════════ -->
+  <section class="tab-panel is-active" id="tab-qs" role="tabpanel">
+    <h2 class="module-title">Quorum-Sensing Chemical Channel</h2>
+    <p class="module-sub">
+      A dense algae population releases signaling molecules (CSSF) into the water. They spread by pure diffusion and
+      degrade on the way; a receiving cell responds by swimming faster once the local concentration crosses a
+      threshold. Range: millimeters. Latency: <i>hours</i> — this is the slowest channel of the four.
+    </p>
+    <details class="theory-box">
+      <summary>Model equations (paper §IV)</summary>
+      <div class="eq">\[ \frac{dN}{dt}=\mu N\Bigl(1-\frac{N}{K}\Bigr) \qquad \frac{\partial C}{\partial t}=D\,\nabla^{2}C+\alpha N-\delta C \qquad v(t)=v_0+v_{\max}\,\frac{C_{\mathrm{RX}}-C_{\mathrm{th}}}{K_m+C_{\mathrm{RX}}} \;\; \bigl(C_{\mathrm{RX}}\ge C_{\mathrm{th}}\bigr) \]</div>
+      <p>Cell density N(t) grows logistically; molecules diffuse (coefficient D) and are lost at rate δ = 1/τ_loss.
+      The receiver maps concentration to swimming speed through a thresholded Michaelis–Menten nonlinearity.
+      Channel-only attenuation A_C(d) compares peak concentration at the receiver vs. the transmitter; end-to-end
+      metrics are defined on the decoded swimming speed. Parameters follow Table&nbsp;I of the paper.</p>
+    </details>
+
+    <div class="mod-grid">
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Parameters</h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="qs-d-val"></span></span>
+            <input type="range" id="qs-d" min="0.25" max="6" step="0.25" value="3"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Diffusion D (×10⁻¹⁰ m²/s)</span><span class="ctl-slider__val" id="qs-D-val"></span></span>
+            <input type="range" id="qs-D" min="2" max="10" step="1" value="5"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Loss time τ_loss</span><span class="ctl-slider__val" id="qs-tl-val"></span></span>
+            <input type="range" id="qs-tl" min="1" max="4" step="0.5" value="2"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Threshold C_th</span><span class="ctl-slider__val" id="qs-th-val"></span></span>
+            <input type="range" id="qs-th" min="0.5" max="2" step="0.25" value="1"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Saturation K_m</span><span class="ctl-slider__val" id="qs-km-val"></span></span>
+            <input type="range" id="qs-km" min="0.5" max="2" step="0.25" value="1"></label>
+        </div>
+        <div class="panel">
+          <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise σ</span><span class="ctl-slider__val" id="qs-sg-val"></span></span>
+            <input type="range" id="qs-sg" min="0.01" max="0.3" step="0.01" value="0.06"></label>
+          <p class="scope-caption">On–off keying over the peak-concentration amplitude with additive Gaussian noise;
+          \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). The paper's models are deliberately deterministic — this noise layer is added for teaching.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Live channel <span class="subnote">molecules diffusing from TX colony to RX cell</span></h3>
+          <div class="transport">
+            <button class="btn-start" data-anim="qs" data-act="start">▶ Start</button>
+            <button data-anim="qs" data-act="pause">⏸ Pause</button>
+            <button data-anim="qs" data-act="reset">↺ Reset</button>
+            <span class="sim-clock">t = <b id="qs-clock">0.0 h</b></span>
+          </div>
+          <canvas id="qs-canvas" class="scope" width="860" height="300"></canvas>
+          <p class="scope-caption">Each dot is a signaling molecule performing the random walk behind the diffusion
+          equation; dots fade out as molecules degrade (τ_loss). The RX cell's tail beats faster once enough molecules
+          accumulate. Particle view is a stochastic visualization of the same physics; the curves below are the paper's
+          deterministic model.</p>
+          <div class="readouts">
+            <div class="readout readout--live"><div class="readout__label">Molecules emitted</div><div class="readout__value" id="qs-emit">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Reached RX</div><div class="readout__value" id="qs-arr">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">RX swim speed</div><div class="readout__value" id="qs-speed">15 µm/s</div></div>
+            <div class="readout"><div class="readout__label">Channel att. A_C(d)</div><div class="readout__value" id="qs-ac">–</div></div>
+            <div class="readout"><div class="readout__label">Channel delay τ_C(d)</div><div class="readout__value" id="qs-tc">–</div></div>
+            <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="qs-ber">–</div></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="panel"><h3 class="panel__title">Attenuation vs distance</h3><div class="chart-box" id="qs-chart-att"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel-only A_C(d)</span><span><i style="background:var(--color-y)"></i>end-to-end A_v(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="qs-chart-del"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel τ_C(d)</span><span><i style="background:var(--color-y)"></i>end-to-end τ_v(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="qs-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ VOC TAB ══════════════════ -->
+  <section class="tab-panel" id="tab-voc" role="tabpanel">
+    <h2 class="module-title">Volatile Organic Compound Channel</h2>
+    <p class="module-sub">
+      Stressed algae release volatile compounds that escape into the air above the water and ride the wind — an
+      advection–diffusion channel with chemical decay. Range jumps to meters or kilometers; delay drops to
+      seconds–minutes. The receiver decodes by ligand–receptor binding.
+    </p>
+    <details class="theory-box">
+      <summary>Model equations (paper §V)</summary>
+      <div class="eq">\[ h_{\mathrm{ch}}(t;d)=\frac{M_0}{\sqrt{4\pi D t}}\,\exp\!\Bigl(-\frac{(d-vt)^{2}}{4Dt}\Bigr)\,e^{-\lambda t} \qquad \frac{dR_b}{dt}=k_{\mathrm{on}}\,C(d,t)\,\bigl(R_T-R_b\bigr)-k_{\mathrm{off}}\,R_b \]</div>
+      <p>An impulse of M₀ molecules released at the surface propagates by wind advection (speed v) plus diffusion in
+      air, decaying at rate λ. Receptor binding at the receiver adds its own latency: the end-to-end peak arrives
+      later than the airborne concentration peak. Parameters follow Table&nbsp;II of the paper.</p>
+    </details>
+
+    <div class="mod-grid">
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Parameters</h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="voc-d-val"></span></span>
+            <input type="range" id="voc-d" min="0.5" max="10" step="0.5" value="5"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Wind speed v</span><span class="ctl-slider__val" id="voc-v-val"></span></span>
+            <input type="range" id="voc-v" min="0.05" max="1" step="0.05" value="0.2"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Decay τ_loss</span><span class="ctl-slider__val" id="voc-tl-val"></span></span>
+            <input type="range" id="voc-tl" min="5" max="50" step="5" value="25"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Binding k_on (×10⁶ M⁻¹s⁻¹)</span><span class="ctl-slider__val" id="voc-kon-val"></span></span>
+            <input type="range" id="voc-kon" min="0.2" max="3" step="0.2" value="1"></label>
+        </div>
+        <div class="panel">
+          <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise σ</span><span class="ctl-slider__val" id="voc-sg-val"></span></span>
+            <input type="range" id="voc-sg" min="0.01" max="0.3" step="0.01" value="0.06"></label>
+          <p class="scope-caption">OOK over the normalized airborne channel amplitude, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). Teaching
+          extension; the reference models are deterministic.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Live channel <span class="subnote">plume drifting downwind over the water surface</span></h3>
+          <div class="transport">
+            <button class="btn-start" data-anim="voc" data-act="start">▶ Start</button>
+            <button data-anim="voc" data-act="pause">⏸ Pause</button>
+            <button data-anim="voc" data-act="reset">↺ Reset</button>
+            <span class="sim-clock">t = <b id="voc-clock">0.0 s</b></span>
+          </div>
+          <canvas id="voc-canvas" class="scope" width="860" height="300"></canvas>
+          <p class="scope-caption">Molecules leave the emitting patch (left), drift with the wind and diffuse in air,
+          and decay. The receiving patch (right) counts arrivals and its receptor-occupancy bar fills according to the
+          binding kinetics. Curves below are computed from the closed-form Green's function of the paper.</p>
+          <div class="readouts">
+            <div class="readout readout--live"><div class="readout__label">Molecules emitted</div><div class="readout__value" id="voc-emit">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Reached RX</div><div class="readout__value" id="voc-arr">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Receptor occupancy</div><div class="readout__value" id="voc-occ">0%</div></div>
+            <div class="readout"><div class="readout__label">Channel att. α_ch(d)</div><div class="readout__value" id="voc-ac">–</div></div>
+            <div class="readout"><div class="readout__label">Peak delay τ_ch(d)</div><div class="readout__value" id="voc-tc">–</div></div>
+            <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="voc-ber">–</div></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="panel"><h3 class="panel__title">Attenuation vs distance <span class="subnote">ref. d = 0.5 m</span></h3><div class="chart-box" id="voc-chart-att"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel α_ch(d)</span><span><i style="background:var(--color-y)"></i>end-to-end α_e2e(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">peak arrival</span></h3><div class="chart-box" id="voc-chart-del"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel τ_ch(d)</span><span><i style="background:var(--color-y)"></i>end-to-end τ_e2e(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="voc-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ ELECTRICAL TAB ══════════════════ -->
+  <section class="tab-panel" id="tab-elec" role="tabpanel">
+    <h2 class="module-title">Electrical Cable Channel</h2>
+    <p class="module-sub">
+      Macroalgae branches conduct action-potential-like voltage pulses, modeled with the same cable equation that
+      describes nerve fibers. Centimeter-to-meter range with millisecond-to-second latency — the colony's rapid
+      response line. The receiver is a voltage-gated channel with a sigmoidal open probability.
+    </p>
+    <details class="theory-box">
+      <summary>Model equations (paper §VI)</summary>
+      <div class="eq">\[ \tau_m\frac{\partial V}{\partial t}=\lambda^{2}\frac{\partial^{2}V}{\partial x^{2}}-V \qquad V(0,t)=A_0\exp\!\Bigl(-\frac{(t-t_0)^{2}}{2\sigma^{2}}\Bigr) \qquad P_o=\frac{1}{1+e^{-(V-V_{1/2})/k}} \]</div>
+      <p>The reduced cable equation with space constant λ and membrane time constant τ_m; a Gaussian voltage pulse is
+      injected at x = 0 and a sealed end is imposed at the branch tip. The receiver converts the arriving voltage into
+      a gate open probability. Parameters follow Table&nbsp;III of the paper. Solved here live by finite differences.</p>
+    </details>
+
+    <div class="mod-grid">
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Parameters</h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="el-d-val"></span></span>
+            <input type="range" id="el-d" min="0.05" max="1" step="0.05" value="0.4"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Space constant λ</span><span class="ctl-slider__val" id="el-lam-val"></span></span>
+            <input type="range" id="el-lam" min="0.08" max="0.18" step="0.01" value="0.12"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Membrane τ_m</span><span class="ctl-slider__val" id="el-tm-val"></span></span>
+            <input type="range" id="el-tm" min="0.02" max="0.1" step="0.01" value="0.05"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Half-activation V½</span><span class="ctl-slider__val" id="el-vh-val"></span></span>
+            <input type="range" id="el-vh" min="0.1" max="0.3" step="0.02" value="0.2"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Gate slope k</span><span class="ctl-slider__val" id="el-k-val"></span></span>
+            <input type="range" id="el-k" min="0.03" max="0.08" step="0.01" value="0.05"></label>
+        </div>
+        <div class="panel">
+          <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver noise σ</span><span class="ctl-slider__val" id="el-sg-val"></span></span>
+            <input type="range" id="el-sg" min="0.005" max="0.15" step="0.005" value="0.03"></label>
+          <p class="scope-caption">OOK over the peak received voltage, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). Teaching extension.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Live channel <span class="subnote">voltage pulse traveling along a branch</span></h3>
+          <div class="transport">
+            <button class="btn-start" data-anim="elec" data-act="start">▶ Fire pulse</button>
+            <button data-anim="elec" data-act="pause">⏸ Pause</button>
+            <button data-anim="elec" data-act="reset">↺ Reset</button>
+            <span class="sim-clock">t = <b id="el-clock">0 ms</b></span>
+          </div>
+          <canvas id="el-canvas" class="scope" width="860" height="300"></canvas>
+          <p class="scope-caption">Top: the branch, colored by instantaneous membrane voltage V(x,t) from a live
+          finite-difference solution of the cable equation. Bottom: the voltage waveform arriving at the receiver
+          (marker) and the gate open probability P_o it produces.</p>
+          <div class="readouts">
+            <div class="readout readout--live"><div class="readout__label">V at RX (now)</div><div class="readout__value" id="el-vrx">0.00</div></div>
+            <div class="readout readout--live"><div class="readout__label">Gate open P_o</div><div class="readout__value" id="el-po">0%</div></div>
+            <div class="readout"><div class="readout__label">Channel att. A_V(d)</div><div class="readout__value" id="el-av">–</div></div>
+            <div class="readout"><div class="readout__label">Channel delay τ_V(d)</div><div class="readout__value" id="el-tv">–</div></div>
+            <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="el-ber">–</div></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="panel"><h3 class="panel__title">Attenuation vs distance</h3><div class="chart-box" id="el-chart-att"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel A_V(d)</span><span><i style="background:var(--color-y)"></i>end-to-end A_P(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="el-chart-del"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel τ_V(d)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="el-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ OPTICAL TAB ══════════════════ -->
+  <section class="tab-panel" id="tab-opt" role="tabpanel">
+    <h2 class="module-title">Optical Bioluminescent Channel</h2>
+    <p class="module-sub">
+      Bioluminescent flashes at 470 nm propagate through water with geometric spreading plus Beer–Lambert extinction.
+      Latency is microseconds-to-milliseconds — set by the flash waveform and the photoreceptor, <i>not</i> by the
+      water — but range is limited to centimeters-to-meters. The colony's urgent-alert channel.
+    </p>
+    <details class="theory-box">
+      <summary>Model equations (paper §VII)</summary>
+      <div class="eq">\[ A_{\mathrm{ch}}(d)=\frac{A_r}{4\pi d^{2}}\,e^{-(a+b)d} \qquad f(t)=\bigl(1-e^{-t/\tau_r}\bigr)e^{-t/\tau_d} \qquad \tau_{\mathrm{rec}}\frac{dS}{dt}=-S+S_0+S_{\max}\frac{R}{K_R+R} \]</div>
+      <p>The channel gain is closed-form: inverse-square spreading times exponential extinction (a: absorption, b:
+      scattering — Petzold water types). The emitted flash has rise/decay constants τ_r, τ_d; the photoreceptor
+      integrates with a saturating Hill nonlinearity, which buffers tens of dB of channel loss down to a few percent
+      of end-to-end loss. Parameters follow Table&nbsp;IV of the paper.</p>
+    </details>
+
+    <div class="mod-grid">
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Parameters</h3>
+          <div class="ctl-select"><span>Water type (Petzold)</span>
+            <select id="op-water">
+              <option value="0.056">Pure sea water (c_ext = 0.056 m⁻¹)</option>
+              <option value="0.150">Clear ocean (0.150 m⁻¹)</option>
+              <option value="0.305" selected>Coastal ocean (0.305 m⁻¹)</option>
+              <option value="2.170">Turbid harbor (2.170 m⁻¹)</option>
+            </select></div>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance d</span><span class="ctl-slider__val" id="op-d-val"></span></span>
+            <input type="range" id="op-d" min="0.1" max="5" step="0.1" value="2"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Flash rise τ_r</span><span class="ctl-slider__val" id="op-tr-val"></span></span>
+            <input type="range" id="op-tr" min="5" max="40" step="5" value="10"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Receiver τ_rec</span><span class="ctl-slider__val" id="op-trec-val"></span></span>
+            <input type="range" id="op-trec" min="0.02" max="0.15" step="0.01" value="0.05"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Half-saturation K_R (log₁₀)</span><span class="ctl-slider__val" id="op-kr-val"></span></span>
+            <input type="range" id="op-kr" min="4" max="5.7" step="0.1" value="5"></label>
+        </div>
+        <div class="panel">
+          <h3 class="panel__title">Digital link <span class="badge-ext">extension — not in paper</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Noise (log₁₀ σ, dB-domain)</span><span class="ctl-slider__val" id="op-sg-val"></span></span>
+            <input type="range" id="op-sg" min="-14" max="-9" step="0.25" value="-12"></label>
+          <p class="scope-caption">OOK over received optical power with additive Gaussian noise of std σ (same units as
+          the normalized channel gain), \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). Teaching extension; a physically rigorous treatment would use a
+          Poisson photon-counting channel — see §X-A of the paper.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Live channel <span class="subnote">photons from a flashing cell to an eyespot</span></h3>
+          <div class="transport">
+            <button class="btn-start" data-anim="opt" data-act="start">▶ Start flashing</button>
+            <button data-anim="opt" data-act="pause">⏸ Pause</button>
+            <button data-anim="opt" data-act="reset">↺ Reset</button>
+            <span class="sim-clock">t = <b id="op-clock">0 ms</b></span>
+          </div>
+          <canvas id="op-canvas" class="scope" width="860" height="300"></canvas>
+          <p class="scope-caption">The transmitter emits flash trains; each photon travels in a straight line and may be
+          absorbed or scattered out of the path (probability set by the water's extinction coefficient). The eyespot
+          counts surviving photons; the response bar S(t) shows the decoded photobiological output.</p>
+          <div class="readouts">
+            <div class="readout readout--live"><div class="readout__label">Photons emitted</div><div class="readout__value" id="op-emit">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Reached eyespot</div><div class="readout__value" id="op-arr">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Response S(t)</div><div class="readout__value" id="op-s">0%</div></div>
+            <div class="readout"><div class="readout__label">Channel gain (dB)</div><div class="readout__value" id="op-ac">–</div></div>
+            <div class="readout"><div class="readout__label">E2E delay τ_S</div><div class="readout__value" id="op-tc">–</div></div>
+            <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="op-ber">–</div></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="panel"><h3 class="panel__title">Channel gain vs distance <span class="subnote">dB, all water types</span></h3><div class="chart-box" id="op-chart-att"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>pure sea</span><span><i style="background:var(--color-h)"></i>clear ocean</span><span><i style="background:var(--color-y)"></i>coastal</span><span><i style="background:var(--color-marker)"></i>turbid harbor</span></div></div>
+          <div class="panel"><h3 class="panel__title">End-to-end attenuation A_S(d)</h3><div class="chart-box" id="op-chart-e2e"></div>
+            <div class="legend"><span><i style="background:var(--color-y)"></i>A_S(d) — receiver saturation buffers channel loss</span></div></div>
+          <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="op-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ COMPARE TAB ══════════════════ -->
+  <section class="tab-panel" id="tab-cmp" role="tabpanel">
+    <h2 class="module-title">Four Channels, One Colony</h2>
+    <p class="module-sub">
+      No single modality wins everywhere. The four channels occupy complementary niches in the range–latency plane —
+      a natural multi-layer signaling architecture (paper §VIII, Table&nbsp;V).
+    </p>
+    <div class="charts-grid">
+      <div class="panel" style="grid-column: 1 / -1;">
+        <h3 class="panel__title">Range–latency map</h3>
+        <div class="chart-box" id="cmp-chart"></div>
+        <p class="scope-caption">Log–log operating regions from the comparative analysis. Energy cost per signaling
+        event rises from the slow chemical channels toward the fast optical channel — speed is metabolically expensive.</p>
+      </div>
+      <div class="panel" style="grid-column: 1 / -1;">
+        <h3 class="panel__title">Comparative summary <span class="subnote">Table V of the paper</span></h3>
+        <div class="tbl-wrap">
+        <table class="cmp">
+          <thead><tr><th>Modality</th><th>Range</th><th>Latency</th><th>Energy cost</th><th>Primary function</th></tr></thead>
+          <tbody>
+            <tr><td>Quorum sensing</td><td>mm – cm</td><td>min – hours</td><td><span class="chip" style="color:var(--ok)">Low</span></td><td>Local coordination</td></tr>
+            <tr><td>VOC</td><td>m – km</td><td>sec – min</td><td><span class="chip" style="color:var(--warn)">Medium</span></td><td>Ecosystem broadcast</td></tr>
+            <tr><td>Electrical</td><td>cm – m</td><td>ms – s</td><td><span class="chip" style="color:var(--warn)">Medium</span></td><td>Rapid response</td></tr>
+            <tr><td>Optical</td><td>cm – m</td><td>µs – ms</td><td><span class="chip" style="color:var(--err)">High</span></td><td>Urgent alert</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ ABOUT TAB ══════════════════ -->
+  <section class="tab-panel about" id="tab-about" role="tabpanel">
+    <h2 class="module-title">About This Page</h2>
+    <p>
+      This is an educational, interactive companion to the reference paper below. All attenuation and delay curves are
+      computed in your browser directly from the paper's equations and parameter tables (Tables I–IV): the
+      diffusion–reaction equation for quorum sensing, the advection–diffusion Green's function for VOCs, the cable
+      equation for electrical signaling, and the Beer–Lambert / Hill-receptor chain for optical signaling. No figures
+      are reproduced from the publication.
+    </p>
+    <p><b>What is faithful to the paper:</b> the deterministic channel and receiver models, their parameters, and the
+      channel-only vs. end-to-end distinction. <b>What is added for teaching:</b> (1)&nbsp;the particle animations are
+      stochastic visualizations of the same transport physics — individual molecules and photons are drawn so the
+      channel becomes visible, and the counters count those simulated particles; (2)&nbsp;the bit-error-rate panels
+      assume on–off keying with additive Gaussian receiver noise, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). The paper deliberately leaves noise
+      modeling, SNR and capacity analysis as open problems (§X); the BER layer here is a standard textbook assumption,
+      clearly separated so students can tell model from extension.
+    </p>
+    <div class="panel">
+      <h3 class="panel__title">Reference</h3>
+      <div class="cite-block">
+        I. F. Akyildiz, S. H. Sayin, E. I. Saygili, and B. D. Unluturk, “The Internet of Algae: End-to-End
+        Communication-Theoretic Models for Photosynthetic Molecular Networks,” <i>IEEE Transactions on Molecular,
+        Biological, and Multi-Scale Communications</i>, vol. 12, pp. 796–816, 2026, doi:
+        <a href="https://doi.org/10.1109/TMBMC.2026.3711050" target="_blank" rel="noopener">10.1109/TMBMC.2026.3711050</a>.
+      </div>
+    </div>
+    <footer>
+      Built as an open educational resource. Simulations run entirely in the browser; parameters default to the
+      values reported in the reference. Hero animation adapted from the “Bioluminescence” shader of
+      <a href="https://radiant-shaders.com/" target="_blank" rel="noopener">Radiant Shaders</a> (MIT License),
+      recolored to this page's palette. “Algae are talking. It is time we learn to listen.”
+    </footer>
+  </section>
+</div>
+
+<script>
+'use strict';
+/* ════════════════════════════ utilities ════════════════════════════ */
+const $ = id => document.getElementById(id);
+function linspace(a, b, n) { const r = new Array(n); for (let i = 0; i < n; i++) r[i] = a + (b - a) * i / (n - 1); return r; }
+function erfc(x) { // Abramowitz–Stegun 7.1.26: erfc(x) = poly(t)·e^(−x²), x ≥ 0
+  const s = x < 0 ? -1 : 1; x = Math.abs(x);
+  const t = 1 / (1 + 0.3275911 * x);
+  const y = (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return s === 1 ? y : 2 - y;
+}
+const Q = x => 0.5 * erfc(x / Math.SQRT2);
+function fmtSI(v, unit, digits = 2) {
+  if (!isFinite(v)) return '–';
+  const av = Math.abs(v);
+  if (av === 0) return '0 ' + unit;
+  if (av >= 1) return v.toFixed(av >= 100 ? 0 : digits) + ' ' + unit;
+  if (av >= 1e-3) return (v * 1e3).toFixed(digits) + ' m' + unit;
+  if (av >= 1e-6) return (v * 1e6).toFixed(digits) + ' µ' + unit;
+  return v.toExponential(1) + ' ' + unit;
+}
+function fmtBER(b) {
+  if (!isFinite(b) || b <= 0) return '< 10⁻¹²';
+  if (b < 1e-12) return '< 10⁻¹²';
+  if (b >= 0.01) return b.toFixed(3);
+  return b.toExponential(1).replace('e-', '·10⁻');
+}
+function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+/* ════════════════════════════ tiny SVG chart lib ════════════════════════════ */
+function drawChart(el, cfg) {
+  // cfg: {series:[{x:[],y:[],colorVar,label}], xlab, ylab, ylog, marker (x value), yfmt, xfmt, ymin, ymax}
+  const W = 430, H = 250, ml = 56, mr = 12, mt = 12, mb = 40;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const allX = cfg.series.flatMap(s => s.x), xmin = Math.min(...allX), xmax = Math.max(...allX);
+  let vals = cfg.series.flatMap(s => s.y).filter(v => isFinite(v) && (!cfg.ylog || v > 0));
+  let ymin = cfg.ymin !== undefined ? cfg.ymin : Math.min(...vals);
+  let ymax = cfg.ymax !== undefined ? cfg.ymax : Math.max(...vals);
+  if (cfg.ylog) { ymin = Math.max(ymin, cfg.yfloor || 1e-12); }
+  if (ymax === ymin) { ymax = ymin + 1; }
+  const ty = v => cfg.ylog ? Math.log10(v) : v;
+  const Y0 = ty(ymin), Y1 = ty(ymax);
+  const sx = x => ml + (x - xmin) / (xmax - xmin) * pw;
+  const sy = v => mt + ph - (ty(v) - Y0) / (Y1 - Y0) * ph;
+  const gridCol = 'var(--border)', txtCol = 'var(--text-faint)';
+  let g = '';
+  // y ticks
+  const yticks = [];
+  if (cfg.ylog) {
+    for (let e = Math.ceil(Math.log10(ymin)); e <= Math.floor(Math.log10(ymax)); e++) yticks.push(Math.pow(10, e));
+    if (yticks.length > 7) { const k = Math.ceil(yticks.length / 6); for (let i = yticks.length - 1; i >= 0; i--) if (i % k) yticks.splice(i, 1); }
+  } else { const n = 5; for (let i = 0; i <= n; i++) yticks.push(ymin + (ymax - ymin) * i / n); }
+  for (const v of yticks) {
+    const y = sy(v);
+    g += `<line x1="${ml}" y1="${y}" x2="${W - mr}" y2="${y}" stroke="${gridCol}" stroke-width="1"/>`;
+    const lab = cfg.yfmt ? cfg.yfmt(v) : (cfg.ylog ? '10' + supExp(Math.round(Math.log10(v))) : trimNum(v));
+    g += `<text x="${ml - 7}" y="${y + 3.5}" text-anchor="end" font-size="10" fill="${txtCol}" font-family="var(--mono)">${lab}</text>`;
+  }
+  // x ticks
+  const nxt = 5;
+  for (let i = 0; i <= nxt; i++) {
+    const xv = xmin + (xmax - xmin) * i / nxt, x = sx(xv);
+    g += `<line x1="${x}" y1="${mt}" x2="${x}" y2="${mt + ph}" stroke="${gridCol}" stroke-width="0.6"/>`;
+    g += `<text x="${x}" y="${mt + ph + 15}" text-anchor="middle" font-size="10" fill="${txtCol}" font-family="var(--mono)">${cfg.xfmt ? cfg.xfmt(xv) : trimNum(xv)}</text>`;
+  }
+  // axes labels
+  g += `<text x="${ml + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="10.5" fill="var(--text-dim)" font-family="var(--font)">${cfg.xlab}</text>`;
+  g += `<text x="12" y="${mt + ph / 2}" text-anchor="middle" font-size="10.5" fill="var(--text-dim)" font-family="var(--font)" transform="rotate(-90 12 ${mt + ph / 2})">${cfg.ylab}</text>`;
+  // marker (current distance)
+  if (cfg.marker !== undefined && isFinite(cfg.marker)) {
+    const x = sx(cfg.marker);
+    g += `<line x1="${x}" y1="${mt}" x2="${x}" y2="${mt + ph}" stroke="var(--accent-cyan)" stroke-width="1" stroke-dasharray="4 3" opacity="0.85"/>`;
+    g += `<text x="${x + 4}" y="${mt + 11}" font-size="9.5" fill="var(--accent-cyan)" font-family="var(--mono)">d</text>`;
+  }
+  // series
+  for (const s of cfg.series) {
+    let dp = '', pen = false;
+    for (let i = 0; i < s.x.length; i++) {
+      const v = s.y[i];
+      if (!isFinite(v) || (cfg.ylog && v <= 0)) { pen = false; continue; }
+      const X = sx(s.x[i]).toFixed(1), Yv = Math.max(mt, Math.min(mt + ph, sy(v))).toFixed(1);
+      dp += (pen ? 'L' : 'M') + X + ' ' + Yv; pen = true;
+    }
+    g += `<path d="${dp}" fill="none" stroke="var(${s.colorVar})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${cfg.ylab} versus ${cfg.xlab}">
+    <rect x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="var(--canvas-bg)" rx="6"/>${g}
+    <line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="var(--border-strong)" stroke-width="1"/>
+    <line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="var(--border-strong)" stroke-width="1"/>
+  </svg><div class="chart-tip"></div>`;
+  // hover
+  const svg = el.querySelector('svg'), tip = el.querySelector('.chart-tip');
+  svg.addEventListener('mousemove', ev => {
+    const r = svg.getBoundingClientRect();
+    const fx = (ev.clientX - r.left) / r.width * W;
+    if (fx < ml || fx > W - mr) { tip.style.display = 'none'; return; }
+    const xv = xmin + (fx - ml) / pw * (xmax - xmin);
+    let html = `<b>${cfg.xlab.split('(')[0].trim()}: ${trimNum(xv)}</b>`;
+    for (const s of cfg.series) {
+      let bi = 0, bd = Infinity;
+      for (let i = 0; i < s.x.length; i++) { const dd = Math.abs(s.x[i] - xv); if (dd < bd) { bd = dd; bi = i; } }
+      const v = s.y[bi];
+      html += `<br><span style="color:var(${s.colorVar})">●</span> ${s.label}: ${isFinite(v) ? (cfg.tipfmt ? cfg.tipfmt(v) : trimNum(v)) : '–'}`;
+    }
+    tip.innerHTML = html; tip.style.display = 'block';
+    const px = ev.clientX - r.left, py = ev.clientY - r.top;
+    tip.style.left = Math.min(px + 12, r.width - 150) + 'px'; tip.style.top = Math.max(0, py - 10) + 'px';
+  });
+  svg.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+}
+function trimNum(v) {
+  if (!isFinite(v)) return '–';
+  const av = Math.abs(v);
+  if (av >= 1000 || (av < 0.01 && av > 0)) return v.toExponential(1);
+  return +v.toFixed(av < 1 ? 2 : (av < 10 ? 2 : 1)) + '';
+}
+function supExp(e) {
+  const map = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  return ('' + e).split('').map(c => map[c] || c).join('');
+}
+
+/* ════════════════════════════ tabs ════════════════════════════ */
+const tabBtns = document.querySelectorAll('.tab-btn');
+tabBtns.forEach(btn => btn.addEventListener('click', () => {
+  tabBtns.forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('is-active'));
+  $('tab-' + btn.dataset.tab).classList.add('is-active');
+  Object.values(anims).forEach(a => a.pause());
+}));
+
+/* ════════════════════════════ QS physics (paper §IV, Table I) ════════════════════════════ */
+function computeQS(p) {
+  // 1-D diffusion–reaction with logistic point source at x=0. Units: mm, s.
+  const D = p.D;                    // m²/s
+  const delta = 1 / (p.tauLoss * 3600); // 1/s
+  const mu = 0.10 / 3600;           // 1/s
+  const Lmm = 6.5, nx = 65, dx = Lmm / 1000 / nx;   // m (display range 6 mm + guard band)
+  const T = 130 * 3600;
+  let dt = 0.35 * dx * dx / D; dt = Math.min(dt, 20);
+  const steps = Math.ceil(T / dt);
+  const C = new Float64Array(nx + 1);
+  const peak = new Float64Array(nx + 1);
+  const rise = new Float64Array(nx + 1).fill(NaN);   // filled after peak known (2nd pass tracking)
+  // store coarse time series of C at all x? Too big; track peaks + record C(t) at sample distances
+  const r = D * dt / (dx * dx);
+  let N = 0.01;                      // normalized N/K
+  const alpha = 1;                   // a.u. source scale (normalized out of attenuation ratios)
+  const nRec = 700, recEvery = Math.max(1, Math.floor(steps / nRec));
+  const tRec = [], cRec = [];        // C profile snapshots (only at RX index — set later)
+  const snapshots = [];              // store full profiles occasionally for rise-time pass
+  for (let s = 0; s < steps; s++) {
+    N += dt * mu * N * (1 - N);
+    const Cn = new Float64Array(nx + 1);
+    for (let i = 1; i < nx; i++) Cn[i] = C[i] + r * (C[i + 1] - 2 * C[i] + C[i - 1]) - delta * dt * C[i];
+    Cn[0] = C[0] + r * 2 * (C[1] - C[0]) - delta * dt * C[0] + alpha * N * dt / dx * 1e-3; // source at x=0 (no-flux + injection)
+    Cn[nx] = Cn[nx - 1]; // open-ish end
+    C.set(Cn);
+    for (let i = 0; i <= nx; i++) if (C[i] > peak[i]) peak[i] = C[i];
+    if (s % recEvery === 0) { tRec.push(s * dt); snapshots.push(Float64Array.from(C)); }
+  }
+  // rise times: first t where C(x,t) >= 0.5 * peak(x)
+  const tau = new Float64Array(nx + 1).fill(NaN);
+  for (let i = 0; i <= nx; i++) {
+    for (let k = 0; k < snapshots.length; k++) if (snapshots[k][i] >= 0.5 * peak[i]) { tau[i] = tRec[k]; break; }
+  }
+  const dArr = [], Ac = [], tC = [], Av = [], tV = [];
+  const v0 = 15, vmax = 40;
+  // normalize threshold in units of TX peak: paper uses a.u.; scale C so peak at TX ≈ 4 (threshold 1 lands mid-range)
+  const scale = 4 / peak[0];
+  for (let i = 1; i <= nx; i++) {
+    const d = i * dx * 1000; // mm
+    if (d > 6.01) break;
+    dArr.push(d);
+    Ac.push(peak[i] / peak[0]);
+    tC.push(tau[i] / 3600);
+    // end-to-end: v(t) from C(t) at this x — use snapshots
+    let vpk = 0, vTX = 0, vrise = NaN;
+    for (let k = 0; k < snapshots.length; k++) {
+      const cc = snapshots[k][i] * scale;
+      const vv = cc >= p.Cth ? vmax * (cc - p.Cth) / (p.Km + cc) : 0;
+      if (vv > vpk) vpk = vv;
+      const c0 = snapshots[k][0] * scale;
+      const v0v = c0 >= p.Cth ? vmax * (c0 - p.Cth) / (p.Km + c0) : 0;
+      if (v0v > vTX) vTX = v0v;
+    }
+    for (let k = 0; k < snapshots.length; k++) {
+      const cc = snapshots[k][i] * scale;
+      const vv = cc >= p.Cth ? vmax * (cc - p.Cth) / (p.Km + cc) : 0;
+      if (vv >= 0.5 * vpk && vpk > 0) { vrise = tRec[k] / 3600; break; }
+    }
+    Av.push(vTX > 0 ? vpk / vTX : NaN);
+    tV.push(vpk > 0 ? vrise : NaN);
+  }
+  return { dArr, Ac, tC, Av, tV };
+}
+
+/* ════════════════════════════ VOC physics (paper §V, Table II) ════════════════════════════ */
+function computeVOC(p) {
+  // closed-form h(t;d), receptor ODE. Units: m, s.
+  const D = 1e-5, v = p.v, lam = 1 / (p.tauLoss * 3600);
+  const h = (t, d) => t <= 0 ? 0 : 1 / Math.sqrt(4 * Math.PI * D * t) * Math.exp(-((d - v * t) ** 2) / (4 * D * t)) * Math.exp(-lam * t);
+  const dRef = 0.5;
+  const dArr = linspace(0.5, 10, 60);
+  const Tmax = 12 / v + 60;
+  const nt = 900, ts = linspace(0.01, Tmax, nt), dtI = ts[1] - ts[0];
+  function chan(d) {
+    let pk = 0, tpk = 0;
+    for (const t of ts) { const x = h(t, d); if (x > pk) { pk = x; tpk = t; } }
+    return { pk, tpk };
+  }
+  function e2e(d) {
+    // dRb/dt = kon*C*(1-Rb) - koff*Rb, C normalized so that TX peak ~ 1e-8 M-ish scale folded into kon
+    const kon = p.kon * 1e6, koff = 1e-2;
+    const c0 = chan(dRef).pk;
+    let Rb = 0, pk = 0, tpk = 0;
+    for (const t of ts) {
+      const Cc = h(t, d) / c0 * 1e-7;   // molar-scale normalization (kon*C ~ 10/s at ref peak)
+      Rb += dtI * (kon * Cc * (1 - Rb) - koff * Rb);
+      if (Rb > pk) { pk = Rb; tpk = t; }
+    }
+    return { pk, tpk };
+  }
+  const ref = chan(dRef), refE = e2e(dRef);
+  const ach = [], tch = [], ae = [], te = [];
+  for (const d of dArr) {
+    const c = chan(d); ach.push(c.pk / ref.pk); tch.push(c.tpk);
+    const e = e2e(d); ae.push(e.pk / refE.pk); te.push(e.tpk);
+  }
+  return { dArr, ach, tch, ae, te };
+}
+
+/* ════════════════════════════ Electrical physics (paper §VI, Table III) ════════════════════════════ */
+function computeElec(p) {
+  // τm Vt = λ² Vxx − V ; Gaussian pulse at x=0, sealed end at L=1. FD.
+  const L = 1, nx = 120, dx = L / nx;
+  const lam2 = p.lam * p.lam, tm = p.tm;
+  let dt = 0.35 * tm * dx * dx / lam2; dt = Math.min(dt, 2e-3);
+  const A0 = 1, t0 = 0.05, sig = 0.01;
+  const T = Math.max(1.2, t0 + 12 * tm);
+  const steps = Math.ceil(T / dt);
+  const V = new Float64Array(nx + 1);
+  const peak = new Float64Array(nx + 1);
+  const nRec = 500, recEvery = Math.max(1, Math.floor(steps / nRec));
+  const tRec = [], snaps = [];
+  for (let s = 0; s < steps; s++) {
+    const t = s * dt;
+    const Vn = new Float64Array(nx + 1);
+    Vn[0] = A0 * Math.exp(-((t - t0) ** 2) / (2 * sig * sig)); // Dirichlet source
+    for (let i = 1; i < nx; i++) Vn[i] = V[i] + dt / tm * (lam2 * (V[i + 1] - 2 * V[i] + V[i - 1]) / (dx * dx) - V[i]);
+    Vn[nx] = Vn[nx - 1]; // sealed end (no-flux)
+    V.set(Vn);
+    for (let i = 0; i <= nx; i++) if (Math.abs(V[i]) > peak[i]) peak[i] = Math.abs(V[i]);
+    if (s % recEvery === 0) { tRec.push(t); snaps.push(Float64Array.from(V)); }
+  }
+  const tau = new Float64Array(nx + 1).fill(NaN);
+  for (let i = 0; i <= nx; i++) for (let k = 0; k < snaps.length; k++) if (Math.abs(snaps[k][i]) >= 0.5 * peak[i]) { tau[i] = tRec[k]; break; }
+  const sigmoid = V_ => 1 / (1 + Math.exp(-(V_ - p.vh) / p.k));
+  const P00 = sigmoid(0);
+  const dArr = [], Av = [], tV = [], Ap = [];
+  let PpkTX = 0;
+  for (let k = 0; k < snaps.length; k++) PpkTX = Math.max(PpkTX, sigmoid(snaps[k][0]) - P00);
+  for (let i = 1; i <= nx; i++) {
+    dArr.push(i * dx);
+    Av.push(peak[i] / peak[0]);
+    tV.push(tau[i]);
+    let Ppk = 0;
+    for (let k = 0; k < snaps.length; k++) Ppk = Math.max(Ppk, sigmoid(snaps[k][i]) - P00);
+    Ap.push(PpkTX > 0 ? Ppk / PpkTX : NaN);
+  }
+  return { dArr, Av, tV, Ap };
+}
+
+/* ════════════════════════════ Optical physics (paper §VII, Table IV) ════════════════════════════ */
+function computeOpt(p) {
+  const Ar = 1e-10;
+  const gain = (d, cext) => Ar / (4 * Math.PI * d * d) * Math.exp(-cext * d);
+  const dArr = linspace(0.05, 5, 120);
+  const types = [0.056, 0.150, 0.305, 2.170];
+  const gdB = types.map(c => dArr.map(d => 10 * Math.log10(gain(d, c))));
+  // end-to-end A_S(d): flash train → R = γ η Φ; S via Hill relaxation
+  const gamma = 1e3, eta = 0.6, hnu = 6.626e-34 * 3e8 / 470e-9;
+  const KR = Math.pow(10, p.logKR);
+  const taur = p.taur, taud = 0.08, trec = p.trec;
+  const Itx = 1e-3; // W, nominal flash peak scale (folded into normalization)
+  function S_of_d(d) {
+    const g = gain(d, p.cext);
+    const dt = 2e-3, T = 1.2;
+    let S = 0, pk = 0, tpk = NaN;
+    for (let t = dt; t < T; t += dt) {
+      const f = (1 - Math.exp(-t / taur)) * Math.exp(-t / taud);
+      const R = gamma * eta * (Itx * f * g / (4 * Math.PI * 1e-4) / hnu) * (4 * Math.PI * 1e-4) / Ar * Ar; // → γη·Φ
+      S += dt / trec * (-S + R / (KR + R));
+      if (S > pk) { pk = S; }
+    }
+    // rise time
+    let S2 = 0;
+    for (let t = dt; t < T; t += dt) {
+      const f = (1 - Math.exp(-t / taur)) * Math.exp(-t / taud);
+      const R = gamma * eta * (Itx * f * g / hnu);
+      S2 += dt / trec * (-S2 + R / (KR + R));
+      if (isNaN(tpk) && S2 >= 0.5 * pk && pk > 0) tpk = t;
+    }
+    return { pk, tpk };
+  }
+  // simpler consistent version: recompute pk with the same R formula used for rise
+  function S2_of_d(d) {
+    const g = gain(d, p.cext);
+    const dt = 2e-3, T = 1.2;
+    let S = 0, pk = 0, tpk = NaN, hist = [];
+    for (let t = dt; t < T; t += dt) {
+      const f = (1 - Math.exp(-t / taur)) * Math.exp(-t / taud);
+      const R = gamma * eta * (Itx * f * g / hnu);
+      S += dt / trec * (-S + R / (KR + R));
+      hist.push([t, S]);
+      if (S > pk) pk = S;
+    }
+    for (const [t, s] of hist) if (s >= 0.5 * pk && pk > 0) { tpk = t; break; }
+    return { pk, tpk };
+  }
+  const d0 = dArr[0], ref = S2_of_d(d0);
+  const As = dArr.map(d => { const r = S2_of_d(d); return ref.pk > 0 ? r.pk / ref.pk : NaN; });
+  const tS = S2_of_d(p.d).tpk;
+  return { dArr, gdB, types, As, tS, gain };
+}
+
+/* ════════════════════════════ BER (teaching extension) ════════════════════════════ */
+const berFromAmp = (ampArr, sigma) => ampArr.map(a => isFinite(a) ? Q(a / (2 * sigma)) : NaN);
+
+/* ════════════════════════════ state + recompute + render ════════════════════════════ */
+const state = {
+  qs: { d: 3, D: 5e-10, tauLoss: 2, Cth: 1, Km: 1, sg: 0.06 },
+  voc: { d: 5, v: 0.2, tauLoss: 25, kon: 1, sg: 0.06 },
+  el: { d: 0.4, lam: 0.12, tm: 0.05, vh: 0.2, k: 0.05, sg: 0.03 },
+  op: { d: 2, cext: 0.305, taur: 0.010, trec: 0.05, logKR: 5, logsg: -12 },
+};
+let cacheQS, cacheVOC, cacheEL, cacheOP;
+
+function interp(xs, ys, x) {
+  if (x <= xs[0]) return ys[0];
+  for (let i = 1; i < xs.length; i++) if (xs[i] >= x) {
+    const f = (x - xs[i - 1]) / (xs[i] - xs[i - 1]);
+    return ys[i - 1] + f * (ys[i] - ys[i - 1]);
+  }
+  return ys[ys.length - 1];
+}
+
+function renderQS() {
+  const p = state.qs;
+  cacheQS = computeQS(p);
+  const { dArr, Ac, tC, Av, tV } = cacheQS;
+  const ber = berFromAmp(Ac, p.sg);
+  drawChart($('qs-chart-att'), { series: [
+      { x: dArr, y: Ac, colorVar: '--color-x', label: 'A_C' },
+      { x: dArr, y: Av, colorVar: '--color-y', label: 'A_v' }],
+    xlab: 'distance d (mm)', ylab: 'attenuation', marker: p.d, ymin: 0, ymax: 1 });
+  drawChart($('qs-chart-del'), { series: [
+      { x: dArr, y: tC, colorVar: '--color-x', label: 'τ_C' },
+      { x: dArr, y: tV, colorVar: '--color-y', label: 'τ_v' }],
+    xlab: 'distance d (mm)', ylab: 'delay (h)', marker: p.d, tipfmt: v => trimNum(v) + ' h' });
+  drawChart($('qs-chart-ber'), { series: [{ x: dArr, y: ber, colorVar: '--color-marker', label: 'BER' }],
+    xlab: 'distance d (mm)', ylab: 'BER', ylog: true, yfloor: 1e-10, ymax: 0.5, marker: p.d, tipfmt: fmtBER });
+  $('qs-ac').textContent = trimNum(interp(dArr, Ac, p.d));
+  const tcv = interp(dArr, tC, p.d);
+  $('qs-tc').textContent = isFinite(tcv) ? tcv.toFixed(1) + ' h' : '–';
+  $('qs-ber').textContent = fmtBER(interp(dArr, ber, p.d));
+}
+function renderVOC() {
+  const p = state.voc;
+  cacheVOC = computeVOC(p);
+  const { dArr, ach, tch, ae, te } = cacheVOC;
+  const ber = berFromAmp(ach, p.sg);
+  drawChart($('voc-chart-att'), { series: [
+      { x: dArr, y: ach, colorVar: '--color-x', label: 'α_ch' },
+      { x: dArr, y: ae, colorVar: '--color-y', label: 'α_e2e' }],
+    xlab: 'distance d (m)', ylab: 'attenuation', marker: p.d, ymin: 0, ymax: 1 });
+  drawChart($('voc-chart-del'), { series: [
+      { x: dArr, y: tch, colorVar: '--color-x', label: 'τ_ch' },
+      { x: dArr, y: te, colorVar: '--color-y', label: 'τ_e2e' }],
+    xlab: 'distance d (m)', ylab: 'delay (s)', marker: p.d, tipfmt: v => trimNum(v) + ' s' });
+  drawChart($('voc-chart-ber'), { series: [{ x: dArr, y: ber, colorVar: '--color-marker', label: 'BER' }],
+    xlab: 'distance d (m)', ylab: 'BER', ylog: true, yfloor: 1e-10, ymax: 0.5, marker: p.d, tipfmt: fmtBER });
+  $('voc-ac').textContent = trimNum(interp(dArr, ach, p.d));
+  $('voc-tc').textContent = trimNum(interp(dArr, tch, p.d)) + ' s';
+  $('voc-ber').textContent = fmtBER(interp(dArr, ber, p.d));
+}
+function renderEL() {
+  const p = state.el;
+  cacheEL = computeElec(p);
+  const { dArr, Av, tV, Ap } = cacheEL;
+  const ber = berFromAmp(Av, p.sg);
+  drawChart($('el-chart-att'), { series: [
+      { x: dArr, y: Av, colorVar: '--color-x', label: 'A_V' },
+      { x: dArr, y: Ap, colorVar: '--color-y', label: 'A_P' }],
+    xlab: 'distance d (m)', ylab: 'attenuation', marker: p.d, ymin: 0, ymax: 1 });
+  drawChart($('el-chart-del'), { series: [{ x: dArr, y: tV.map(v => v * 1000), colorVar: '--color-x', label: 'τ_V' }],
+    xlab: 'distance d (m)', ylab: 'delay (ms)', marker: p.d, tipfmt: v => trimNum(v) + ' ms' });
+  drawChart($('el-chart-ber'), { series: [{ x: dArr, y: ber, colorVar: '--color-marker', label: 'BER' }],
+    xlab: 'distance d (m)', ylab: 'BER', ylog: true, yfloor: 1e-10, ymax: 0.5, marker: p.d, tipfmt: fmtBER });
+  $('el-av').textContent = trimNum(interp(dArr, Av, p.d));
+  $('el-tv').textContent = trimNum(interp(dArr, tV, p.d) * 1000) + ' ms';
+  $('el-ber').textContent = fmtBER(interp(dArr, ber, p.d));
+}
+function renderOP() {
+  const p = state.op;
+  cacheOP = computeOpt(p);
+  const { dArr, gdB, As, tS } = cacheOP;
+  const names = ['pure sea', 'clear ocean', 'coastal', 'turbid harbor'];
+  const colors = ['--color-x', '--color-h', '--color-y', '--color-marker'];
+  drawChart($('op-chart-att'), { series: gdB.map((y, i) => ({ x: dArr, y, colorVar: colors[i], label: names[i] })),
+    xlab: 'distance d (m)', ylab: 'channel gain (dB)', marker: p.d, tipfmt: v => v.toFixed(1) + ' dB' });
+  drawChart($('op-chart-e2e'), { series: [{ x: dArr, y: As, colorVar: '--color-y', label: 'A_S' }],
+    xlab: 'distance d (m)', ylab: 'end-to-end attenuation', marker: p.d, ymin: Math.min(0.9, Math.min(...As.filter(isFinite)) * 0.995), ymax: 1.001 });
+  const sigma = Math.pow(10, p.logsg);
+  const amp = dArr.map(d => cacheOP.gain(d, p.cext));
+  const ber = berFromAmp(amp, sigma);
+  drawChart($('op-chart-ber'), { series: [{ x: dArr, y: ber, colorVar: '--color-marker', label: 'BER' }],
+    xlab: 'distance d (m)', ylab: 'BER', ylog: true, yfloor: 1e-10, ymax: 0.5, marker: p.d, tipfmt: fmtBER });
+  const g = cacheOP.gain(p.d, p.cext);
+  $('op-ac').textContent = (10 * Math.log10(g)).toFixed(1) + ' dB';
+  $('op-tc').textContent = isFinite(tS) ? (tS * 1000).toFixed(0) + ' ms' : '–';
+  $('op-ber').textContent = fmtBER(Q(g / (2 * sigma)));
+}
+function renderCMP() {
+  // log-log range–latency occupancy map, hand-built SVG
+  const el = $('cmp-chart');
+  const W = 900, H = 380, ml = 70, mr = 20, mt = 16, mb = 48;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const lx0 = -3.3, lx1 = 3.3;   // log10 range (m): mm → km
+  const ly0 = -6.3, ly1 = 4.7;   // log10 latency (s): µs → hours
+  const sx = lx => ml + (lx - lx0) / (lx1 - lx0) * pw;
+  const sy = ly => mt + ph - (ly - ly0) / (ly1 - ly0) * ph;
+  const boxes = [
+    { name: 'Quorum sensing', sub: 'low energy', x: [-3, -1], y: [Math.log10(600), Math.log10(3600 * 10)], c: '--color-x' },
+    { name: 'VOC broadcast', sub: 'medium energy', x: [0, 3], y: [0, Math.log10(600)], c: '--color-h' },
+    { name: 'Electrical', sub: 'medium energy', x: [-2, 0], y: [-3, 0], c: '--color-y' },
+    { name: 'Optical', sub: 'high energy', x: [-2, 1], y: [-6, -3], c: '--color-marker' },
+  ];
+  let g = '';
+  const xticks = [[-3, '1 mm'], [-2, '1 cm'], [-1, '10 cm'], [0, '1 m'], [1, '10 m'], [2, '100 m'], [3, '1 km']];
+  const yticks = [[-6, '1 µs'], [-4.5, ''], [-3, '1 ms'], [-1.5, ''], [0, '1 s'], [Math.log10(60), '1 min'], [Math.log10(3600), '1 h'], [Math.log10(36000), '10 h']];
+  for (const [lx, lab] of xticks) {
+    g += `<line x1="${sx(lx)}" y1="${mt}" x2="${sx(lx)}" y2="${mt + ph}" stroke="var(--border)" />`;
+    g += `<text x="${sx(lx)}" y="${mt + ph + 18}" text-anchor="middle" font-size="11" fill="var(--text-faint)" font-family="var(--mono)">${lab}</text>`;
+  }
+  for (const [ly, lab] of yticks) {
+    g += `<line x1="${ml}" y1="${sy(ly)}" x2="${W - mr}" y2="${sy(ly)}" stroke="var(--border)"/>`;
+    if (lab) g += `<text x="${ml - 8}" y="${sy(ly) + 4}" text-anchor="end" font-size="11" fill="var(--text-faint)" font-family="var(--mono)">${lab}</text>`;
+  }
+  for (const b of boxes) {
+    const x = sx(b.x[0]), w = sx(b.x[1]) - x;
+    const y = sy(b.y[1]), h = sy(b.y[0]) - y;
+    g += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="var(${b.c})" opacity="0.14" stroke="var(${b.c})" stroke-width="1.5"/>`;
+    g += `<text x="${x + w / 2}" y="${y + h / 2 - 4}" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(${b.c})" font-family="var(--font)">${b.name}</text>`;
+    g += `<text x="${x + w / 2}" y="${y + h / 2 + 13}" text-anchor="middle" font-size="10.5" fill="var(--text-dim)" font-family="var(--mono)">${b.sub}</text>`;
+  }
+  g += `<text x="${ml + pw / 2}" y="${H - 8}" text-anchor="middle" font-size="12" fill="var(--text-dim)">communication range</text>`;
+  g += `<text x="16" y="${mt + ph / 2}" text-anchor="middle" font-size="12" fill="var(--text-dim)" transform="rotate(-90 16 ${mt + ph / 2})">latency</text>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Range versus latency operating regions of the four channels">
+    <rect x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="var(--canvas-bg)" rx="8"/>${g}</svg>`;
+}
+
+/* ════════════════════════════ slider wiring ════════════════════════════ */
+let deb = {};
+function wire(id, fmt, apply, render) {
+  const inp = $(id), out = $(id + '-val');
+  const upd = () => { const v = parseFloat(inp.value); out.textContent = fmt(v); apply(v); };
+  inp.addEventListener('input', () => { upd(); clearTimeout(deb[id]); deb[id] = setTimeout(render, 160); });
+  upd();
+}
+wire('qs-d', v => v.toFixed(2) + ' mm', v => state.qs.d = v, renderQS);
+wire('qs-D', v => v + '·10⁻¹⁰', v => state.qs.D = v * 1e-10, renderQS);
+wire('qs-tl', v => v + ' h', v => state.qs.tauLoss = v, renderQS);
+wire('qs-th', v => v.toFixed(2) + ' a.u.', v => state.qs.Cth = v, renderQS);
+wire('qs-km', v => v.toFixed(2) + ' a.u.', v => state.qs.Km = v, renderQS);
+wire('qs-sg', v => v.toFixed(2), v => state.qs.sg = v, renderQS);
+wire('voc-d', v => v.toFixed(1) + ' m', v => state.voc.d = v, renderVOC);
+wire('voc-v', v => v.toFixed(2) + ' m/s', v => state.voc.v = v, renderVOC);
+wire('voc-tl', v => v + ' h', v => state.voc.tauLoss = v, renderVOC);
+wire('voc-kon', v => v.toFixed(1), v => state.voc.kon = v, renderVOC);
+wire('voc-sg', v => v.toFixed(2), v => state.voc.sg = v, renderVOC);
+wire('el-d', v => (v * 100).toFixed(0) + ' cm', v => state.el.d = v, renderEL);
+wire('el-lam', v => v.toFixed(2) + ' m', v => state.el.lam = v, renderEL);
+wire('el-tm', v => (v * 1000).toFixed(0) + ' ms', v => state.el.tm = v, renderEL);
+wire('el-vh', v => v.toFixed(2), v => state.el.vh = v, renderEL);
+wire('el-k', v => v.toFixed(2), v => state.el.k = v, renderEL);
+wire('el-sg', v => v.toFixed(3), v => state.el.sg = v, renderEL);
+wire('op-d', v => v.toFixed(1) + ' m', v => state.op.d = v, renderOP);
+wire('op-tr', v => v + ' ms', v => state.op.taur = v / 1000, renderOP);
+wire('op-trec', v => (v * 1000).toFixed(0) + ' ms', v => state.op.trec = v, renderOP);
+wire('op-kr', v => '10^' + v.toFixed(1), v => state.op.logKR = v, renderOP);
+wire('op-sg', v => '10^' + v.toFixed(1), v => state.op.logsg = v, renderOP);
+$('op-water').addEventListener('change', e => { state.op.cext = parseFloat(e.target.value); renderOP(); });
+
+/* ════════════════════════════ particle animations ════════════════════════════ */
+function makeAnim(canvasId, hooks) {
+  const cv = $(canvasId), ctx = cv.getContext('2d');
+  const a = { running: false, t: 0, raf: null, cv, ctx, data: null };
+  a.start = () => { if (!a.data) { a.data = hooks.init(a); } if (!a.running) { a.running = true; loop(); } };
+  a.pause = () => { a.running = false; if (a.raf) cancelAnimationFrame(a.raf); };
+  a.reset = () => { a.pause(); a.t = 0; a.data = hooks.init(a); hooks.draw(a); };
+  function loop() {
+    if (!a.running) return;
+    hooks.step(a); hooks.draw(a);
+    a.raf = requestAnimationFrame(loop);
+  }
+  a.reset();
+  return a;
+}
+function scopeColors() {
+  return { text: cssVar('--text-dim'), faint: cssVar('--text-faint'), acc: cssVar('--accent'),
+    acc2: cssVar('--accent-2'), blue: cssVar('--accent-blue'), cyan: cssVar('--accent-cyan'),
+    marker: cssVar('--color-marker'), bg: cssVar('--scope-bg'), border: cssVar('--border-strong') };
+}
+function drawCell(ctx, x, y, r, color, phase, tail) {
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = color + '33'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 7); ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x - r * 0.18, y - r * 0.15, r * 0.3, 0, 7); ctx.fillStyle = color + '66'; ctx.fill();
+  if (tail) { // beating flagella; beat speed encodes response
+    ctx.beginPath();
+    for (let i = 0; i <= 20; i++) {
+      const s = i / 20, fx = x + r * 0.7 + s * r * 1.6;
+      const fy = y + Math.sin(phase + s * 6) * r * 0.28 * s;
+      i ? ctx.lineTo(fx, fy) : ctx.moveTo(fx, fy);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ── QS animation: random-walk molecules, TX colony → RX cell ── */
+const qsAnim = makeAnim('qs-canvas', {
+  init(a) {
+    a.t = 0;
+    return { parts: [], emitted: 0, arrived: 0, near: 0, phase: 0 };
+  },
+  step(a) {
+    const d = a.data, W = a.cv.width, H = a.cv.height;
+    const p = state.qs;
+    const dmax = 6;                        // mm mapped to canvas
+    const x0 = 70, x1 = W - 60;
+    const pxPerMM = (x1 - x0) / dmax;
+    const rxX = x0 + p.d * pxPerMM, rxY = H / 2;
+    const dtH = 0.02;                      // sim hours per frame (~1 min of colony time)
+    a.t += dtH;
+    // emission ∝ logistic N(t)
+    const N = 1 / (1 + Math.exp(-(a.t - 8) / 4));
+    const nEmit = Math.random() < N ? Math.ceil(N * 9) : 0;
+    for (let i = 0; i < nEmit; i++) {
+      d.parts.push({ x: x0 + (Math.random() - 0.5) * 14, y: H / 2 + (Math.random() - 0.5) * 60, age: 0 });
+      d.emitted++;
+    }
+    // random walk at true scale: RMS per axis = √(2 D Δt), mapped mm → px
+    const sigmaPx = Math.sqrt(2 * p.D * dtH * 3600) * 1000 * pxPerMM; // m → mm → px
+    const stepA = sigmaPx * Math.sqrt(3);  // uniform[-a,a] has RMS a/√3
+    const pDie = dtH / p.tauLoss;          // exponential degradation, exact rate
+    d.near = 0;
+    for (let i = d.parts.length - 1; i >= 0; i--) {
+      const q = d.parts[i];
+      q.x += (Math.random() - 0.5) * 2 * stepA;
+      q.y += (Math.random() - 0.5) * 2 * stepA;
+      q.age += dtH;
+      const dx = q.x - rxX, dy = q.y - rxY, rr = Math.hypot(dx, dy);
+      if (rr < 26) d.near++;
+      if (rr < 13) { d.arrived++; d.parts.splice(i, 1); continue; }
+      if (Math.random() < pDie || q.x < 20 || q.x > W - 15 || q.y < 8 || q.y > H - 8) d.parts.splice(i, 1);
+    }
+    if (d.parts.length > 2600) d.parts.splice(0, d.parts.length - 2600);
+    // decode: swimming speed from local count via MM
+    const cLocal = d.near / 3;
+    const v = cLocal >= p.Cth ? 15 + 40 * (cLocal - p.Cth) / (p.Km + cLocal) : 15;
+    d.phase += 0.05 + (v - 15) / 40 * 0.55;
+    $('qs-emit').textContent = d.emitted;
+    $('qs-arr').textContent = d.arrived;
+    $('qs-speed').textContent = v.toFixed(0) + ' µm/s';
+    $('qs-clock').textContent = a.t.toFixed(1) + ' h';
+  },
+  draw(a) {
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const p = state.qs, x0 = 70, x1 = W - 60, pxPerMM = (x1 - x0) / 6;
+    const rxX = x0 + p.d * pxPerMM;
+    // scale bar
+    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.lineWidth = 1; ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.beginPath(); ctx.moveTo(x0, H - 16); ctx.lineTo(x0 + pxPerMM, H - 16); ctx.stroke();
+    ctx.fillText('1 mm', x0 + 6, H - 22);
+    // molecules
+    ctx.fillStyle = C.acc;
+    for (const q of d.parts) {
+      const alpha = Math.max(0.15, 1 - q.age / (p.tauLoss * 2));
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.fillRect(q.x - 1.2, q.y - 1.2, 2.4, 2.4);
+    }
+    ctx.globalAlpha = 1;
+    // TX colony + RX cell
+    drawCell(ctx, x0, H / 2, 20, C.acc, d.phase * 0.4, false);
+    ctx.fillStyle = C.text; ctx.fillText('TX colony', x0 - 32, H / 2 - 30);
+    drawCell(ctx, rxX, H / 2, 15, C.blue, d.phase, true);
+    ctx.fillStyle = C.text; ctx.fillText('RX cell', rxX - 22, H / 2 - 26);
+    // capture radius
+    ctx.beginPath(); ctx.arc(rxX, H / 2, 26, 0, 7); ctx.strokeStyle = C.cyan; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
+  },
+});
+
+/* ── VOC animation: wind-advected plume over water ── */
+const vocAnim = makeAnim('voc-canvas', {
+  init(a) { a.t = 0; return { parts: [], emitted: 0, arrived: 0, Rb: 0 }; },
+  step(a) {
+    const d = a.data, W = a.cv.width, H = a.cv.height;
+    const p = state.voc;
+    const waterY = H - 56;
+    const x0 = 70, x1 = W - 50, pxPerM = (x1 - x0) / 10;
+    const rxX = x0 + p.d * pxPerM;
+    const dtS = 0.12 / Math.max(0.1, p.v); // sim seconds per frame scaled so plume crosses in a few seconds
+    a.t += dtS;
+    for (let i = 0; i < 4; i++) { d.parts.push({ x: x0 + (Math.random() - 0.5) * 10, y: waterY - 2 - Math.random() * 6, age: 0 }); d.emitted++; }
+    const adv = p.v * pxPerM * dtS;
+    const dif = Math.sqrt(2 * 1e-5 * dtS) * pxPerM * 30; // exaggerated for visibility
+    const pDie = dtS / (p.tauLoss * 3600) * 900;         // exaggerated decay so it is visible
+    d.near = 0;
+    for (let i = d.parts.length - 1; i >= 0; i--) {
+      const q = d.parts[i];
+      q.x += adv + (Math.random() - 0.5) * dif;
+      q.y += (Math.random() - 0.55) * dif;               // slight buoyant rise
+      q.age += dtS;
+      if (q.y > waterY - 1) q.y = waterY - 1;
+      const inRX = Math.abs(q.x - rxX) < 16 && q.y > waterY - 30;
+      if (inRX) { d.arrived++; d.parts.splice(i, 1); continue; }
+      if (Math.random() < pDie || q.x > W - 10 || q.y < 6) d.parts.splice(i, 1);
+    }
+    if (d.parts.length > 2600) d.parts.splice(0, d.parts.length - 2600);
+    // receptor ODE (visual): occupancy toward arrivals flux
+    const flux = Math.min(1, d.parts.filter(q => Math.abs(q.x - rxX) < 40 && q.y > waterY - 60).length / 40);
+    d.Rb += dtS * (p.kon * 1.2 * flux * (1 - d.Rb) - 0.35 * d.Rb);
+    d.Rb = Math.max(0, Math.min(1, d.Rb));
+    $('voc-emit').textContent = d.emitted;
+    $('voc-arr').textContent = d.arrived;
+    $('voc-occ').textContent = (d.Rb * 100).toFixed(0) + '%';
+    $('voc-clock').textContent = a.t.toFixed(1) + ' s';
+  },
+  draw(a) {
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const p = state.voc, waterY = H - 56, x0 = 70, x1 = W - 50, pxPerM = (x1 - x0) / 10;
+    const rxX = x0 + p.d * pxPerM;
+    // water
+    ctx.fillStyle = C.blue + '22'; ctx.fillRect(0, waterY, W, H - waterY);
+    ctx.strokeStyle = C.blue; ctx.globalAlpha = 0.5; ctx.beginPath();
+    for (let x = 0; x < W; x += 8) { const y = waterY + Math.sin(x / 26 + a.t * 2) * 2; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke(); ctx.globalAlpha = 1;
+    // wind arrows
+    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.font = '11px IBM Plex Mono, monospace';
+    const wl = 18 + p.v * 40;
+    for (let i = 0; i < 3; i++) {
+      const ax = 40 + ((a.t * p.v * 60 + i * 90) % 260), ay = 26 + i * 16;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + wl, ay); ctx.lineTo(ax + wl - 5, ay - 3); ctx.moveTo(ax + wl, ay); ctx.lineTo(ax + wl - 5, ay + 3); ctx.stroke();
+    }
+    ctx.fillText('wind ' + p.v.toFixed(2) + ' m/s', 40, 18);
+    // scale bar
+    ctx.beginPath(); ctx.moveTo(x0, H - 10); ctx.lineTo(x0 + pxPerM, H - 10); ctx.strokeStyle = C.faint; ctx.stroke();
+    ctx.fillText('1 m', x0 + 4, H - 16);
+    // molecules
+    ctx.fillStyle = C.acc2;
+    for (const q of d.parts) { ctx.globalAlpha = Math.max(0.2, 1 - q.age / 30); ctx.fillRect(q.x - 1.3, q.y - 1.3, 2.6, 2.6); }
+    ctx.globalAlpha = 1;
+    // TX patch and RX patch
+    ctx.fillStyle = C.acc; ctx.fillRect(x0 - 16, waterY, 32, 8);
+    ctx.fillStyle = C.text; ctx.fillText('TX algae', x0 - 24, waterY + 24);
+    ctx.fillStyle = C.blue; ctx.fillRect(rxX - 16, waterY, 32, 8);
+    ctx.fillStyle = C.text; ctx.fillText('RX algae', rxX - 24, waterY + 24);
+    // occupancy bar
+    ctx.strokeStyle = C.border; ctx.strokeRect(rxX - 16, waterY - 40, 8, 32);
+    ctx.fillStyle = C.cyan; const bh = 32 * d.Rb; ctx.fillRect(rxX - 16, waterY - 8 - bh, 8, bh);
+    ctx.fillStyle = C.faint; ctx.fillText('R_b', rxX - 2, waterY - 26);
+  },
+});
+
+/* ── Electrical animation: live cable FD + RX trace ── */
+const elAnim = makeAnim('el-canvas', {
+  init(a) {
+    a.t = 0;
+    const nx = 160;
+    return { V: new Float64Array(nx + 1), nx, trace: [], po: 0 };
+  },
+  step(a) {
+    const d = a.data, p = state.el;
+    const L = 1, dx = L / d.nx, lam2 = p.lam * p.lam;
+    let dtN = 0.3 * p.tm * dx * dx / lam2;
+    const frameDt = 0.004; // 4 ms of sim time per frame
+    const sub = Math.max(1, Math.ceil(frameDt / dtN)); dtN = frameDt / sub;
+    for (let s = 0; s < sub; s++) {
+      const t = a.t + s * dtN;
+      const Vn = new Float64Array(d.nx + 1);
+      Vn[0] = Math.exp(-((t - 0.05) ** 2) / (2 * 0.01 * 0.01));
+      for (let i = 1; i < d.nx; i++) Vn[i] = d.V[i] + dtN / p.tm * (lam2 * (d.V[i + 1] - 2 * d.V[i] + d.V[i - 1]) / (dx * dx) - d.V[i]);
+      Vn[d.nx] = Vn[d.nx - 1];
+      d.V.set(Vn);
+    }
+    a.t += frameDt;
+    const idx = Math.min(d.nx, Math.round(p.d / L * d.nx));
+    const vrx = d.V[idx];
+    d.trace.push([a.t, vrx]);
+    if (d.trace.length > 400) d.trace.shift();
+    d.po = 1 / (1 + Math.exp(-(vrx - p.vh) / p.k));
+    $('el-vrx').textContent = vrx.toFixed(3);
+    $('el-po').textContent = (d.po * 100).toFixed(0) + '%';
+    $('el-clock').textContent = (a.t * 1000).toFixed(0) + ' ms';
+    if (a.t > 0.05 + 14 * p.tm) { a.finished = true; a.pause(); }
+  },
+  draw(a) {
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const p = state.el, x0 = 60, x1 = W - 40;
+    // cable colored by V
+    const cy = 70, ch = 26;
+    for (let i = 0; i <= d.nx; i++) {
+      const v = Math.sqrt(Math.max(0, Math.min(1, d.V[i]))); // sqrt boosts the attenuated tail into visibility
+      const x = x0 + i / d.nx * (x1 - x0);
+      ctx.fillStyle = `rgba(110,168,255,${0.10 + v * 0.9})`;
+      ctx.fillRect(x, cy - ch / 2, (x1 - x0) / d.nx + 1, ch);
+    }
+    ctx.strokeStyle = C.border; ctx.strokeRect(x0, cy - ch / 2, x1 - x0, ch);
+    ctx.font = '11px IBM Plex Mono, monospace'; ctx.fillStyle = C.text;
+    ctx.fillText('TX pulse', x0 - 10, cy - 24);
+    const rxX = x0 + p.d * (x1 - x0);
+    ctx.strokeStyle = C.marker; ctx.beginPath(); ctx.moveTo(rxX, cy - ch / 2 - 8); ctx.lineTo(rxX, cy + ch / 2 + 8); ctx.stroke();
+    ctx.fillStyle = C.marker; ctx.fillText('RX @ ' + (p.d * 100).toFixed(0) + ' cm', rxX - 30, cy - 24);
+    // RX trace
+    const ty0 = 130, th = H - 150;
+    ctx.strokeStyle = C.border; ctx.strokeRect(x0, ty0, x1 - x0, th);
+    ctx.fillStyle = C.faint; ctx.fillText('V(x_rx, t) and gate P_o', x0 + 6, ty0 + 14);
+    if (d.trace.length > 1) {
+      const t0 = d.trace[0][0], t1 = Math.max(d.trace[d.trace.length - 1][0], t0 + 0.2);
+      const vmaxTr = Math.max(0.02, ...d.trace.map(p_ => p_[1]));
+      const vscale = 1 / vmaxTr;
+      ctx.fillStyle = C.faint;
+      ctx.fillText('V trace ×' + (vscale < 1.5 ? '1' : vscale.toFixed(0)), x0 + 6, ty0 + 28);
+      ctx.beginPath();
+      d.trace.forEach(([t, v], i) => {
+        const x = x0 + (t - t0) / (t1 - t0) * (x1 - x0);
+        const y = ty0 + th - Math.max(0, Math.min(1, v * vscale)) * (th - 18) - 4;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.strokeStyle = C.blue; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+      // gate open probability trace
+      ctx.beginPath();
+      d.trace.forEach(([t, v], i) => {
+        const po = 1 / (1 + Math.exp(-(v - p.vh) / p.k));
+        const x = x0 + (t - t0) / (t1 - t0) * (x1 - x0);
+        const y = ty0 + th - po * (th - 18) - 4;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.strokeStyle = C.acc; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.fillStyle = C.blue; ctx.fillText('— V_rx', x1 - 120, ty0 + 14);
+    ctx.fillStyle = C.acc; ctx.fillText('-- P_o', x1 - 60, ty0 + 14);
+  },
+});
+
+/* ── Optical animation: photon rays + eyespot ── */
+const opAnim = makeAnim('op-canvas', {
+  init(a) { a.t = 0; return { photons: [], emitted: 0, arrived: 0, S: 0, flashPhase: 0 }; },
+  step(a) {
+    const d = a.data, W = a.cv.width, H = a.cv.height;
+    const p = state.op;
+    const x0 = 90, x1 = W - 70, pxPerM = (x1 - x0) / 5;
+    const rxX = x0 + p.d * pxPerM, rxY = H / 2;
+    const dtMs = 4; a.t += dtMs / 1000;
+    // flash waveform f(t) with period 0.5 s
+    const tf = a.t % 0.5;
+    const f = (1 - Math.exp(-tf / p.taur)) * Math.exp(-tf / 0.08);
+    const nEmit = Math.round(f * 22);
+    for (let i = 0; i < nEmit; i++) {
+      const ang = (Math.random() - 0.5) * Math.PI * 1.7;
+      d.photons.push({ x: x0, y: H / 2, vx: Math.cos(ang) * 9, vy: Math.sin(ang) * 9 });
+      d.emitted++;
+    }
+    // move photons; absorb with probability ∝ c_ext per meter traveled
+    const pAbsPerPx = p.cext / pxPerM * 1.0;
+    for (let i = d.photons.length - 1; i >= 0; i--) {
+      const q = d.photons[i];
+      q.x += q.vx; q.y += q.vy;
+      const dist = Math.hypot(q.vx, q.vy);
+      if (Math.hypot(q.x - rxX, q.y - rxY) < 14) { d.arrived++; d.photons.splice(i, 1); continue; }
+      if (Math.random() < pAbsPerPx * dist || q.x < 6 || q.x > W - 6 || q.y < 6 || q.y > H - 6) d.photons.splice(i, 1);
+    }
+    // decoded response S(t): Hill relaxation on recent arrival rate
+    const g = Math.exp(-p.cext * p.d) / (4 * Math.PI * Math.max(0.05, p.d) ** 2);
+    const R = f * g * 5e3 * Math.pow(10, 5 - p.logKR);
+    d.S += (dtMs / 1000) / p.trec * (-d.S + R / (1 + R));
+    d.S = Math.max(0, Math.min(1, d.S));
+    d.flashPhase = f;
+    $('op-emit').textContent = d.emitted;
+    $('op-arr').textContent = d.arrived;
+    $('op-s').textContent = (d.S * 100).toFixed(0) + '%';
+    $('op-clock').textContent = (a.t * 1000).toFixed(0) + ' ms';
+  },
+  draw(a) {
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const p = state.op, x0 = 90, x1 = W - 70, pxPerM = (x1 - x0) / 5;
+    const rxX = x0 + p.d * pxPerM, rxY = H / 2;
+    ctx.font = '11px IBM Plex Mono, monospace';
+    // scale bar
+    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint;
+    ctx.beginPath(); ctx.moveTo(x0, H - 14); ctx.lineTo(x0 + pxPerM, H - 14); ctx.stroke();
+    ctx.fillText('1 m', x0 + 8, H - 20);
+    ctx.fillText('water: c_ext = ' + p.cext.toFixed(3) + ' m⁻¹', W - 260, 20);
+    // TX flash glow
+    const glow = 14 + d.flashPhase * 30;
+    const grd = ctx.createRadialGradient(x0, H / 2, 2, x0, H / 2, glow * 2.4);
+    grd.addColorStop(0, 'rgba(45,212,191,' + (0.25 + d.flashPhase * 0.65) + ')');
+    grd.addColorStop(1, 'rgba(45,212,191,0)');
+    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(x0, H / 2, glow * 2.4, 0, 7); ctx.fill();
+    drawCell(ctx, x0, H / 2, 16, C.cyan, 0, false);
+    ctx.fillStyle = C.text; ctx.fillText('TX (luciferase)', x0 - 42, H / 2 - 30);
+    // photons
+    ctx.strokeStyle = C.cyan;
+    for (const q of d.photons) {
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(q.x - q.vx * 0.8, q.y - q.vy * 0.8); ctx.lineTo(q.x, q.y); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // RX eyespot
+    drawCell(ctx, rxX, rxY, 15, C.blue, 0, false);
+    ctx.beginPath(); ctx.arc(rxX - 8, rxY, 4, 0, 7); ctx.fillStyle = C.marker; ctx.fill();
+    ctx.fillStyle = C.text; ctx.fillText('RX (eyespot)', rxX - 34, rxY - 28);
+    // S(t) bar
+    ctx.strokeStyle = C.border; ctx.strokeRect(rxX + 24, rxY - 36, 9, 72);
+    ctx.fillStyle = C.acc; const bh = 72 * d.S; ctx.fillRect(rxX + 24, rxY + 36 - bh, 9, bh);
+    ctx.fillStyle = C.faint; ctx.fillText('S(t)', rxX + 20, rxY - 44);
+  },
+});
+
+const anims = { qs: qsAnim, voc: vocAnim, elec: elAnim, opt: opAnim };
+document.querySelectorAll('[data-anim]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const a = anims[btn.dataset.anim];
+    if (btn.dataset.act === 'start') { if (a.finished) { a.reset(); a.finished = false; } a.start(); }
+    else if (btn.dataset.act === 'pause') a.pause();
+    else a.reset();
+  });
+});
+
+/* ════════════════════════════ boot ════════════════════════════ */
+state.op.cext = parseFloat($('op-water').value); // browsers may restore a previous form state
+renderQS(); renderVOC(); renderEL(); renderOP(); renderCMP();
+// re-render charts on theme flips so CSS-var strokes stay in sync (they are var() refs, so mostly automatic)
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { renderQS(); renderVOC(); renderEL(); renderOP(); renderCMP(); });
+</script>
+<script>
+/* Hero background — adapted from Radiant Shaders “Bioluminescence” (https://radiant-shaders.com, MIT),
+   recolored from amber to this page's bioluminescent teal palette. Dark theme only. */
+(function () {
+  var canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var pixelScale = 0.75; // hero background: favor battery over pixel density
+
+  var gl = canvas.getContext('webgl', { alpha: true, antialias: false, preserveDrawingBuffer: false });
+  if (!gl) return;
+
+  var vertSrc = [
+    'attribute vec2 a_pos;',
+    'void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }'
+  ].join('\n');
+
+  var fragSrc = [
+    'precision highp float;',
+    'uniform float u_time;',
+    'uniform vec2 u_res;',
+    'uniform float u_glowIntensity;',
+    'uniform float u_waveSpeed;',
+    'uniform vec2 u_mouse;',
+    '',
+    '#define PI 3.14159265359',
+    '#define TAU 6.28318530718',
+    '',
+    '// ── Hash & noise primitives ──',
+    'float hash(vec2 p) {',
+    '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);',
+    '}',
+    '',
+    'float hash1(float n) {',
+    '  return fract(sin(n) * 43758.5453123);',
+    '}',
+    '',
+    'float noise(vec2 p) {',
+    '  vec2 i = floor(p);',
+    '  vec2 f = fract(p);',
+    '  f = f * f * (3.0 - 2.0 * f);',
+    '  float a = hash(i);',
+    '  float b = hash(i + vec2(1.0, 0.0));',
+    '  float c = hash(i + vec2(0.0, 1.0));',
+    '  float d = hash(i + vec2(1.0, 1.0));',
+    '  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);',
+    '}',
+    '',
+    '// ── FBM for layered detail ──',
+    'float fbm(vec2 p, int octaves) {',
+    '  float val = 0.0;',
+    '  float amp = 0.5;',
+    '  float freq = 1.0;',
+    '  for (int i = 0; i < 8; i++) {',
+    '    if (i >= octaves) break;',
+    '    val += amp * noise(p * freq);',
+    '    freq *= 2.03;',
+    '    amp *= 0.49;',
+    '    p += vec2(1.7, 9.2);',
+    '  }',
+    '  return val;',
+    '}',
+    '',
+    '// ── Domain-warped noise for organic flow ──',
+    'float warpedNoise(vec2 p, float t) {',
+    '  vec2 q = vec2(',
+    '    fbm(p + vec2(0.0, 0.0) + t * 0.04, 4),',
+    '    fbm(p + vec2(5.2, 1.3) + t * 0.03, 4)',
+    '  );',
+    '  vec2 r = vec2(',
+    '    fbm(p + 3.0 * q + vec2(1.7, 9.2) + t * 0.05, 4),',
+    '    fbm(p + 3.0 * q + vec2(8.3, 2.8) + t * 0.04, 4)',
+    '  );',
+    '  return fbm(p + 2.5 * r, 5);',
+    '}',
+    '',
+    '// ── Ocean wave height field ──',
+    '// Returns a wave height and derivative-like value for foam/disturbance',
+    'vec2 oceanWaves(vec2 p, float t) {',
+    '  float h = 0.0;',
+    '  float d = 0.0;', // disturbance accumulator
+    '  float amp = 1.0;',
+    '  float freq = 1.0;',
+    '',
+    '  // Layer multiple wave directions for realistic ocean',
+    '  for (int i = 0; i < 6; i++) {',
+    '    float fi = float(i);',
+    '    float angle = fi * 0.7 + 0.3;',
+    '    vec2 dir = vec2(cos(angle), sin(angle));',
+    '    float phase = dot(p * freq, dir) + t * (0.6 + fi * 0.15);',
+    '    float wave = sin(phase) * 0.5 + 0.5;',
+    '    // Sharp crests via pow',
+    '    float sharpWave = pow(wave, 1.5);',
+    '    h += sharpWave * amp;',
+    '    // Disturbance is highest at wave crests',
+    '    d += pow(wave, 3.0) * amp;',
+    '    amp *= 0.55;',
+    '    freq *= 1.8;',
+    '  }',
+    '  return vec2(h, d);',
+    '}',
+    '',
+    '// ── Breaking wave / foam line detection ──',
+    'float waveBreak(vec2 uv, float t) {',
+    '  float breaks = 0.0;',
+    '  for (int i = 0; i < 4; i++) {',
+    '    float fi = float(i);',
+    '    float y_center = 0.1 + fi * 0.22;',
+    '    float wave_x = uv.x * (2.0 + fi * 0.8) + t * (0.15 + fi * 0.05);',
+    '    float undulation = sin(wave_x) * 0.03 + sin(wave_x * 2.3 + fi) * 0.015;',
+    '    float dist_to_wave = abs(uv.y - y_center - undulation);',
+    '    float breakLine = smoothstep(0.03, 0.0, dist_to_wave);',
+    '    // Modulate along the wave — some sections break, others don\'t',
+    '    float modulation = noise(vec2(uv.x * 3.0 + fi * 10.0, t * 0.2 + fi));',
+    '    modulation = smoothstep(0.35, 0.7, modulation);',
+    '    breaks += breakLine * modulation * (1.0 - fi * 0.2);',
+    '  }',
+    '  return breaks;',
+    '}',
+    '',
+    '// ── Bioluminescent glow patterns ──',
+    '// Organisms glow when disturbed by wave motion',
+    'float bioGlow(vec2 uv, float t) {',
+    '  float glow = 0.0;',
+    '',
+    '  // Large-scale wave disturbance triggering glow',
+    '  vec2 wv = oceanWaves(uv * 3.0, t * 0.8);',
+    '  float disturbance = wv.y;',
+    '',
+    '  // Domain-warped organic glow patterns',
+    '  float organic1 = warpedNoise(uv * 4.0 + vec2(t * 0.06, t * 0.04), t * 0.5);',
+    '  float organic2 = warpedNoise(uv * 6.0 + vec2(-t * 0.05, t * 0.07), t * 0.4);',
+    '',
+    '  // Glow is triggered where waves disturb the water',
+    '  glow += organic1 * disturbance * 0.8;',
+    '  glow += organic2 * pow(disturbance, 2.0) * 0.5;',
+    '',
+    '  // Swirling tendrils of light — eddies and currents',
+    '  vec2 eddy_uv = uv * 5.0 + vec2(t * 0.08, t * 0.05);',
+    '  float eddy = fbm(eddy_uv, 6);',
+    '  float eddy_curl = abs(eddy - fbm(eddy_uv + vec2(0.01, 0.0), 6)) * 80.0;',
+    '  glow += eddy_curl * disturbance * 0.3;',
+    '',
+    '  // Scattered bright plankton clusters',
+    '  for (int i = 0; i < 5; i++) {',
+    '    float fi = float(i);',
+    '    vec2 center = vec2(',
+    '      hash1(fi * 13.7 + 1.0) * 1.6 - 0.3,',
+    '      hash1(fi * 7.3 + 2.0) * 1.2 - 0.1',
+    '    );',
+    '    // Drift with current',
+    '    center.x += sin(t * 0.05 + fi * 2.0) * 0.15;',
+    '    center.y += cos(t * 0.04 + fi * 1.5) * 0.08;',
+    '    float d = length(uv - center);',
+    '    float cluster = exp(-d * d / (0.015 + hash1(fi * 3.1) * 0.02));',
+    '    // Pulse and breathe',
+    '    float pulse = sin(t * (0.3 + fi * 0.1) + fi * 4.0) * 0.5 + 0.5;',
+    '    glow += cluster * pulse * disturbance * 1.5;',
+    '  }',
+    '',
+    '  return glow;',
+    '}',
+    '',
+    '// ── Individual bright plankton sparks ──',
+    'float planktonSparks(vec2 uv, float t, float disturbance) {',
+    '  float sparks = 0.0;',
+    '  for (int i = 0; i < 25; i++) {',
+    '    float fi = float(i);',
+    '    vec2 pos = vec2(',
+    '      hash1(fi * 17.3 + 100.0),',
+    '      hash1(fi * 11.9 + 200.0)',
+    '    );',
+    '    // Drift in current',
+    '    pos.x = fract(pos.x + t * (0.01 + hash1(fi * 5.1 + 300.0) * 0.02));',
+    '    pos.y = fract(pos.y + sin(t * 0.3 + fi) * 0.02);',
+    '',
+    '    float d = length(uv - pos);',
+    '    float size = 0.001 + hash1(fi * 3.7 + 400.0) * 0.003;',
+    '    float spark = smoothstep(size, 0.0, d);',
+    '',
+    '    // Use pre-computed disturbance instead of per-spark wave calc',
+    '    float trigger = smoothstep(0.2, 0.6, disturbance);',
+    '',
+    '    // Twinkle',
+    '    float twinkle = sin(t * (1.0 + hash1(fi * 2.3) * 3.0) + fi * 7.0);',
+    '    twinkle = twinkle * 0.5 + 0.5;',
+    '',
+    '    sparks += spark * trigger * twinkle * 0.8;',
+    '  }',
+    '  return sparks;',
+    '}',
+    '',
+    'void main() {',
+    '  vec2 uv = gl_FragCoord.xy / u_res;',
+    '  // Aspect-corrected UV for wave calculations',
+    '  float aspect = u_res.x / u_res.y;',
+    '  vec2 uvAspect = vec2(uv.x * aspect, uv.y);',
+    '  float t = u_time * u_waveSpeed;',
+    '',
+    '  // ── Deep ocean base color ──',
+    '  // Dark navy-black gradient — darker at top (deep water), slightly lighter near surface',
+    '  vec3 deepColor = vec3(0.002, 0.010, 0.014);',
+    '  vec3 midColor = vec3(0.003, 0.016, 0.020);',
+    '  vec3 surfaceColor = vec3(0.005, 0.024, 0.028);',
+    '  vec3 col = mix(deepColor, surfaceColor, uv.y);',
+    '',
+    '  // ── Subtle underwater caustic light from moonlight ──',
+    '  float caustic1 = noise(uvAspect * 8.0 + vec2(t * 0.12, t * 0.08));',
+    '  float caustic2 = noise(uvAspect * 12.0 + vec2(-t * 0.1, t * 0.15));',
+    '  float causticPattern = caustic1 * caustic2;',
+    '  causticPattern = pow(causticPattern, 2.0) * 3.0;',
+    '  // Caustics only near the surface',
+    '  float surfaceFade = smoothstep(0.3, 0.95, uv.y);',
+    '  col += vec3(0.006, 0.030, 0.028) * causticPattern * surfaceFade;',
+    '',
+    '  // ── Ocean wave structure ──',
+    '  vec2 waves = oceanWaves(uvAspect * 2.5, t);',
+    '  float waveHeight = waves.x;',
+    '  float waveDisturbance = waves.y;',
+    '',
+    '  // Subtle wave shading — dark troughs, slightly lit crests',
+    '  col += vec3(0.005, 0.016, 0.018) * waveHeight * 0.3;',
+    '',
+    '  // ── BIOLUMINESCENCE ──',
+    '  float bio = bioGlow(uvAspect, t) * u_glowIntensity;',
+    '',
+    '  // ── Mouse attraction: brighten glow near cursor ──',
+    '  if (u_mouse.x > 0.0) {',
+    '    vec2 mUV = u_mouse / u_res;',
+    '    vec2 mAspect = vec2(mUV.x * aspect, mUV.y);',
+    '    float mDist = length(uvAspect - mAspect);',
+    '    float attract = exp(-mDist * mDist * 10.0) * 1.2;',
+    '    bio += attract * u_glowIntensity;',
+    '  }',
+    '',
+    '  // Wave-break bioluminescence — brightest at breaking wave lines',
+    '  float breaks = waveBreak(uvAspect, t);',
+    '  bio += breaks * 1.2 * u_glowIntensity;',
+    '',
+    '  // Shape the glow — more concentrated, less uniform',
+    '  bio = pow(max(bio, 0.0), 1.3);',
+    '',
+    '  // Bioluminescent color: electric blue-cyan with green tints',
+    '  vec3 bioColor1 = vec3(0.00, 0.45, 0.30);   // Deep amber (→ cyan-blue via blue filter)',
+    '  vec3 bioColor2 = vec3(0.08, 0.72, 0.60);  // Rose-amber (→ teal via blue filter)',
+    '  vec3 bioColor3 = vec3(0.45, 1.0, 0.80);   // Bright warm (→ bright cyan via blue filter)',
+    '',
+    '  // Vary color across the scene for natural variation',
+    '  float colorVar = noise(uvAspect * 2.0 + t * 0.02);',
+    '  vec3 bioCol = mix(bioColor1, bioColor2, colorVar);',
+    '  bioCol = mix(bioCol, bioColor3, smoothstep(0.5, 1.0, bio));',
+    '',
+    '  // Add the glow — additive blending',
+    '  col += bioCol * bio * 0.7;',
+    '',
+    '  // ── Bright plankton sparks ──',
+    '  float sparks = planktonSparks(uv, t, waveDisturbance);',
+    '  vec3 sparkColor = vec3(0.60, 1.0, 0.85);',
+    '  col += sparkColor * sparks * u_glowIntensity;',
+    '',
+    '  // ── Wave foam with bioluminescent edge ──',
+    '  // Where waves break, there\'s a bright edge of churned-up plankton',
+    '  float foam = waveBreak(uvAspect, t);',
+    '  float foamDetail = noise(uvAspect * 25.0 + t * 0.3);',
+    '  foam *= foamDetail;',
+    '  col += vec3(0.25, 0.75, 0.60) * foam * 0.4 * u_glowIntensity;',
+    '',
+    '  // ── Flowing current streaks ──',
+    '  // Long horizontal streaks of glow following water flow',
+    '  float streak_uv_y = uv.y * 15.0;',
+    '  float streakNoise = noise(vec2(uvAspect.x * 3.0 + t * 0.15, streak_uv_y));',
+    '  float streak = pow(streakNoise, 5.0) * 2.0;',
+    '  streak *= waveDisturbance;',
+    '  col += vec3(0.06, 0.36, 0.28) * streak * u_glowIntensity;',
+    '',
+    '  // ── Surface reflection / bright zone near top ──',
+    '  float surfaceGlow = smoothstep(0.7, 1.0, uv.y);',
+    '  float surfaceWave = noise(vec2(uvAspect.x * 4.0 + t * 0.1, t * 0.2));',
+    '  col += vec3(0.004, 0.020, 0.024) * surfaceGlow * surfaceWave;',
+    '',
+    '  // ── Depth fog — darker in the deep ──',
+    '  float depthFog = smoothstep(0.6, 0.0, uv.y);',
+    '  col = mix(col, deepColor * 0.5, depthFog * 0.4);',
+    '',
+    '  // ── Moonlight from above ──',
+    '  // Soft diffuse light concentrated at the top-center',
+    '  vec2 moonUV = uv - vec2(0.5, 1.0);',
+    '  float moonDist = length(moonUV * vec2(1.0, 1.5));',
+    '  float moonLight = exp(-moonDist * moonDist * 3.0);',
+    '  col += vec3(0.008, 0.028, 0.026) * moonLight;',
+    '',
+    '  // ── Vignette ──',
+    '  vec2 vigUV = uv - 0.5;',
+    '  float vig = 1.0 - dot(vigUV, vigUV) * 1.8;',
+    '  vig = clamp(vig, 0.0, 1.0);',
+    '  col *= 0.5 + vig * 0.5;',
+    '',
+    '  // ── Tone mapping & color grading ──',
+    '  col = max(col, vec3(0.0));',
+    '',
+    '  col = pow(max(col, 0.0), vec3(0.95, 1.0, 1.02));',
+    '',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join('\n');
+
+  function compile(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error('Shader compile error:', gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+
+  var prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, vertSrc));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.error('Program link error:', gl.getProgramInfoLog(prog));
+  }
+  gl.useProgram(prog);
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  var aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  var uTime = gl.getUniformLocation(prog, 'u_time');
+  var uRes = gl.getUniformLocation(prog, 'u_res');
+  var uGlowIntensity = gl.getUniformLocation(prog, 'u_glowIntensity');
+  var uWaveSpeed = gl.getUniformLocation(prog, 'u_waveSpeed');
+  var uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  var mouseXVal = -1.0, mouseYVal = -1.0;
+  var glowIntensityVal = 0.8; // hero background: keep the overlaid text readable
+  var waveSpeedVal = 0.8;
+
+  var dpr = Math.min(window.devicePixelRatio || 1, 1.5) * pixelScale;
+  var needsResize = true;
+
+  function resize() {
+    needsResize = false;
+    var w = Math.round(canvas.clientWidth * dpr);
+    var h = Math.round(canvas.clientHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+      gl.viewport(0, 0, w, h);
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+    }
+  }
+
+  var inView = true;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function(en) { inView = en[0].isIntersecting; }).observe(canvas);
+  }
+  function render(now) {
+    if (canvas.clientWidth === 0 || !inView) { requestAnimationFrame(render); return; }
+    if (needsResize) resize();
+    gl.uniform1f(uTime, prefersReduced ? 0.0 : now * 0.001);
+    gl.uniform1f(uGlowIntensity, glowIntensityVal);
+    gl.uniform1f(uWaveSpeed, waveSpeedVal);
+    gl.uniform2f(uMouse, mouseXVal, mouseYVal);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(render);
+  }
+
+  window.addEventListener('resize', function () {
+    needsResize = true;
+  });
+
+  resize();
+
+  requestAnimationFrame(render);
+
+  var heroEl = canvas.closest('.hero') || canvas;
+  heroEl.addEventListener('mousemove', function(e) {
+    var r = canvas.getBoundingClientRect();
+    mouseXVal = (e.clientX - r.left) * dpr;
+    mouseYVal = (canvas.clientHeight - (e.clientY - r.top)) * dpr;
+  });
+  heroEl.addEventListener('mouseleave', function() {
+    mouseXVal = -1.0; mouseYVal = -1.0;
+  });
+
+})();
+</script>
+
+</body>
+</html>
