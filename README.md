@@ -1,6 +1,32 @@
-# Internet of Algae Lab
+<!-- markdownlint-disable MD033 MD041 -->
+<!-- Inline HTML is intentional: centered hero header and badge row. -->
 
-**Live: <https://algae-molecular-communication.vercel.app>**
+<p align="center">
+  <img src="assets/icon.svg" alt="Internet of Algae Lab logo" width="120" height="120">
+</p>
+
+<h1 align="center">Internet of Algae Lab</h1>
+
+<p align="center">
+  <strong>Interactive Channel Simulations for Photosynthetic Molecular Networks</strong><br>
+  <sub>A single static page that turns the end-to-end algae communication models of Akyildiz et al. (IEEE TMBMC 2026) into live, parameter-driven simulations. Press Start and watch the molecules arrive.</sub>
+</p>
+
+<p align="center">
+  <a href="https://algae-molecular-communication.vercel.app"><img src="https://img.shields.io/badge/algae--molecular--communication.vercel.app-020810?style=for-the-badge&logo=vercel&logoColor=3EF2A0" alt="The public page"></a>
+  &nbsp;
+  <a href="index.html"><img src="https://img.shields.io/badge/index.html-0F3040?style=for-the-badge&logo=html5&logoColor=FAF8F4" alt="The interactive page"></a>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Static%20%C2%B7%20no%20build-0F3040?style=for-the-badge&logoColor=white" alt="Static, no build step">
+  <img src="https://img.shields.io/badge/KaTeX%20vendored-0F3040?style=for-the-badge&logo=latex&logoColor=white" alt="KaTeX vendored">
+  <img src="https://img.shields.io/badge/WebGL%20hero-0F3040?style=for-the-badge&logo=webgl&logoColor=3EF2A0" alt="WebGL bioluminescence hero">
+  <a href="https://doi.org/10.1109/TMBMC.2026.3711050"><img src="https://img.shields.io/badge/IEEE%20TMBMC%202026%20%C2%B7%20doi-0F3040?style=for-the-badge&logoColor=white" alt="Reference paper DOI"></a>
+  <img src="https://img.shields.io/badge/QS%20%C2%B7%20VOC%20%C2%B7%20Electrical%20%C2%B7%20Optical-0F3040?style=for-the-badge" alt="Four signaling modalities">
+</p>
+
+---
+
+## Overview
 
 Interactive, browser-based teaching simulations of the four communication channels that algae
 colonies use — built as an educational companion to:
