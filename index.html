@@ -159,7 +159,7 @@ code, kbd { font-family: var(--mono); }
   background: var(--surface-2); border: 1px solid var(--border); border-radius: 99px;
   padding: 8px 16px; transition: all var(--transition);
 }
-.tab-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(62,242,160,0.18); }
+.tab-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 .tab-btn[aria-selected="true"] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
 .tab-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
   outline: 2px solid var(--accent-cyan); outline-offset: 2px;
@@ -220,18 +220,18 @@ input[type='range'] {
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%;
-  background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(62,242,160,0.4);
+  background: var(--accent); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
 input[type='range']::-moz-range-thumb {
   width: 15px; height: 15px; border: none; border-radius: 50%;
-  background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(62,242,160,0.4);
+  background: var(--accent); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
 button {
   font-family: var(--mono); cursor: pointer; color: var(--text); background: var(--surface-2);
   border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 16px;
   transition: all var(--transition); font-size: 0.85rem;
 }
-button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(62,242,160,0.18); }
+button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 .transport { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 .transport .btn-start { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
 .sim-clock { font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim); margin-left: auto; }
@@ -350,7 +350,9 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <p>Cell density N(t) grows logistically; molecules diffuse (coefficient \(D\)) and are lost at rate \(\delta = 1/\tau_{\mathrm{loss}}\).
       The receiver maps concentration to swimming speed through a thresholded Michaelis–Menten nonlinearity.
       Channel-only attenuation \(A_C(d)\) compares peak concentration at the receiver vs. the transmitter; end-to-end
-      metrics are defined on the decoded swimming speed. Parameters follow Table&nbsp;I of the paper.</p>
+      metrics are defined on the decoded swimming speed. Table&nbsp;I supplies the physical parameters; the unreported
+      initial population and boundary-source convention are fixed to reproduce Figs.&nbsp;5–8 and documented under
+      <i>About &amp; Citation</i>.</p>
     </details>
 
     <div class="mod-grid">
@@ -541,6 +543,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <div class="readout readout--live"><div class="readout__label">Gate open \(P_o\)</div><div class="readout__value" id="el-po">0%</div></div>
             <div class="readout"><div class="readout__label">Channel att. \(A_V(d)\)</div><div class="readout__value" id="el-av">–</div></div>
             <div class="readout"><div class="readout__label">Channel delay \(\tau_V(d)\)</div><div class="readout__value" id="el-tv">–</div></div>
+            <div class="readout"><div class="readout__label">E2E delay \(\tau_P(d)\)</div><div class="readout__value" id="el-tp">–</div></div>
             <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="el-ber">–</div></div>
           </div>
         </div>
@@ -549,7 +552,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           <div class="panel"><h3 class="panel__title">Attenuation vs distance</h3><div class="chart-box" id="el-chart-att"></div>
             <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(A_V(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(A_P(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="el-chart-del"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_V(d)\)</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_V(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\tau_P(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="el-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
@@ -562,15 +565,16 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <h2 class="module-title">Optical Bioluminescent Channel</h2>
     <p class="module-sub">
       Bioluminescent flashes at 470 nm propagate through water with geometric spreading plus Beer–Lambert extinction.
-      Latency is microseconds-to-milliseconds — set by the flash waveform and the photoreceptor, <i>not</i> by the
-      water — but range is limited to centimeters-to-meters. The colony's urgent-alert channel.
+      The numerical model gives roughly 0.15–0.25&nbsp;s latency, set by the flash waveform and the photoreceptor,
+      <i>not</i> by the water; propagation itself is effectively instantaneous at these ranges. The colony's urgent-alert channel.
     </p>
     <details class="theory-box">
       <summary>Model equations (paper §VII)</summary>
       <div class="eq">\[ A_{\mathrm{ch}}(d)=\frac{A_r}{4\pi d^{2}}\,e^{-(a+b)d} \qquad f(t)=\bigl(1-e^{-t/\tau_r}\bigr)e^{-t/\tau_d} \qquad \tau_{\mathrm{rec}}\frac{dS}{dt}=-S+S_0+S_{\max}\frac{R}{K_R+R} \]</div>
       <p>The channel gain is closed-form: inverse-square spreading times exponential extinction (\(a\): absorption, \(b\):\n      scattering — Petzold water types). The emitted flash has rise/decay constants \(\tau_r\), \(\tau_d\); the photoreceptor
       integrates with a saturating Hill nonlinearity, which buffers tens of dB of channel loss down to a few percent
-      of end-to-end loss. Parameters follow Table&nbsp;IV of the paper.</p>
+      of end-to-end loss. Table&nbsp;IV supplies the physical parameters; the unreported flash-train timing convention used
+      to reproduce Figs.&nbsp;20–23 is documented under <i>About &amp; Citation</i>.</p>
     </details>
 
     <div class="mod-grid">
@@ -621,6 +625,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <div class="readout readout--live"><div class="readout__label">Reached eyespot</div><div class="readout__value" id="op-arr">0</div></div>
             <div class="readout readout--live"><div class="readout__label">Response \(S(t)\)</div><div class="readout__value" id="op-s">0%</div></div>
             <div class="readout"><div class="readout__label">Channel gain (dB)</div><div class="readout__value" id="op-ac">–</div></div>
+            <div class="readout"><div class="readout__label">Channel delay \(\tau_I\)</div><div class="readout__value" id="op-ti">–</div></div>
             <div class="readout"><div class="readout__label">E2E delay \(\tau_S\)</div><div class="readout__value" id="op-tc">–</div></div>
             <div class="readout readout--warn"><div class="readout__label">BER @ d (ext.)</div><div class="readout__value" id="op-ber">–</div></div>
           </div>
@@ -631,6 +636,8 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <div class="legend"><span><i style="background:var(--color-x)"></i>pure sea</span><span><i style="background:var(--color-h)"></i>clear ocean</span><span><i style="background:var(--color-y)"></i>coastal</span><span><i style="background:var(--color-marker)"></i>turbid harbor</span></div></div>
           <div class="panel"><h3 class="panel__title">End-to-end attenuation \(A_S(d)\)</h3><div class="chart-box" id="op-chart-e2e"></div>
             <div class="legend"><span><i style="background:var(--color-y)"></i>\(A_S(d)\) — receiver saturation buffers channel loss</span></div></div>
+          <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="op-chart-del"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_I(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\tau_S(d)\)</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="op-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
@@ -649,8 +656,9 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <div class="panel" style="grid-column: 1 / -1;">
         <h3 class="panel__title">Range–latency map</h3>
         <div class="chart-box" id="cmp-chart"></div>
-        <p class="scope-caption">Log–log operating regions from the comparative analysis. Energy cost per signaling
-        event rises from the slow chemical channels toward the fast optical channel — speed is metabolically expensive.</p>
+        <p class="scope-caption">Log–log operating regions from the comparative analysis. The optical box uses the
+        153–254&nbsp;ms numerical delays in Figs.&nbsp;21 and 23; Table&nbsp;V gives the broader qualitative label
+        µs–ms. Energy cost per signaling event rises toward the optical channel.</p>
       </div>
       <div class="panel" style="grid-column: 1 / -1;">
         <h3 class="panel__title">Comparative summary <span class="subnote">Table V of the paper</span></h3>
@@ -661,7 +669,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <tr><td>Quorum sensing</td><td>mm – cm</td><td>min – hours</td><td><span class="chip" style="color:var(--ok)">Low</span></td><td>Local coordination</td></tr>
             <tr><td>VOC</td><td>m – km</td><td>sec – min</td><td><span class="chip" style="color:var(--warn)">Medium</span></td><td>Ecosystem broadcast</td></tr>
             <tr><td>Electrical</td><td>cm – m</td><td>ms – s</td><td><span class="chip" style="color:var(--warn)">Medium</span></td><td>Rapid response</td></tr>
-            <tr><td>Optical</td><td>cm – m</td><td>µs – ms</td><td><span class="chip" style="color:var(--err)">High</span></td><td>Urgent alert</td></tr>
+            <tr><td>Optical</td><td>cm – m</td><td>153–254 ms in Figs. 21/23<br><span class="subnote">µs–ms in Table V</span></td><td><span class="chip" style="color:var(--err)">High</span></td><td>Urgent alert</td></tr>
           </tbody>
         </table>
         </div>
@@ -674,13 +682,19 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <h2 class="module-title">About This Page</h2>
     <p>
       This is an educational, interactive companion to the reference paper below. All attenuation and delay curves are
-      computed in your browser directly from the paper's equations and parameter tables (Tables I–IV): the
+      computed in your browser from the paper's equations, parameter tables (Tables I–IV), and the explicitly documented
+      figure-reproduction conventions below: the
       diffusion–reaction equation for quorum sensing, the advection–diffusion Green's function for VOCs, the cable
       equation for electrical signaling, and the Beer–Lambert / Hill-receptor chain for optical signaling. No figures
       are reproduced from the publication.
     </p>
-    <p><b>What is faithful to the paper:</b> the deterministic channel and receiver models, their parameters, and the
-      channel-only vs. end-to-end distinction. <b>What is added for teaching:</b> (1)&nbsp;the particle animations are
+    <p><b>What is faithful to the paper:</b> the deterministic channel and receiver equations, the tabulated parameters,
+      and the channel-only vs. end-to-end distinction. The paper does not tabulate every numerical convention needed
+      to regenerate its figures. To reproduce Figs.&nbsp;5–8, the QS solver uses \(N(0)=0.0032K\), a 12&nbsp;mm
+      computational domain, and a 1.5 boundary-cell source weight. To reproduce Figs.&nbsp;20–23, the optical solver uses
+      a 0.15&nbsp;s flash start and an effective four-flash aggregate amplitude. These are figure-reproduction conventions,
+      not independently measured biological parameters. <b>What is added for teaching:</b> (1)&nbsp;the particle
+      animations are
       stochastic visualizations of the same transport physics — individual molecules and photons are drawn so the
       channel becomes visible, and the counters count those simulated particles; (2)&nbsp;the bit-error-rate panels
       assume on–off keying with additive Gaussian receiver noise, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). The paper deliberately leaves noise
@@ -697,8 +711,9 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       </div>
     </div>
     <footer>
-      Built as an open educational resource. Simulations run entirely in the browser; parameters default to the
-      values reported in the reference. Hero animation adapted from the “Bioluminescence” shader of
+      Built as an open educational resource. Simulations run entirely in the browser; visible controls default to the
+      values reported in the reference, while unreported numerical conventions are stated above. Hero animation adapted
+      from the “Bioluminescence” shader of
       <a href="https://radiant-shaders.com/" target="_blank" rel="noopener">Radiant Shaders</a> (MIT License),
       recolored to this page's palette. “Algae are talking. It is time we learn to listen.”
     </footer>
@@ -837,30 +852,32 @@ tabBtns.forEach(btn => btn.addEventListener('click', () => {
 
 /* ════════════════════════════ QS physics (paper §IV, Table I) ════════════════════════════ */
 function computeQS(p) {
-  // 1-D diffusion–reaction with logistic point source at x=0. Units: mm, s.
+  // 1-D diffusion–reaction with a logistic boundary source. Units: m, s, cells/mL.
   const D = p.D;                    // m²/s
   const delta = 1 / (p.tauLoss * 3600); // 1/s
   const mu = 0.10 / 3600;           // 1/s
-  const Lmm = 6.5, nx = 65, dx = Lmm / 1000 / nx;   // m (display range 6 mm + guard band)
+  const K = 2e7;                    // cells/mL, Table I
+  const alpha = 2e-12;              // (a.u.)·m·(cells/mL)^−1·s^−1, Table I
+  // The paper does not report N(0) or its boundary-cell quadrature. These values reproduce Figs. 5–8.
+  const initialFraction = 0.0032;
+  const boundarySourceWeight = 1.5;
+  const Lmm = 12, nx = 120, dx = Lmm / 1000 / nx;   // 6 mm plotted + 6 mm guard band
   const T = 130 * 3600;
   let dt = 0.35 * dx * dx / D; dt = Math.min(dt, 20);
   const steps = Math.ceil(T / dt);
   const C = new Float64Array(nx + 1);
   const peak = new Float64Array(nx + 1);
-  const rise = new Float64Array(nx + 1).fill(NaN);   // filled after peak known (2nd pass tracking)
-  // store coarse time series of C at all x? Too big; track peaks + record C(t) at sample distances
   const r = D * dt / (dx * dx);
-  let N = 0.01;                      // normalized N/K
-  const alpha = 1;                   // a.u. source scale (normalized out of attenuation ratios)
+  let Nfrac = initialFraction;
   const nRec = 700, recEvery = Math.max(1, Math.floor(steps / nRec));
-  const tRec = [], cRec = [];        // C profile snapshots (only at RX index — set later)
-  const snapshots = [];              // store full profiles occasionally for rise-time pass
+  const tRec = [], snapshots = [];
   for (let s = 0; s < steps; s++) {
-    N += dt * mu * N * (1 - N);
+    Nfrac += dt * mu * Nfrac * (1 - Nfrac);
     const Cn = new Float64Array(nx + 1);
     for (let i = 1; i < nx; i++) Cn[i] = C[i] + r * (C[i + 1] - 2 * C[i] + C[i - 1]) - delta * dt * C[i];
-    Cn[0] = C[0] + r * 2 * (C[1] - C[0]) - delta * dt * C[0] + alpha * N * dt / dx * 1e-3; // source at x=0 (no-flux + injection)
-    Cn[nx] = Cn[nx - 1]; // open-ish end
+    const source = boundarySourceWeight * alpha * (Nfrac * K) * dt / dx;
+    Cn[0] = C[0] + r * 2 * (C[1] - C[0]) - delta * dt * C[0] + source;
+    Cn[nx] = Cn[nx - 1]; // no-flux boundary, outside the displayed range
     C.set(Cn);
     for (let i = 0; i <= nx; i++) if (C[i] > peak[i]) peak[i] = C[i];
     if (s % recEvery === 0) { tRec.push(s * dt); snapshots.push(Float64Array.from(C)); }
@@ -872,8 +889,6 @@ function computeQS(p) {
   }
   const dArr = [], Ac = [], tC = [], Av = [], tV = [];
   const v0 = 15, vmax = 40;
-  // normalize threshold in units of TX peak: paper uses a.u.; scale C so peak at TX ≈ 4 (threshold 1 lands mid-range)
-  const scale = 4 / peak[0];
   for (let i = 1; i <= nx; i++) {
     const d = i * dx * 1000; // mm
     if (d > 6.01) break;
@@ -883,15 +898,15 @@ function computeQS(p) {
     // end-to-end: v(t) from C(t) at this x — use snapshots
     let vpk = 0, vTX = 0, vrise = NaN;
     for (let k = 0; k < snapshots.length; k++) {
-      const cc = snapshots[k][i] * scale;
+      const cc = snapshots[k][i];
       const vv = cc >= p.Cth ? vmax * (cc - p.Cth) / (p.Km + cc) : 0;
       if (vv > vpk) vpk = vv;
-      const c0 = snapshots[k][0] * scale;
+      const c0 = snapshots[k][0];
       const v0v = c0 >= p.Cth ? vmax * (c0 - p.Cth) / (p.Km + c0) : 0;
       if (v0v > vTX) vTX = v0v;
     }
     for (let k = 0; k < snapshots.length; k++) {
-      const cc = snapshots[k][i] * scale;
+      const cc = snapshots[k][i];
       const vv = cc >= p.Cth ? vmax * (cc - p.Cth) / (p.Km + cc) : 0;
       if (vv >= 0.5 * vpk && vpk > 0) { vrise = tRec[k] / 3600; break; }
     }
@@ -903,31 +918,38 @@ function computeQS(p) {
 
 /* ════════════════════════════ VOC physics (paper §V, Table II) ════════════════════════════ */
 function computeVOC(p) {
-  // closed-form h(t;d), receptor ODE. Units: m, s.
+  // Closed-form channel peak plus a pulse-adapted, positivity-preserving receptor solve. Units: m, s.
   const D = 1e-5, v = p.v, lam = 1 / (p.tauLoss * 3600);
   const h = (t, d) => t <= 0 ? 0 : 1 / Math.sqrt(4 * Math.PI * D * t) * Math.exp(-((d - v * t) ** 2) / (4 * D * t)) * Math.exp(-lam * t);
   const dRef = 0.5;
   const dArr = linspace(0.5, 10, 60);
-  const Tmax = 12 / v + 60;
-  const nt = 900, ts = linspace(0.01, Tmax, nt), dtI = ts[1] - ts[0];
   function chan(d) {
-    let pk = 0, tpk = 0;
-    for (const t of ts) { const x = h(t, d); if (x > pk) { pk = x; tpk = t; } }
-    return { pk, tpk };
+    const a = v * v + 4 * D * lam;
+    const tpk = (-D + Math.sqrt(D * D + a * d * d)) / a;
+    return { pk: h(tpk, d), tpk };
   }
+  const ref = chan(dRef);
   function e2e(d) {
-    // dRb/dt = kon*C*(1-Rb) - koff*Rb, C normalized so that TX peak ~ 1e-8 M-ish scale folded into kon
+    // Resolve the narrow advective pulse locally; a uniform global grid misses it for moderate/high wind speeds.
     const kon = p.kon * 1e6, koff = 1e-2;
-    const c0 = chan(dRef).pk;
+    const cScale = 1e-7;
+    const c = chan(d);
+    const width = Math.sqrt(2 * D * c.tpk) / v;
+    const start = Math.max(1e-10, c.tpk - 10 * width);
+    const end = c.tpk + 12 * width;
+    const n = 1320, dtI = (end - start) / n;
     let Rb = 0, pk = 0, tpk = 0;
-    for (const t of ts) {
-      const Cc = h(t, d) / c0 * 1e-7;   // molar-scale normalization (kon*C ~ 10/s at ref peak)
-      Rb += dtI * (kon * Cc * (1 - Rb) - koff * Rb);
-      if (Rb > pk) { pk = Rb; tpk = t; }
+    for (let j = 0; j < n; j++) {
+      const t = start + (j + 0.5) * dtI;
+      const Cc = h(t, d) / ref.pk * cScale;
+      const bind = kon * Cc, rate = bind + koff;
+      const eq = rate > 0 ? bind / rate : 0;
+      Rb = eq + (Rb - eq) * Math.exp(-rate * dtI);
+      if (Rb > pk) { pk = Rb; tpk = start + (j + 1) * dtI; }
     }
     return { pk, tpk };
   }
-  const ref = chan(dRef), refE = e2e(dRef);
+  const refE = e2e(dRef);
   const ach = [], tch = [], ae = [], te = [];
   for (const d of dArr) {
     const c = chan(d); ach.push(c.pk / ref.pk); tch.push(c.tpk);
@@ -963,7 +985,7 @@ function computeElec(p) {
   for (let i = 0; i <= nx; i++) for (let k = 0; k < snaps.length; k++) if (Math.abs(snaps[k][i]) >= 0.5 * peak[i]) { tau[i] = tRec[k]; break; }
   const sigmoid = V_ => 1 / (1 + Math.exp(-(V_ - p.vh) / p.k));
   const P00 = sigmoid(0);
-  const dArr = [], Av = [], tV = [], Ap = [];
+  const dArr = [], Av = [], tV = [], Ap = [], tP = [];
   let PpkTX = 0;
   for (let k = 0; k < snaps.length; k++) PpkTX = Math.max(PpkTX, sigmoid(snaps[k][0]) - P00);
   for (let i = 1; i <= nx; i++) {
@@ -973,61 +995,54 @@ function computeElec(p) {
     let Ppk = 0;
     for (let k = 0; k < snaps.length; k++) Ppk = Math.max(Ppk, sigmoid(snaps[k][i]) - P00);
     Ap.push(PpkTX > 0 ? Ppk / PpkTX : NaN);
+    let prise = NaN;
+    for (let k = 0; k < snaps.length; k++) {
+      if (sigmoid(snaps[k][i]) - P00 >= 0.5 * Ppk && Ppk > 0) { prise = tRec[k]; break; }
+    }
+    tP.push(prise);
   }
-  return { dArr, Av, tV, Ap };
+  return { dArr, Av, tV, Ap, tP };
 }
 
 /* ════════════════════════════ Optical physics (paper §VII, Table IV) ════════════════════════════ */
 function computeOpt(p) {
   const Ar = 1e-10;
   const gain = (d, cext) => Ar / (4 * Math.PI * d * d) * Math.exp(-cext * d);
-  const dArr = linspace(0.05, 5, 120);
+  const dArr = linspace(0.01, 5, 120);
   const types = [0.056, 0.150, 0.305, 2.170];
   const gdB = types.map(c => dArr.map(d => 10 * Math.log10(gain(d, c))));
-  // end-to-end A_S(d): flash train → R = γ η Φ; S via Hill relaxation
+  // End-to-end A_S(d): flash train → R = γηΦ; S via Hill relaxation.
   const gamma = 1e3, eta = 0.6, hnu = 6.626e-34 * 3e8 / 470e-9;
   const KR = Math.pow(10, p.logKR);
   const taur = p.taur, taud = 0.08, trec = p.trec;
-  const Itx = 1e-3; // W, nominal flash peak scale (folded into normalization)
-  function S_of_d(d) {
+  // Eq. (42) defines a train but does not tabulate N(σ) or t_i. Four aggregate flashes at t=0.15 s reproduce Figs. 20–23.
+  const effectiveFlashAmplitude = 4, flashStart = 0.15;
+  const dt = 5e-4, T = 1.2, nt = Math.ceil(T / dt);
+  const flash = t => t <= flashStart ? 0 :
+    (1 - Math.exp(-(t - flashStart) / taur)) * Math.exp(-(t - flashStart) / taud);
+  let fpk = 0;
+  const fHist = new Float64Array(nt);
+  for (let j = 0; j < nt; j++) { fHist[j] = flash((j + 1) * dt); fpk = Math.max(fpk, fHist[j]); }
+  let tI = NaN;
+  for (let j = 0; j < nt; j++) if (fHist[j] >= 0.5 * fpk) { tI = (j + 1) * dt; break; }
+  function response(d) {
     const g = gain(d, p.cext);
-    const dt = 2e-3, T = 1.2;
-    let S = 0, pk = 0, tpk = NaN;
-    for (let t = dt; t < T; t += dt) {
-      const f = (1 - Math.exp(-t / taur)) * Math.exp(-t / taud);
-      const R = gamma * eta * (Itx * f * g / (4 * Math.PI * 1e-4) / hnu) * (4 * Math.PI * 1e-4) / Ar * Ar; // → γη·Φ
+    let S = 0, pk = 0;
+    const hist = new Float64Array(nt);
+    for (let j = 0; j < nt; j++) {
+      const R = gamma * eta * (effectiveFlashAmplitude * fHist[j] * g / hnu);
       S += dt / trec * (-S + R / (KR + R));
-      if (S > pk) { pk = S; }
-    }
-    // rise time
-    let S2 = 0;
-    for (let t = dt; t < T; t += dt) {
-      const f = (1 - Math.exp(-t / taur)) * Math.exp(-t / taud);
-      const R = gamma * eta * (Itx * f * g / hnu);
-      S2 += dt / trec * (-S2 + R / (KR + R));
-      if (isNaN(tpk) && S2 >= 0.5 * pk && pk > 0) tpk = t;
-    }
-    return { pk, tpk };
-  }
-  // simpler consistent version: recompute pk with the same R formula used for rise
-  function S2_of_d(d) {
-    const g = gain(d, p.cext);
-    const dt = 2e-3, T = 1.2;
-    let S = 0, pk = 0, tpk = NaN, hist = [];
-    for (let t = dt; t < T; t += dt) {
-      const f = (1 - Math.exp(-t / taur)) * Math.exp(-t / taud);
-      const R = gamma * eta * (Itx * f * g / hnu);
-      S += dt / trec * (-S + R / (KR + R));
-      hist.push([t, S]);
+      hist[j] = S;
       if (S > pk) pk = S;
     }
-    for (const [t, s] of hist) if (s >= 0.5 * pk && pk > 0) { tpk = t; break; }
-    return { pk, tpk };
+    let rise = NaN;
+    for (let j = 0; j < nt; j++) if (hist[j] >= 0.5 * pk && pk > 0) { rise = (j + 1) * dt; break; }
+    return { pk, rise };
   }
-  const d0 = dArr[0], ref = S2_of_d(d0);
-  const As = dArr.map(d => { const r = S2_of_d(d); return ref.pk > 0 ? r.pk / ref.pk : NaN; });
-  const tS = S2_of_d(p.d).tpk;
-  return { dArr, gdB, types, As, tS, gain };
+  const responses = dArr.map(response), ref = responses[0];
+  const As = responses.map(r => ref.pk > 0 ? r.pk / ref.pk : NaN);
+  const tS = responses.map(r => r.rise);
+  return { dArr, gdB, types, As, tI, tS, gain };
 }
 
 /* ════════════════════════════ BER (teaching extension) ════════════════════════════ */
@@ -1093,30 +1108,37 @@ function renderVOC() {
 function renderEL() {
   const p = state.el;
   cacheEL = computeElec(p);
-  const { dArr, Av, tV, Ap } = cacheEL;
+  const { dArr, Av, tV, Ap, tP } = cacheEL;
   const ber = berFromAmp(Av, p.sg);
   drawChart($('el-chart-att'), { series: [
       { x: dArr, y: Av, colorVar: '--color-x', label: 'A_V' },
       { x: dArr, y: Ap, colorVar: '--color-y', label: 'A_P' }],
     xlab: 'distance d (m)', ylab: 'attenuation', marker: p.d, ymin: 0, ymax: 1 });
-  drawChart($('el-chart-del'), { series: [{ x: dArr, y: tV.map(v => v * 1000), colorVar: '--color-x', label: 'τ_V' }],
+  drawChart($('el-chart-del'), { series: [
+      { x: dArr, y: tV.map(v => v * 1000), colorVar: '--color-x', label: 'τ_V' },
+      { x: dArr, y: tP.map(v => v * 1000), colorVar: '--color-y', label: 'τ_P' }],
     xlab: 'distance d (m)', ylab: 'delay (ms)', marker: p.d, tipfmt: v => trimNum(v) + ' ms' });
   drawChart($('el-chart-ber'), { series: [{ x: dArr, y: ber, colorVar: '--color-marker', label: 'BER' }],
     xlab: 'distance d (m)', ylab: 'BER', ylog: true, yfloor: 1e-10, ymax: 0.5, marker: p.d, tipfmt: fmtBER });
   $('el-av').textContent = trimNum(interp(dArr, Av, p.d));
   $('el-tv').textContent = trimNum(interp(dArr, tV, p.d) * 1000) + ' ms';
+  $('el-tp').textContent = trimNum(interp(dArr, tP, p.d) * 1000) + ' ms';
   $('el-ber').textContent = fmtBER(interp(dArr, ber, p.d));
 }
 function renderOP() {
   const p = state.op;
   cacheOP = computeOpt(p);
-  const { dArr, gdB, As, tS } = cacheOP;
+  const { dArr, gdB, As, tI, tS } = cacheOP;
   const names = ['pure sea', 'clear ocean', 'coastal', 'turbid harbor'];
   const colors = ['--color-x', '--color-h', '--color-y', '--color-marker'];
   drawChart($('op-chart-att'), { series: gdB.map((y, i) => ({ x: dArr, y, colorVar: colors[i], label: names[i] })),
     xlab: 'distance d (m)', ylab: 'channel gain (dB)', marker: p.d, tipfmt: v => v.toFixed(1) + ' dB' });
   drawChart($('op-chart-e2e'), { series: [{ x: dArr, y: As, colorVar: '--color-y', label: 'A_S' }],
     xlab: 'distance d (m)', ylab: 'end-to-end attenuation', marker: p.d, ymin: Math.min(0.9, Math.min(...As.filter(isFinite)) * 0.995), ymax: 1.001 });
+  drawChart($('op-chart-del'), { series: [
+      { x: dArr, y: dArr.map(() => tI * 1000), colorVar: '--color-x', label: 'τ_I' },
+      { x: dArr, y: tS.map(v => v * 1000), colorVar: '--color-y', label: 'τ_S' }],
+    xlab: 'distance d (m)', ylab: 'delay (ms)', marker: p.d, tipfmt: v => trimNum(v) + ' ms' });
   const sigma = Math.pow(10, p.logsg);
   const amp = dArr.map(d => cacheOP.gain(d, p.cext));
   const ber = berFromAmp(amp, sigma);
@@ -1124,7 +1146,9 @@ function renderOP() {
     xlab: 'distance d (m)', ylab: 'BER', ylog: true, yfloor: 1e-10, ymax: 0.5, marker: p.d, tipfmt: fmtBER });
   const g = cacheOP.gain(p.d, p.cext);
   $('op-ac').textContent = (10 * Math.log10(g)).toFixed(1) + ' dB';
-  $('op-tc').textContent = isFinite(tS) ? (tS * 1000).toFixed(0) + ' ms' : '–';
+  $('op-ti').textContent = isFinite(tI) ? (tI * 1000).toFixed(1) + ' ms' : '–';
+  const tSv = interp(dArr, tS, p.d);
+  $('op-tc').textContent = isFinite(tSv) ? (tSv * 1000).toFixed(1) + ' ms' : '–';
   $('op-ber').textContent = fmtBER(Q(g / (2 * sigma)));
 }
 function renderCMP() {
@@ -1140,7 +1164,7 @@ function renderCMP() {
     { name: 'Quorum sensing', sub: 'low energy', x: [-3, -1], y: [Math.log10(600), Math.log10(3600 * 10)], c: '--color-x' },
     { name: 'VOC broadcast', sub: 'medium energy', x: [0, 3], y: [0, Math.log10(600)], c: '--color-h' },
     { name: 'Electrical', sub: 'medium energy', x: [-2, 0], y: [-3, 0], c: '--color-y' },
-    { name: 'Optical', sub: 'high energy', x: [-2, 1], y: [-6, -3], c: '--color-marker' },
+    { name: 'Optical (modeled)', sub: 'high energy · 153–254 ms', x: [-2, 0], y: [Math.log10(0.153), Math.log10(0.254)], c: '--color-marker' },
   ];
   let g = '';
   const xticks = [[-3, '1 mm'], [-2, '1 cm'], [-1, '10 cm'], [0, '1 m'], [1, '10 m'], [2, '100 m'], [3, '1 km']];
