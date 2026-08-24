@@ -90,9 +90,9 @@
 }
 
 * { box-sizing: border-box; }
-html { font-size: 15px; scroll-behavior: smooth; }
+html { font-size: 15px; scroll-behavior: smooth; scroll-padding-top: 72px; }
 body {
-  margin: 0; min-height: 100vh; color: var(--text);
+  margin: 0; min-height: 100vh; min-height: 100dvh; color: var(--text);
   font-family: var(--font); font-weight: 400;
   -webkit-font-smoothing: antialiased;
   background: var(--halo), var(--bg);
@@ -103,7 +103,7 @@ a:hover { color: var(--accent-2); }
 h1, h2, h3 { margin: 0 0 16px; font-family: var(--font-head); font-optical-sizing: auto; font-weight: 700; }
 code, kbd { font-family: var(--mono); }
 
-.wrap { max-width: 1280px; margin: 0 auto; padding: 24px 20px 64px; }
+.wrap { --gutter: 20px; max-width: 1280px; margin: 0 auto; padding: 24px var(--gutter) 64px; }
 
 /* ── Hero shader (dark theme only; hidden on light "paper lab") ── */
 .hero { position: relative; border-radius: var(--radius); overflow: clip; }
@@ -200,6 +200,7 @@ code, kbd { font-family: var(--mono); }
 @media (max-width: 900px) { .mod-grid { grid-template-columns: 1fr; } }
 .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
 .charts-grid .panel { margin-bottom: 0; }
+.charts-grid > * { min-width: 0; }  /* a wide child must scroll, not stretch the track */
 
 /* ── Controls ── */
 .ctl-slider { display: block; margin-bottom: 14px; font-size: 0.88rem; }
@@ -267,7 +268,7 @@ button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 
 .theory-box p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; max-width: 78ch; }
 
 /* ── Charts ── */
-.chart-box { position: relative; }
+.chart-box { position: relative; touch-action: pan-y; }
 .chart-box svg { width: 100%; height: auto; display: block; }
 .chart-tip {
   position: absolute; pointer-events: none; display: none; z-index: 5;
@@ -296,6 +297,49 @@ table.cmp td { font-variant-numeric: tabular-nums; }
   line-height: 1.7; overflow-x: auto;
 }
 footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--text-faint); line-height: 1.6; }
+
+/* ── Mobile portrait ── */
+.chart-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.tbl-wrap { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+@media (max-width: 700px) {
+  .wrap { --gutter: 14px; padding: 16px var(--gutter) 48px; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-box--wide { min-width: 620px; }
+  /* fade the trailing edge so a wide table reads as scrollable */
+  .tbl-wrap { -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent); mask-image: linear-gradient(90deg, #000 86%, transparent); }
+  .cite-strip { padding: 10px 12px; }
+  .sim-clock { margin-left: 0; width: 100%; }
+  .theory-box { padding: 8px 12px; }
+  .theory-box .eq { padding: 10px 12px; font-size: 0.88rem; }
+  footer { margin-top: 28px; }
+}
+
+/* The tab row wraps to three or four lines below ~1000 px; as a sticky bar that
+   would eat a fifth of a phone screen, so it becomes one scrollable row. */
+@media (max-width: 900px) {
+  .tabs {
+    flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    margin: 16px calc(-1 * var(--gutter)) 16px; padding: 8px var(--gutter);
+    background: color-mix(in srgb, var(--bg) 97%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { flex: 0 0 auto; scroll-snap-align: start; }
+}
+
+/* ── Touch ergonomics (Apple/Material ≥44 px targets) ── */
+@media (pointer: coarse) {
+  .tab-btn, .transport button { min-height: 44px; }
+  .tab-btn { padding: 10px 18px; }
+  select { min-height: 44px; }
+  .theory-box summary { padding: 10px 0; }
+  input[type='range'] { height: 8px; margin: 12px 0; }
+  input[type='range']::-webkit-slider-thumb { width: 24px; height: 24px; }
+  input[type='range']::-moz-range-thumb { width: 24px; height: 24px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; scroll-behavior: auto; }
@@ -655,7 +699,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <div class="charts-grid">
       <div class="panel" style="grid-column: 1 / -1;">
         <h3 class="panel__title">Range–latency map</h3>
-        <div class="chart-box" id="cmp-chart"></div>
+        <div class="chart-scroll"><div class="chart-box chart-box--wide" id="cmp-chart"></div></div>
         <p class="scope-caption">Log–log operating regions from the comparative analysis. The optical box uses the
         153–254&nbsp;ms numerical delays in Figs.&nbsp;21 and 23; Table&nbsp;V gives the broader qualitative label
         µs–ms. Energy cost per signaling event rises toward the optical channel.</p>
@@ -812,7 +856,7 @@ function drawChart(el, cfg) {
   </svg><div class="chart-tip"></div>`;
   // hover
   const svg = el.querySelector('svg'), tip = el.querySelector('.chart-tip');
-  svg.addEventListener('mousemove', ev => {
+  svg.addEventListener('pointermove', ev => {
     const r = svg.getBoundingClientRect();
     const fx = (ev.clientX - r.left) / r.width * W;
     if (fx < ml || fx > W - mr) { tip.style.display = 'none'; return; }
@@ -828,7 +872,9 @@ function drawChart(el, cfg) {
     const px = ev.clientX - r.left, py = ev.clientY - r.top;
     tip.style.left = Math.min(px + 12, r.width - 150) + 'px'; tip.style.top = Math.max(0, py - 10) + 'px';
   });
-  svg.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  svg.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+  svg.addEventListener('pointercancel', () => { tip.style.display = 'none'; });
+  svg.addEventListener('touchend', () => { setTimeout(() => { tip.style.display = 'none'; }, 1800); });
 }
 function trimNum(v) {
   if (!isFinite(v)) return '–';
@@ -848,7 +894,14 @@ tabBtns.forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('is-active'));
   $('tab-' + btn.dataset.tab).classList.add('is-active');
   Object.values(anims).forEach(a => a.pause());
+  refitScopes();
 }));
+function refitScopes() {
+  if (typeof anims === 'undefined') return;
+  Object.values(anims).forEach(a => { if (a.fit()) a.reset(); });
+}
+let refitTimer;
+window.addEventListener('resize', () => { clearTimeout(refitTimer); refitTimer = setTimeout(refitScopes, 150); });
 
 /* ════════════════════════════ QS physics (paper §IV, Table I) ════════════════════════════ */
 function computeQS(p) {
@@ -1225,7 +1278,21 @@ $('op-water').addEventListener('change', e => { state.op.cext = parseFloat(e.tar
 /* ════════════════════════════ particle animations ════════════════════════════ */
 function makeAnim(canvasId, hooks) {
   const cv = $(canvasId), ctx = cv.getContext('2d');
-  const a = { running: false, t: 0, raf: null, cv, ctx, data: null };
+  const a = { running: false, t: 0, raf: null, cv, ctx, data: null, k: 1 };
+  /* The scopes are authored in an 860-px-wide space. A phone renders that box at
+     ~316 CSS px, which would shrink the 11 px labels to ~4 px. `k` is the CSS
+     downscale factor: chrome (labels, rules, bar widths) is drawn k× larger so it
+     lands at its intended size, and the box turns portrait so the bigger chrome
+     has room. Physics constants are left alone, so the readouts are unchanged. */
+  a.fit = () => {
+    const cssW = cv.getBoundingClientRect().width;
+    if (!cssW) return false;                       // hidden tab — refit when shown
+    const k = Math.max(1, Math.min(3, 860 / cssW));
+    const H = k > 1.35 ? 560 : 300;
+    if (Math.abs(a.k - k) < 0.01 && cv.height === H) return false;
+    a.k = k; cv.height = H;
+    return true;
+  };
   a.start = () => { if (!a.data) { a.data = hooks.init(a); } if (!a.running) { a.running = true; loop(); } };
   a.pause = () => { a.running = false; if (a.raf) cancelAnimationFrame(a.raf); };
   a.reset = () => { a.pause(); a.t = 0; a.data = hooks.init(a); hooks.draw(a); };
@@ -1234,18 +1301,30 @@ function makeAnim(canvasId, hooks) {
     hooks.step(a); hooks.draw(a);
     a.raf = requestAnimationFrame(loop);
   }
+  a.fit();
   a.reset();
   return a;
+}
+/* True when two centred captions would run into each other — labels grow with k,
+   so a short TX–RX distance that is clear on a desktop collides on a phone. */
+function labelsCollide(ctx, aText, aX, bText, bX) {
+  return Math.abs(bX - aX) < (ctx.measureText(aText).width + ctx.measureText(bText).width) / 2 + 10;
+}
+/* Centred label, nudged inside the canvas so wide labels near an edge stay whole. */
+function centerLabel(ctx, text, x, y, W) {
+  const hw = ctx.measureText(text).width / 2, pad = ctx.measureText('0').width;
+  ctx.fillText(text, Math.max(hw + pad, Math.min(W - hw - pad, x)), y);
 }
 function scopeColors() {
   return { text: cssVar('--text-dim'), faint: cssVar('--text-faint'), acc: cssVar('--accent'),
     acc2: cssVar('--accent-2'), blue: cssVar('--accent-blue'), cyan: cssVar('--accent-cyan'),
     marker: cssVar('--color-marker'), bg: cssVar('--scope-bg'), border: cssVar('--border-strong') };
 }
-function drawCell(ctx, x, y, r, color, phase, tail) {
+function drawCell(ctx, x, y, r, color, phase, tail, k) {
+  k = k || 1;
   ctx.save();
   ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = color + '33'; ctx.fill();
-  ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 7); ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 7); ctx.strokeStyle = color; ctx.lineWidth = 1.6 * k; ctx.stroke();
   ctx.beginPath(); ctx.arc(x - r * 0.18, y - r * 0.15, r * 0.3, 0, 7); ctx.fillStyle = color + '66'; ctx.fill();
   if (tail) { // beating flagella; beat speed encodes response
     ctx.beginPath();
@@ -1254,7 +1333,7 @@ function drawCell(ctx, x, y, r, color, phase, tail) {
       const fy = y + Math.sin(phase + s * 6) * r * 0.28 * s;
       i ? ctx.lineTo(fx, fy) : ctx.moveTo(fx, fy);
     }
-    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2 * k; ctx.stroke();
   }
   ctx.restore();
 }
@@ -1307,29 +1386,32 @@ const qsAnim = makeAnim('qs-canvas', {
     $('qs-clock').textContent = a.t.toFixed(1) + ' h';
   },
   draw(a) {
-    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors(), k = a.k;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
     const p = state.qs, x0 = 70, x1 = W - 60, pxPerMM = (x1 - x0) / 6;
     const rxX = x0 + p.d * pxPerMM;
     // scale bar
-    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.lineWidth = 1; ctx.font = '11px IBM Plex Mono, monospace';
-    ctx.beginPath(); ctx.moveTo(x0, H - 16); ctx.lineTo(x0 + pxPerMM, H - 16); ctx.stroke();
-    ctx.fillText('1 mm', x0 + 6, H - 22);
+    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.lineWidth = k; ctx.font = (11 * k) + 'px IBM Plex Mono, monospace';
+    ctx.beginPath(); ctx.moveTo(x0, H - 16 * k); ctx.lineTo(x0 + pxPerMM, H - 16 * k); ctx.stroke();
+    ctx.fillText('1 mm', x0 + 6, H - 22 * k);
     // molecules
     ctx.fillStyle = C.acc;
+    const ps = 1.2 * k;
     for (const q of d.parts) {
       const alpha = Math.max(0.15, 1 - q.age / (p.tauLoss * 2));
       ctx.globalAlpha = alpha * 0.85;
-      ctx.fillRect(q.x - 1.2, q.y - 1.2, 2.4, 2.4);
+      ctx.fillRect(q.x - ps, q.y - ps, ps * 2, ps * 2);
     }
     ctx.globalAlpha = 1;
     // TX colony + RX cell
-    drawCell(ctx, x0, H / 2, 20, C.acc, d.phase * 0.4, false);
-    ctx.fillStyle = C.text; ctx.fillText('TX colony', x0 - 32, H / 2 - 30);
-    drawCell(ctx, rxX, H / 2, 15, C.blue, d.phase, true);
-    ctx.fillStyle = C.text; ctx.fillText('RX cell', rxX - 22, H / 2 - 26);
+    ctx.textAlign = 'center';
+    drawCell(ctx, x0, H / 2, 20, C.acc, d.phase * 0.4, false, k);
+    ctx.fillStyle = C.text; centerLabel(ctx, 'TX colony', x0, H / 2 - 22 - 8 * k, W);
+    drawCell(ctx, rxX, H / 2, 15, C.blue, d.phase, true, k);
+    ctx.fillStyle = C.text; centerLabel(ctx, 'RX cell', rxX, H / 2 + 28 + 11 * k, W);
+    ctx.textAlign = 'left';
     // capture radius
-    ctx.beginPath(); ctx.arc(rxX, H / 2, 26, 0, 7); ctx.strokeStyle = C.cyan; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(rxX, H / 2, 26, 0, 7); ctx.strokeStyle = C.cyan; ctx.lineWidth = k; ctx.setLineDash([3 * k, 4 * k]); ctx.stroke(); ctx.setLineDash([]);
   },
 });
 
@@ -1337,9 +1419,9 @@ const qsAnim = makeAnim('qs-canvas', {
 const vocAnim = makeAnim('voc-canvas', {
   init(a) { a.t = 0; return { parts: [], emitted: 0, arrived: 0, Rb: 0 }; },
   step(a) {
-    const d = a.data, W = a.cv.width, H = a.cv.height;
+    const d = a.data, W = a.cv.width, H = a.cv.height, k = a.k;
     const p = state.voc;
-    const waterY = H - 56;
+    const waterY = H - 56 * k;
     const x0 = 70, x1 = W - 50, pxPerM = (x1 - x0) / 10;
     const rxX = x0 + p.d * pxPerM;
     const dtS = 0.12 / Math.max(0.1, p.v); // sim seconds per frame scaled so plume crosses in a few seconds
@@ -1370,39 +1452,48 @@ const vocAnim = makeAnim('voc-canvas', {
     $('voc-clock').textContent = a.t.toFixed(1) + ' s';
   },
   draw(a) {
-    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors(), k = a.k;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
-    const p = state.voc, waterY = H - 56, x0 = 70, x1 = W - 50, pxPerM = (x1 - x0) / 10;
+    const p = state.voc, waterY = H - 56 * k, x0 = 70, x1 = W - 50, pxPerM = (x1 - x0) / 10;
     const rxX = x0 + p.d * pxPerM;
     // water
     ctx.fillStyle = C.blue + '22'; ctx.fillRect(0, waterY, W, H - waterY);
     ctx.strokeStyle = C.blue; ctx.globalAlpha = 0.5; ctx.beginPath();
-    for (let x = 0; x < W; x += 8) { const y = waterY + Math.sin(x / 26 + a.t * 2) * 2; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    for (let x = 0; x < W; x += 8) { const y = waterY + Math.sin(x / 26 + a.t * 2) * 2 * k; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
     ctx.stroke(); ctx.globalAlpha = 1;
     // wind arrows
-    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.font = '11px IBM Plex Mono, monospace';
-    const wl = 18 + p.v * 40;
+    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.lineWidth = k;
+    ctx.font = (11 * k) + 'px IBM Plex Mono, monospace';
+    const wl = (18 + p.v * 40) * k;
     for (let i = 0; i < 3; i++) {
-      const ax = 40 + ((a.t * p.v * 60 + i * 90) % 260), ay = 26 + i * 16;
-      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + wl, ay); ctx.lineTo(ax + wl - 5, ay - 3); ctx.moveTo(ax + wl, ay); ctx.lineTo(ax + wl - 5, ay + 3); ctx.stroke();
+      const ax = 40 * k + ((a.t * p.v * 60 + i * 90) % 260) * k, ay = (26 + i * 16) * k;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + wl, ay); ctx.lineTo(ax + wl - 5 * k, ay - 3 * k); ctx.moveTo(ax + wl, ay); ctx.lineTo(ax + wl - 5 * k, ay + 3 * k); ctx.stroke();
     }
-    ctx.fillText('wind ' + p.v.toFixed(2) + ' m/s', 40, 18);
+    ctx.fillText('wind ' + p.v.toFixed(2) + ' m/s', 40 * k, 18 * k);
     // scale bar
-    ctx.beginPath(); ctx.moveTo(x0, H - 10); ctx.lineTo(x0 + pxPerM, H - 10); ctx.strokeStyle = C.faint; ctx.stroke();
-    ctx.fillText('1 m', x0 + 4, H - 16);
+    ctx.beginPath(); ctx.moveTo(x0, H - 10 * k); ctx.lineTo(x0 + pxPerM, H - 10 * k); ctx.strokeStyle = C.faint; ctx.stroke();
+    ctx.fillText('1 m', x0 + 4, H - 16 * k);
     // molecules
     ctx.fillStyle = C.acc2;
-    for (const q of d.parts) { ctx.globalAlpha = Math.max(0.2, 1 - q.age / 30); ctx.fillRect(q.x - 1.3, q.y - 1.3, 2.6, 2.6); }
+    const ps = 1.3 * k;
+    for (const q of d.parts) { ctx.globalAlpha = Math.max(0.2, 1 - q.age / 30); ctx.fillRect(q.x - ps, q.y - ps, ps * 2, ps * 2); }
     ctx.globalAlpha = 1;
     // TX patch and RX patch
-    ctx.fillStyle = C.acc; ctx.fillRect(x0 - 16, waterY, 32, 8);
-    ctx.fillStyle = C.text; ctx.fillText('TX algae', x0 - 24, waterY + 24);
-    ctx.fillStyle = C.blue; ctx.fillRect(rxX - 16, waterY, 32, 8);
-    ctx.fillStyle = C.text; ctx.fillText('RX algae', rxX - 24, waterY + 24);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = C.acc; ctx.fillRect(x0 - 16, waterY, 32, 8 * k);
+    ctx.fillStyle = C.text; centerLabel(ctx, 'TX algae', x0, waterY + 10 + 15 * k, W);
+    ctx.fillStyle = C.blue; ctx.fillRect(rxX - 16, waterY, 32, 8 * k);
+    ctx.fillStyle = C.text;
+    centerLabel(ctx, 'RX algae', rxX,
+      labelsCollide(ctx, 'TX algae', x0, 'RX algae', rxX) ? waterY - 10 - 6 * k : waterY + 10 + 15 * k, W);
+    ctx.textAlign = 'left';
     // occupancy bar
-    ctx.strokeStyle = C.border; ctx.strokeRect(rxX - 16, waterY - 40, 8, 32);
-    ctx.fillStyle = C.cyan; const bh = 32 * d.Rb; ctx.fillRect(rxX - 16, waterY - 8 - bh, 8, bh);
-    ctx.fillStyle = C.faint; ctx.fillText('R_b', rxX - 2, waterY - 26);
+    const obX = k > 1.35 ? W - 20 * k : rxX - 16 * k;
+    ctx.strokeStyle = C.border; ctx.lineWidth = k; ctx.strokeRect(obX, waterY - 40 * k, 8 * k, 32 * k);
+    ctx.fillStyle = C.cyan; const bh = 32 * k * d.Rb; ctx.fillRect(obX, waterY - 8 * k - bh, 8 * k, bh);
+    ctx.fillStyle = C.faint;
+    if (k > 1.35) { ctx.textAlign = 'center'; centerLabel(ctx, 'R_b', obX + 4 * k, waterY - 46 * k, W); ctx.textAlign = 'left'; }
+    else ctx.fillText('R_b', rxX - 2 * k, waterY - 26 * k);
   },
 });
 
@@ -1439,52 +1530,57 @@ const elAnim = makeAnim('el-canvas', {
     if (a.t > 0.05 + 14 * p.tm) { a.finished = true; a.pause(); }
   },
   draw(a) {
-    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors(), k = a.k;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
     const p = state.el, x0 = 60, x1 = W - 40;
     // cable colored by V
-    const cy = 70, ch = 26;
+    const cy = 70 * k, ch = 26 * k;
     for (let i = 0; i <= d.nx; i++) {
       const v = Math.sqrt(Math.max(0, Math.min(1, d.V[i]))); // sqrt boosts the attenuated tail into visibility
       const x = x0 + i / d.nx * (x1 - x0);
       ctx.fillStyle = `rgba(110,168,255,${0.10 + v * 0.9})`;
       ctx.fillRect(x, cy - ch / 2, (x1 - x0) / d.nx + 1, ch);
     }
-    ctx.strokeStyle = C.border; ctx.strokeRect(x0, cy - ch / 2, x1 - x0, ch);
-    ctx.font = '11px IBM Plex Mono, monospace'; ctx.fillStyle = C.text;
-    ctx.fillText('TX pulse', x0 - 10, cy - 24);
+    ctx.strokeStyle = C.border; ctx.lineWidth = k; ctx.strokeRect(x0, cy - ch / 2, x1 - x0, ch);
+    ctx.font = (11 * k) + 'px IBM Plex Mono, monospace'; ctx.fillStyle = C.text;
+    ctx.fillText('TX pulse', x0 - 10, cy - 24 * k);
     const rxX = x0 + p.d * (x1 - x0);
-    ctx.strokeStyle = C.marker; ctx.beginPath(); ctx.moveTo(rxX, cy - ch / 2 - 8); ctx.lineTo(rxX, cy + ch / 2 + 8); ctx.stroke();
-    ctx.fillStyle = C.marker; ctx.fillText('RX @ ' + (p.d * 100).toFixed(0) + ' cm', rxX - 30, cy - 24);
+    ctx.strokeStyle = C.marker; ctx.beginPath(); ctx.moveTo(rxX, cy - ch / 2 - 8 * k); ctx.lineTo(rxX, cy + ch / 2 + 8 * k); ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = C.marker;
+    const rxLbl = 'RX @ ' + (p.d * 100).toFixed(0) + ' cm';
+    centerLabel(ctx, rxLbl, rxX,
+      labelsCollide(ctx, 'TX pulse', x0 + 20 * k, rxLbl, rxX) ? cy + ch / 2 + 12 + 11 * k : cy - 24 * k, W);
+    ctx.textAlign = 'left';
     // RX trace
-    const ty0 = 130, th = H - 150;
+    const ty0 = 130 * k, th = H - 150 * k;
     ctx.strokeStyle = C.border; ctx.strokeRect(x0, ty0, x1 - x0, th);
-    ctx.fillStyle = C.faint; ctx.fillText('V(x_rx, t) and gate P_o', x0 + 6, ty0 + 14);
+    ctx.fillStyle = C.faint; ctx.fillText('V(x_rx, t) and gate P_o', x0 + 6, ty0 + 14 * k);
     if (d.trace.length > 1) {
       const t0 = d.trace[0][0], t1 = Math.max(d.trace[d.trace.length - 1][0], t0 + 0.2);
       const vmaxTr = Math.max(0.02, ...d.trace.map(p_ => p_[1]));
       const vscale = 1 / vmaxTr;
       ctx.fillStyle = C.faint;
-      ctx.fillText('V trace ×' + (vscale < 1.5 ? '1' : vscale.toFixed(0)), x0 + 6, ty0 + 28);
+      ctx.fillText('V trace ×' + (vscale < 1.5 ? '1' : vscale.toFixed(0)), x0 + 6, ty0 + 28 * k);
       ctx.beginPath();
       d.trace.forEach(([t, v], i) => {
         const x = x0 + (t - t0) / (t1 - t0) * (x1 - x0);
-        const y = ty0 + th - Math.max(0, Math.min(1, v * vscale)) * (th - 18) - 4;
+        const y = ty0 + th - Math.max(0, Math.min(1, v * vscale)) * (th - 18 * k) - 4 * k;
         i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       });
-      ctx.strokeStyle = C.blue; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+      ctx.strokeStyle = C.blue; ctx.lineWidth = 2 * k; ctx.stroke(); ctx.lineWidth = k;
       // gate open probability trace
       ctx.beginPath();
       d.trace.forEach(([t, v], i) => {
         const po = 1 / (1 + Math.exp(-(v - p.vh) / p.k));
         const x = x0 + (t - t0) / (t1 - t0) * (x1 - x0);
-        const y = ty0 + th - po * (th - 18) - 4;
+        const y = ty0 + th - po * (th - 18 * k) - 4 * k;
         i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       });
-      ctx.strokeStyle = C.acc; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = C.acc; ctx.setLineDash([4 * k, 3 * k]); ctx.stroke(); ctx.setLineDash([]);
     }
-    ctx.fillStyle = C.blue; ctx.fillText('— V_rx', x1 - 120, ty0 + 14);
-    ctx.fillStyle = C.acc; ctx.fillText('-- P_o', x1 - 60, ty0 + 14);
+    ctx.fillStyle = C.blue; ctx.fillText('— V_rx', x1 - 120 * k, ty0 + 14 * k);
+    ctx.fillStyle = C.acc; ctx.fillText('-- P_o', x1 - 60 * k, ty0 + 14 * k);
   },
 });
 
@@ -1527,43 +1623,51 @@ const opAnim = makeAnim('op-canvas', {
     $('op-clock').textContent = (a.t * 1000).toFixed(0) + ' ms';
   },
   draw(a) {
-    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors();
+    const d = a.data, ctx = a.ctx, W = a.cv.width, H = a.cv.height, C = scopeColors(), k = a.k;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
     const p = state.op, x0 = 90, x1 = W - 70, pxPerM = (x1 - x0) / 5;
     const rxX = x0 + p.d * pxPerM, rxY = H / 2;
-    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.font = (11 * k) + 'px IBM Plex Mono, monospace';
     // scale bar
-    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint;
-    ctx.beginPath(); ctx.moveTo(x0, H - 14); ctx.lineTo(x0 + pxPerM, H - 14); ctx.stroke();
-    ctx.fillText('1 m', x0 + 8, H - 20);
-    ctx.fillText('water: c_ext = ' + p.cext.toFixed(3) + ' m⁻¹', W - 260, 20);
+    ctx.strokeStyle = C.faint; ctx.fillStyle = C.faint; ctx.lineWidth = k;
+    ctx.beginPath(); ctx.moveTo(x0, H - 14 * k); ctx.lineTo(x0 + pxPerM, H - 14 * k); ctx.stroke();
+    ctx.fillText('1 m', x0 + 8, H - 20 * k);
+    ctx.fillText('water: c_ext = ' + p.cext.toFixed(3) + ' m⁻¹', Math.max(8, W - 260 * k), 20 * k);
     // TX flash glow
     const glow = 14 + d.flashPhase * 30;
     const grd = ctx.createRadialGradient(x0, H / 2, 2, x0, H / 2, glow * 2.4);
     grd.addColorStop(0, 'rgba(45,212,191,' + (0.25 + d.flashPhase * 0.65) + ')');
     grd.addColorStop(1, 'rgba(45,212,191,0)');
     ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(x0, H / 2, glow * 2.4, 0, 7); ctx.fill();
-    drawCell(ctx, x0, H / 2, 16, C.cyan, 0, false);
-    ctx.fillStyle = C.text; ctx.fillText('TX (luciferase)', x0 - 42, H / 2 - 30);
+    ctx.textAlign = 'center';
+    drawCell(ctx, x0, H / 2, 16, C.cyan, 0, false, k);
+    ctx.fillStyle = C.text; centerLabel(ctx, 'TX (luciferase)', x0, H / 2 - 22 - 8 * k, W);
     // photons
-    ctx.strokeStyle = C.cyan;
+    ctx.strokeStyle = C.cyan; ctx.lineWidth = k;
     for (const q of d.photons) {
       ctx.globalAlpha = 0.85;
       ctx.beginPath(); ctx.moveTo(q.x - q.vx * 0.8, q.y - q.vy * 0.8); ctx.lineTo(q.x, q.y); ctx.stroke();
     }
     ctx.globalAlpha = 1;
     // RX eyespot
-    drawCell(ctx, rxX, rxY, 15, C.blue, 0, false);
+    drawCell(ctx, rxX, rxY, 15, C.blue, 0, false, k);
     ctx.beginPath(); ctx.arc(rxX - 8, rxY, 4, 0, 7); ctx.fillStyle = C.marker; ctx.fill();
-    ctx.fillStyle = C.text; ctx.fillText('RX (eyespot)', rxX - 34, rxY - 28);
+    ctx.fillStyle = C.text; centerLabel(ctx, 'RX (eyespot)', rxX, rxY + 26 + 11 * k, W);
+    ctx.textAlign = 'left';
     // S(t) bar
-    ctx.strokeStyle = C.border; ctx.strokeRect(rxX + 24, rxY - 36, 9, 72);
-    ctx.fillStyle = C.acc; const bh = 72 * d.S; ctx.fillRect(rxX + 24, rxY + 36 - bh, 9, bh);
-    ctx.fillStyle = C.faint; ctx.fillText('S(t)', rxX + 20, rxY - 44);
+    // on a phone the captions are wide enough to run under a bar pinned to the
+    // eyespot, so the gauge moves to the edge of the scope instead
+    const barX = k > 1.35 ? W - 22 * k : Math.min(rxX + 24 * k, W - 9 * k - 6);
+    ctx.strokeStyle = C.border; ctx.strokeRect(barX, rxY - 36 * k, 9 * k, 72 * k);
+    ctx.fillStyle = C.acc; const bh = 72 * k * d.S; ctx.fillRect(barX, rxY + 36 * k - bh, 9 * k, bh);
+    ctx.fillStyle = C.faint;
+    if (k > 1.35) { ctx.textAlign = 'center'; centerLabel(ctx, 'S(t)', barX + 4.5 * k, rxY - 44 * k, W); ctx.textAlign = 'left'; }
+    else ctx.fillText('S(t)', barX - 4 * k, rxY - 44 * k);
   },
 });
 
 const anims = { qs: qsAnim, voc: vocAnim, elec: elAnim, opt: opAnim };
+refitScopes();
 document.querySelectorAll('[data-anim]').forEach(btn => {
   btn.addEventListener('click', () => {
     const a = anims[btn.dataset.anim];
