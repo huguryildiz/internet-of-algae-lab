@@ -34,47 +34,195 @@ function close(actual, expected, tolerance, label) {
     `${label}: expected ${expected} ± ${tolerance}, got ${actual}`);
 }
 
-// Figs. 5–8: channel loss, channel delay, and decoded response remain finite at 6 mm.
-const qs = context.computeQS({ D: 5e-10, tauLoss: 2, Cth: 1, Km: 1 });
-close(interp(qs.dArr, qs.Ac, 3), 0.21, 0.02, 'QS A_C(3 mm)');
-close(interp(qs.dArr, qs.Ac, 6), 0.04, 0.01, 'QS A_C(6 mm)');
-close(interp(qs.dArr, qs.tC, 3), 60, 2, 'QS tau_C(3 mm)');
-close(interp(qs.dArr, qs.Av, 6), 0.65, 0.04, 'QS A_v(6 mm)');
-close(interp(qs.dArr, qs.tV, 6), 58, 2, 'QS tau_v(6 mm)');
-
-// Figs. 10–13: normalized attenuation is bounded and the analytic peak time is d/v.
-for (const v of [0.05, 0.2, 0.5, 1]) {
-  const voc = context.computeVOC({ v, tauLoss: 25, kon: 1 });
-  close(interp(voc.dArr, voc.ach, 10), Math.sqrt(0.5 / 10), 7e-4,
-    `VOC alpha_ch(10 m), v=${v}`);
-  close(interp(voc.dArr, voc.tch, 10), 10 / v, 0.02,
-    `VOC tau_ch(10 m), v=${v}`);
-  assert.ok(Math.max(...voc.ach) <= 1 + 1e-12, `VOC channel attenuation bounded, v=${v}`);
-  assert.ok(Math.max(...voc.ae) <= 1 + 1e-12, `VOC end-to-end attenuation bounded, v=${v}`);
+function closeCurve(result, key, distances, expected, tolerance, label) {
+  for (let i = 0; i < distances.length; i++) {
+    close(interp(result.dArr, result[key], distances[i]), expected[i], tolerance,
+      `${label}, d=${distances[i]}`);
+  }
 }
 
-// Figs. 15–18: channel and decoded metrics are both present.
-const electrical = context.computeElec({ lam: 0.12, tm: 0.05, vh: 0.2, k: 0.05 });
-close(interp(electrical.dArr, electrical.Av, 0.4), 0.01, 0.003, 'electrical A_V(0.4 m)');
-close(interp(electrical.dArr, electrical.tV, 0.4), 0.08, 0.005, 'electrical tau_V(0.4 m)');
-assert.ok(Number.isFinite(interp(electrical.dArr, electrical.tP, 0.4)),
-  'electrical end-to-end delay must be finite');
+// Digitized publication data. Tolerances reflect plot resolution: roughly 5% of
+// the displayed axis range, or half a minor grid interval for delay plots.
+const qsD = [1, 3, 6];
+for (const [D, expected] of [
+  [2e-10, [0.4323, 0.0811, 0.01375]],
+  [5e-10, [0.5952, 0.2045, 0.04674]],
+  [1e-9, [0.6966, 0.3388, 0.1381]],
+]) {
+  const result = context.computeQS({ D, tauLoss: 2, Cth: 1, Km: 1 });
+  closeCurve(result, 'Ac', qsD, expected, 0.05, `Fig. 5, D=${D}`);
+}
+for (const [tauLoss, expected] of [
+  [1, [58.7505, 58.7278, 60.1134]],
+  [2, [58.6742, 59.8577, 61.0371]],
+  [4, [59.8124, 61.0722, 63.5897]],
+]) {
+  const result = context.computeQS({ D: 5e-10, tauLoss, Cth: 1, Km: 1 });
+  // Tolerance is half the paper's own ~1.2–1.3 h staircase step (its snapshot
+  // quantization biases the plotted first-crossing times upward); the solver here
+  // interpolates the 50% crossing continuously.
+  closeCurve(result, 'tC', qsD, expected, 0.65, `Fig. 6, tau_loss=${tauLoss}`);
+}
+for (const [Cth, expected] of [
+  [0.5, [0.9899, 0.9437, 0.7452]],
+  [1, [0.9880, 0.9247, 0.6592]],
+  [2, [0.9757, 0.8856, 0.4839]],
+]) {
+  const result = context.computeQS({ D: 5e-10, tauLoss: 2, Cth, Km: 1 });
+  closeCurve(result, 'Av', qsD, expected, 0.03, `Fig. 7, C_th=${Cth}`);
+}
+for (const [Km, expected] of [
+  [0.5, [25.06, 37.43, 56.80]],
+  [1, [26.63, 38.20, 57.44]],
+  [2, [30.75, 41.35, 59.33]],
+]) {
+  const result = context.computeQS({ D: 5e-10, tauLoss: 2, Cth: 1, Km });
+  closeCurve(result, 'tV', qsD, expected, 2, `Fig. 8, K_m=${Km}`);
+}
 
-// Figs. 20–23: Beer–Lambert gain, saturated response, and absolute flash timing.
-const optical = context.computeOpt({ d: 2, cext: 0.305, taur: 0.01, trec: 0.05, logKR: 5 });
-close(10 * Math.log10(optical.gain(5, 0.305)), -131.6, 0.2, 'optical gain at 5 m');
-close(interp(optical.dArr, optical.As, 5), 0.994, 0.006, 'optical A_S(5 m)');
-close(optical.tI, 0.155, 0.001, 'optical channel delay');
-close(interp(optical.dArr, optical.tS, 2), 0.185, 0.001, 'optical end-to-end delay');
+const vocD = [0.5, 3, 5.5, 10];
+const vocPaper = new Map([
+  [0.05, { ae: [1, 0.98767, 0.98017, 0.97069], te: [11.6, 60.2, 112.6, 203.1] }],
+  [0.2, { ae: [1, 0.9981, 0.9969, 0.9950], te: [2.9, 14.9, 28.0, 50.0] }],
+  [0.5, { ae: [1, 0.99928, 0.99907, 0.99859], te: [1.0, 6.1, 11.2, 20.1] }],
+  [1, { ae: [1, 0.99973, 0.99963, 0.99944], te: [0.5, 3.0, 5.5, 10.1] }],
+]);
+for (const v of [0.05, 0.2, 0.5, 1]) {
+  const result = context.computeVOC({ v, tauLoss: 25, kon: 1 });
+  const channelAttenuation = vocD.map(d => Math.sqrt(0.5 / d));
+  const channelDelay = vocD.map(d => d / v);
+  closeCurve(result, 'ach', vocD, channelAttenuation, 0.003, `Fig. 10, v=${v}`);
+  closeCurve(result, 'tch', vocD, channelDelay, 0.2, `Fig. 11, v=${v}`);
+  closeCurve(result, 'ae', vocD, vocPaper.get(v).ae, 6e-4, `Fig. 12, v=${v}`);
+  closeCurve(result, 'te', vocD, vocPaper.get(v).te, 3, `Fig. 13, v=${v}`);
+}
 
-const weakSaturation = context.computeOpt({ d: 2, cext: 0.305, taur: 0.01, trec: 0.05, logKR: Math.log10(5e5) });
-close(interp(weakSaturation.dArr, weakSaturation.As, 5), 0.975, 0.006,
-  'optical A_S(5 m), K_R=5e5');
+const electricalD = [0.08, 0.4, 0.8];
+for (const [lam, expected] of [
+  [0.08, [0.24, 0.002, 0]], [0.12, [0.38, 0.01, 0]], [0.18, [0.52, 0.04, 0.003]],
+]) {
+  const result = context.computeElec({ lam, tm: 0.05, vh: 0.2, k: 0.05 });
+  closeCurve(result, 'Av', electricalD, expected, 0.05, `Fig. 15, lambda=${lam}`);
+}
+for (const [tm, expected] of [
+  [0.02, [0.043, 0.060, 0.085]], [0.05, [0.046, 0.081, 0.138]],
+  [0.1, [0.050, 0.112, 0.23]],
+]) {
+  const result = context.computeElec({ lam: 0.12, tm, vh: 0.2, k: 0.05 });
+  closeCurve(result, 'tV', electricalD, expected, 0.008, `Fig. 16, tau_m=${tm}`);
+}
+for (const [vh, expected] of [
+  [0.1, [0.99, 0.03, 0]], [0.2, [0.98, 0.005, 0]], [0.3, [0.84, 0, 0]],
+]) {
+  const result = context.computeElec({ lam: 0.12, tm: 0.05, vh, k: 0.05 });
+  closeCurve(result, 'Ap', electricalD, expected, 0.08, `Fig. 17, V_1/2=${vh}`);
+}
+for (const k of [0.03, 0.05, 0.08]) {
+  const result = context.computeElec({ lam: 0.12, tm: 0.05, vh: 0.2, k });
+  closeCurve(result, 'tP', electricalD, [0.047, 0.081, 0.139], 0.006, `Fig. 18, k=${k}`);
+}
 
-for (const [trec, expected] of [[0.02, 0.164], [0.05, 0.185], [0.08, 0.205], [0.15, 0.254]]) {
-  const result = context.computeOpt({ d: 2, cext: 0.305, taur: 0.01, trec, logKR: 5 });
-  close(interp(result.dArr, result.tS, 2), expected, 0.005,
-    `optical tau_S, tau_rec=${trec}`);
+const opticalBase = { d: 2, cext: 0.305, taur: 0.01, trec: 0.05, logKR: 5 };
+const optical = context.computeOpt(opticalBase);
+const opticalChannelD = [0.1, 1, 3, 5];
+for (const [cext, expected] of [
+  [0.056, [-90.94, -111.23, -121.26, -126.19]],
+  [0.150, [-90.98, -111.64, -122.49, -128.23]],
+  [0.305, [-91.04, -112.32, -124.51, -131.59]],
+  [2.170, [-91.85, -120.41, -148.81, -172.09]],
+]) {
+  const index = optical.types.indexOf(cext);
+  for (let i = 0; i < opticalChannelD.length; i++) {
+    close(interp(optical.dArr, optical.gdB[index], opticalChannelD[i]), expected[i], 0.25,
+      `Fig. 20, c_ext=${cext}, d=${opticalChannelD[i]}`);
+  }
+}
+for (const [taur, expected] of [[0.005, 0.1531], [0.01, 0.1551], [0.02, 0.1581], [0.04, 0.1615]]) {
+  const result = context.computeOpt({ ...opticalBase, taur });
+  close(result.tI, expected, 2e-4, `Fig. 21, tau_r=${taur}`);
+}
+const opticalD = [1, 3, 5];
+for (const [KR, expected] of [
+  [1e4, [1, 1, 0.99935]], [5e4, [0.9999, 0.99948, 0.9970]],
+  [1e5, [0.9998, 0.9989, 0.99389]], [5e5, [0.99964, 0.99385, 0.97423]],
+]) {
+  const result = context.computeOpt({ ...opticalBase, logKR: Math.log10(KR) });
+  closeCurve(result, 'As', opticalD, expected, 0.0012, `Fig. 22, K_R=${KR}`);
+}
+for (const [trec, expected] of [
+  // The model asserts distance independence (paper Fig. 23), so each row is one constant.
+  [0.02, 0.164], [0.05, 0.1845], [0.08, 0.2055], [0.15, 0.254],
+]) {
+  const result = context.computeOpt({ ...opticalBase, trec });
+  closeCurve(result, 'tS', [0.01, 1, 3, 5], [expected, expected, expected, expected], 0.0011,
+    `Fig. 23, tau_rec=${trec}`);
+  const spread = Math.max(...result.tS) - Math.min(...result.tS);
+  assert.ok(spread <= 1e-12, `Fig. 23 tau_S must be distance-independent, spread=${spread}`);
+}
+
+function grid(min, max, step) {
+  const values = [];
+  for (let value = min; value <= max + step / 100; value += step) values.push(value);
+  return values;
+}
+
+function sweepCases(defaults, valuesByKey) {
+  const cases = [];
+  for (const [key, values] of Object.entries(valuesByKey)) {
+    for (const value of values) cases.push({ ...defaults, [key]: value });
+  }
+  const keys = Object.keys(valuesByKey);
+  for (let mask = 0; mask < 2 ** keys.length; mask++) {
+    const params = { ...defaults };
+    keys.forEach((key, i) => {
+      const values = valuesByKey[key];
+      params[key] = values[(mask >> i) & 1 ? values.length - 1 : 0];
+    });
+    cases.push(params);
+  }
+  return [...new Map(cases.map(params => [JSON.stringify(params), params])).values()];
+}
+
+function assertBounded(label, arrays) {
+  for (const values of arrays) for (const value of values) {
+    assert.ok(Number.isFinite(value) && value >= 0 && value <= 1 + 1e-12,
+      `${label} normalized attenuation must remain in [0, 1], got ${value}`);
+  }
+}
+
+// Full declared slider grids, plus every lower/upper parameter corner. Distance is
+// already swept by each returned array; noise belongs only to the teaching extension.
+for (const params of sweepCases(
+  { D: 5e-10, tauLoss: 2, Cth: 1, Km: 1 },
+  { D: grid(2, 10, 1).map(x => x * 1e-10), tauLoss: grid(1, 4, 0.5),
+    Cth: grid(0.5, 2, 0.25), Km: grid(0.5, 2, 0.25) },
+)) {
+  const result = context.computeQS(params);
+  assertBounded('QS', [result.Ac, result.Av]);
+}
+for (const params of sweepCases(
+  { v: 0.2, tauLoss: 25, kon: 1 },
+  { v: grid(0.05, 1, 0.05), tauLoss: grid(5, 50, 5), kon: grid(0.2, 3, 0.2) },
+)) {
+  const result = context.computeVOC(params);
+  assertBounded('VOC', [result.ach, result.ae]);
+}
+for (const params of sweepCases(
+  { lam: 0.12, tm: 0.05, vh: 0.2, k: 0.05 },
+  { lam: grid(0.08, 0.18, 0.01), tm: grid(0.02, 0.1, 0.01),
+    vh: grid(0.1, 0.3, 0.02), k: grid(0.03, 0.08, 0.01) },
+)) {
+  const result = context.computeElec(params);
+  assertBounded('electrical', [result.Av, result.Ap]);
+}
+for (const params of sweepCases(
+  { d: 2, cext: 0.305, taur: 0.01, trec: 0.05, logKR: 5 },
+  { cext: [0.056, 0.150, 0.305, 2.170], taur: grid(0.005, 0.04, 0.005),
+    trec: grid(0.02, 0.15, 0.01), logKR: grid(4, 5.7, 0.1) },
+)) {
+  const result = context.computeOpt(params);
+  const channelAttenuations = result.types.flatMap(cext => result.dArr.map(d => result.gain(d, cext)));
+  assertBounded('optical', [result.As, channelAttenuations]);
 }
 
 console.log('physics regression checks passed');

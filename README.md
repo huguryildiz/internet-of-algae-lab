@@ -60,10 +60,13 @@ latency shown in Figs. 21 and 23.
   end-to-end* distinction follow the reference paper. No figures are copied from the publication;
   every curve is recomputed.
 - The paper does not tabulate every initial or source convention needed to regenerate its figures.
-  The QS solver uses `N(0) = 0.0032 K`, a 12 mm computational domain, and a 1.5 boundary-cell
-  source weight to reproduce Figs. 5–8. The optical solver uses a 0.15 s flash start and an
-  effective four-flash aggregate amplitude to reproduce Figs. 20–23. These are numerical
-  reproduction conventions, not independently measured biological parameters.
+  The inverse-calibrated conventions are `N(0) = 0.003224 K` and a 1.47 boundary-cell source
+  weight for QS; a `5e-8 M` reference concentration for the VOC impulse magnitude; and a
+  0.15 s flash start with an effective 0.56 channel threshold for optical timing. The
+  published optical attenuation follows the peak quasi-steady Hill response (effective irradiance
+  scale 0.2805), whereas its reported biochemical delay is distance-independent. These are
+  numerical figure-reproduction conventions inferred from the plots, not independently measured
+  biological parameters.
 - **The bit-error-rate panels are a teaching extension, not part of the paper.** The paper is
   deliberately deterministic and leaves noise/SNR/capacity analysis open (§X). The BER layer
   assumes on–off keying with additive Gaussian receiver noise, BER = Q(A/2σ), and is marked

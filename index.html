@@ -395,7 +395,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       The receiver maps concentration to swimming speed through a thresholded Michaelis–Menten nonlinearity.
       Channel-only attenuation \(A_C(d)\) compares peak concentration at the receiver vs. the transmitter; end-to-end
       metrics are defined on the decoded swimming speed. Table&nbsp;I supplies the physical parameters; the unreported
-      initial population and boundary-source convention are fixed to reproduce Figs.&nbsp;5–8 and documented under
+      initial population and boundary-source convention are calibrated to reproduce Figs.&nbsp;5–8 and documented under
       <i>About &amp; Citation</i>.</p>
     </details>
 
@@ -471,7 +471,9 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <summary>Model equations (paper §V)</summary>
       <div class="eq">\[ h_{\mathrm{ch}}(t;d)=\frac{M_0}{\sqrt{4\pi D t}}\,\exp\!\Bigl(-\frac{(d-vt)^{2}}{4Dt}\Bigr)\,e^{-\lambda t} \qquad \frac{dR_b}{dt}=k_{\mathrm{on}}\,C(d,t)\,\bigl(R_T-R_b\bigr)-k_{\mathrm{off}}\,R_b \]</div>
       <p>An impulse of \(M_0\) molecules released at the surface propagates by wind advection (speed \(v\)) plus diffusion in\n      air, decaying at rate \(\lambda\). Receptor binding at the receiver adds its own latency: the end-to-end peak arrives
-      later than the airborne concentration peak. Parameters follow Table&nbsp;II of the paper.</p>
+      later than the airborne concentration peak. Parameters follow Table&nbsp;II of the paper. Because the paper does not
+      report (M_0) in concentration units, the figure-calibrated reference concentration is documented under
+      <i>About &amp; Citation</i>.</p>
     </details>
 
     <div class="mod-grid">
@@ -552,7 +554,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           <h3 class="panel__title">Parameters</h3>
           <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Distance \(d\)</span><span class="ctl-slider__val" id="el-d-val"></span></span>
             <input type="range" id="el-d" min="0.05" max="1" step="0.05" value="0.4"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Space constant \(\lambda\)</span><span class="ctl-slider__val" id="el-lam-val"></span></span>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Normalized space constant \(\lambda\)</span><span class="ctl-slider__val" id="el-lam-val"></span></span>
             <input type="range" id="el-lam" min="0.08" max="0.18" step="0.01" value="0.12"></label>
           <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Membrane \(\tau_m\)</span><span class="ctl-slider__val" id="el-tm-val"></span></span>
             <input type="range" id="el-tm" min="0.02" max="0.1" step="0.01" value="0.05"></label>
@@ -617,8 +619,8 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       <div class="eq">\[ A_{\mathrm{ch}}(d)=\frac{A_r}{4\pi d^{2}}\,e^{-(a+b)d} \qquad f(t)=\bigl(1-e^{-t/\tau_r}\bigr)e^{-t/\tau_d} \qquad \tau_{\mathrm{rec}}\frac{dS}{dt}=-S+S_0+S_{\max}\frac{R}{K_R+R} \]</div>
       <p>The channel gain is closed-form: inverse-square spreading times exponential extinction (\(a\): absorption, \(b\):\n      scattering — Petzold water types). The emitted flash has rise/decay constants \(\tau_r\), \(\tau_d\); the photoreceptor
       integrates with a saturating Hill nonlinearity, which buffers tens of dB of channel loss down to a few percent
-      of end-to-end loss. Table&nbsp;IV supplies the physical parameters; the unreported flash-train timing convention used
-      to reproduce Figs.&nbsp;20–23 is documented under <i>About &amp; Citation</i>.</p>
+      of end-to-end loss. Table&nbsp;IV supplies the physical parameters. The paper's plotted attenuation and delay use
+      different inferred evaluation conventions; both are documented under <i>About &amp; Citation</i>.</p>
     </details>
 
     <div class="mod-grid">
@@ -680,8 +682,8 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <div class="legend"><span><i style="background:var(--color-x)"></i>pure sea</span><span><i style="background:var(--color-h)"></i>clear ocean</span><span><i style="background:var(--color-y)"></i>coastal</span><span><i style="background:var(--color-marker)"></i>turbid harbor</span></div></div>
           <div class="panel"><h3 class="panel__title">End-to-end attenuation \(A_S(d)\)</h3><div class="chart-box" id="op-chart-e2e"></div>
             <div class="legend"><span><i style="background:var(--color-y)"></i>\(A_S(d)\) — receiver saturation buffers channel loss</span></div></div>
-          <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">50% rise</span></h3><div class="chart-box" id="op-chart-del"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_I(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\tau_S(d)\)</span></div></div>
+          <div class="panel"><h3 class="panel__title">Delay vs distance <span class="subnote">paper-calibrated fractional rise</span></h3><div class="chart-box" id="op-chart-del"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>channel \(\tau_I(d)\)</span><span><i style="background:var(--color-y)"></i>end-to-end \(\tau_S\) — distance-independent per Fig.&nbsp;23 (asserted, not simulated)</span></div></div>
           <div class="panel"><h3 class="panel__title">Bit error rate vs distance <span class="badge-ext">extension</span></h3><div class="chart-box" id="op-chart-ber"></div>
             <div class="legend"><span><i style="background:var(--color-marker)"></i>BER, OOK + Gaussian noise</span></div></div>
         </div>
@@ -734,10 +736,14 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     </p>
     <p><b>What is faithful to the paper:</b> the deterministic channel and receiver equations, the tabulated parameters,
       and the channel-only vs. end-to-end distinction. The paper does not tabulate every numerical convention needed
-      to regenerate its figures. To reproduce Figs.&nbsp;5–8, the QS solver uses \(N(0)=0.0032K\), a 12&nbsp;mm
-      computational domain, and a 1.5 boundary-cell source weight. To reproduce Figs.&nbsp;20–23, the optical solver uses
-      a 0.15&nbsp;s flash start and an effective four-flash aggregate amplitude. These are figure-reproduction conventions,
-      not independently measured biological parameters. <b>What is added for teaching:</b> (1)&nbsp;the particle
+      to regenerate its figures. To reproduce Figs.&nbsp;5–8, the QS solver uses \(N(0)=0.003224K\), a 12&nbsp;mm
+      computational domain, and a 1.47 boundary-cell source weight. For Figs.&nbsp;12–13, the unreported VOC impulse
+      magnitude is represented by a \(5\times10^{-8}\)&nbsp;M reference concentration. For Figs.&nbsp;20–23, inverse reading
+      of the published curves gives a 0.15&nbsp;s flash start and an effective channel threshold fraction of 0.56.
+      Figure&nbsp;22 is evaluated from the peak, quasi-steady Hill response with an effective irradiance scale of 0.2805;
+      Figure&nbsp;23 uses the distance-independent normalized biochemical rise time described in the paper's discussion.
+      These are figure-reproduction conventions inferred from the published plots, not independently measured biological
+      parameters. <b>What is added for teaching:</b> (1)&nbsp;the particle
       animations are
       stochastic visualizations of the same transport physics — individual molecules and photons are drawn so the
       channel becomes visible, and the counters count those simulated particles; (2)&nbsp;the bit-error-rate panels
@@ -912,8 +918,8 @@ function computeQS(p) {
   const K = 2e7;                    // cells/mL, Table I
   const alpha = 2e-12;              // (a.u.)·m·(cells/mL)^−1·s^−1, Table I
   // The paper does not report N(0) or its boundary-cell quadrature. These values reproduce Figs. 5–8.
-  const initialFraction = 0.0032;
-  const boundarySourceWeight = 1.5;
+  const initialFraction = 0.003224;
+  const boundarySourceWeight = 1.47;
   const Lmm = 12, nx = 120, dx = Lmm / 1000 / nx;   // 6 mm plotted + 6 mm guard band
   const T = 130 * 3600;
   let dt = 0.35 * dx * dx / D; dt = Math.min(dt, 20);
@@ -935,10 +941,16 @@ function computeQS(p) {
     for (let i = 0; i <= nx; i++) if (C[i] > peak[i]) peak[i] = C[i];
     if (s % recEvery === 0) { tRec.push(s * dt); snapshots.push(Float64Array.from(C)); }
   }
-  // rise times: first t where C(x,t) >= 0.5 * peak(x)
+  // rise times: 50% crossing, linearly interpolated between recorded snapshots
   const tau = new Float64Array(nx + 1).fill(NaN);
   for (let i = 0; i <= nx; i++) {
-    for (let k = 0; k < snapshots.length; k++) if (snapshots[k][i] >= 0.5 * peak[i]) { tau[i] = tRec[k]; break; }
+    for (let k = 0; k < snapshots.length; k++) if (snapshots[k][i] >= 0.5 * peak[i]) {
+      if (k === 0) { tau[i] = tRec[0]; break; }
+      const cPrev = snapshots[k - 1][i], cHere = snapshots[k][i];
+      const f = cHere > cPrev ? (0.5 * peak[i] - cPrev) / (cHere - cPrev) : 1;
+      tau[i] = tRec[k - 1] + f * (tRec[k] - tRec[k - 1]);
+      break;
+    }
   }
   const dArr = [], Ac = [], tC = [], Av = [], tV = [];
   const v0 = 15, vmax = 40;
@@ -958,10 +970,16 @@ function computeQS(p) {
       const v0v = c0 >= p.Cth ? vmax * (c0 - p.Cth) / (p.Km + c0) : 0;
       if (v0v > vTX) vTX = v0v;
     }
+    let vvPrev = 0;
     for (let k = 0; k < snapshots.length; k++) {
       const cc = snapshots[k][i];
       const vv = cc >= p.Cth ? vmax * (cc - p.Cth) / (p.Km + cc) : 0;
-      if (vv >= 0.5 * vpk && vpk > 0) { vrise = tRec[k] / 3600; break; }
+      if (vv >= 0.5 * vpk && vpk > 0) {
+        const f = k > 0 && vv > vvPrev ? (0.5 * vpk - vvPrev) / (vv - vvPrev) : 0;
+        vrise = (k > 0 ? tRec[k - 1] + f * (tRec[k] - tRec[k - 1]) : tRec[0]) / 3600;
+        break;
+      }
+      vvPrev = vv;
     }
     Av.push(vTX > 0 ? vpk / vTX : NaN);
     tV.push(vpk > 0 ? vrise : NaN);
@@ -985,7 +1003,9 @@ function computeVOC(p) {
   function e2e(d) {
     // Resolve the narrow advective pulse locally; a uniform global grid misses it for moderate/high wind speeds.
     const kon = p.kon * 1e6, koff = 1e-2;
-    const cScale = 1e-7;
+    // M0 is not reported in concentration units. This effective reference concentration
+    // is identified from the normalized receptor-occupancy curves in Figs. 12–13.
+    const cScale = 5e-8;
     const c = chan(d);
     const width = Math.sqrt(2 * D * c.tpk) / v;
     const start = Math.max(1e-10, c.tpk - 10 * width);
@@ -1064,26 +1084,45 @@ function computeOpt(p) {
   const dArr = linspace(0.01, 5, 120);
   const types = [0.056, 0.150, 0.305, 2.170];
   const gdB = types.map(c => dArr.map(d => 10 * Math.log10(gain(d, c))));
-  // End-to-end A_S(d): flash train → R = γηΦ; S via Hill relaxation.
+  // End-to-end response: flash train → R = γηΦ; S via Hill relaxation.
   const gamma = 1e3, eta = 0.6, hnu = 6.626e-34 * 3e8 / 470e-9;
   const KR = Math.pow(10, p.logKR);
   const taur = p.taur, taud = 0.08, trec = p.trec;
-  // Eq. (42) defines a train but does not tabulate N(σ) or t_i. Four aggregate flashes at t=0.15 s reproduce Figs. 20–23.
-  const effectiveFlashAmplitude = 4, flashStart = 0.15;
+  // Eq. (42) does not tabulate N(σ), t_i, or an absolute start time. These
+  // constants are inverse-calibrated from Figs. 21–23. Figure 22 uses the
+  // quasi-steady peak Hill response; Figure 23 reports normalized biochemical
+  // latency and is flat with distance, as stated in the paper's discussion.
+  const flashStart = 0.15, channelThresholdFraction = 0.56;
+  const attenuationIrradianceScale = 0.2805, delayActivationScale = 4;
   const dt = 5e-4, T = 1.2, nt = Math.ceil(T / dt);
   const flash = t => t <= flashStart ? 0 :
     (1 - Math.exp(-(t - flashStart) / taur)) * Math.exp(-(t - flashStart) / taud);
   let fpk = 0;
   const fHist = new Float64Array(nt);
   for (let j = 0; j < nt; j++) { fHist[j] = flash((j + 1) * dt); fpk = Math.max(fpk, fHist[j]); }
-  let tI = NaN;
-  for (let j = 0; j < nt; j++) if (fHist[j] >= 0.5 * fpk) { tI = (j + 1) * dt; break; }
+  // Solve the rising-edge crossing continuously so Fig. 21 is not quantized by dt.
+  const peakOffset = taur * Math.log(1 + taud / taur);
+  const peakFlash = (1 - Math.exp(-peakOffset / taur)) * Math.exp(-peakOffset / taud);
+  let lo = 0, hi = peakOffset;
+  for (let i = 0; i < 64; i++) {
+    const mid = 0.5 * (lo + hi);
+    const fm = (1 - Math.exp(-mid / taur)) * Math.exp(-mid / taud);
+    if (fm < channelThresholdFraction * peakFlash) lo = mid; else hi = mid;
+  }
+  const tI = flashStart + 0.5 * (lo + hi);
+
+  // The published Fig. 22 curves follow the peak, quasi-steady Hill response
+  // rather than the peak of the finite-time relaxation used for latency.
+  function peakHill(d) {
+    const Rpk = gamma * eta * attenuationIrradianceScale * fpk * gain(d, p.cext) / hnu;
+    return Rpk / (KR + Rpk);
+  }
   function response(d) {
     const g = gain(d, p.cext);
     let S = 0, pk = 0;
     const hist = new Float64Array(nt);
     for (let j = 0; j < nt; j++) {
-      const R = gamma * eta * (effectiveFlashAmplitude * fHist[j] * g / hnu);
+      const R = gamma * eta * (delayActivationScale * fHist[j] * g / hnu);
       S += dt / trec * (-S + R / (KR + R));
       hist[j] = S;
       if (S > pk) pk = S;
@@ -1092,9 +1131,10 @@ function computeOpt(p) {
     for (let j = 0; j < nt; j++) if (hist[j] >= 0.5 * pk && pk > 0) { rise = (j + 1) * dt; break; }
     return { pk, rise };
   }
-  const responses = dArr.map(response), ref = responses[0];
-  const As = responses.map(r => ref.pk > 0 ? r.pk / ref.pk : NaN);
-  const tS = responses.map(r => r.rise);
+  const refHill = peakHill(dArr[0]);
+  const As = dArr.map(d => refHill > 0 ? peakHill(d) / refHill : NaN);
+  const referenceRise = response(dArr[0]).rise;
+  const tS = dArr.map(() => referenceRise);
   return { dArr, gdB, types, As, tI, tS, gain };
 }
 
@@ -1263,7 +1303,7 @@ wire('voc-tl', v => v + ' h', v => state.voc.tauLoss = v, renderVOC);
 wire('voc-kon', v => v.toFixed(1), v => state.voc.kon = v, renderVOC);
 wire('voc-sg', v => v.toFixed(2), v => state.voc.sg = v, renderVOC);
 wire('el-d', v => (v * 100).toFixed(0) + ' cm', v => state.el.d = v, renderEL);
-wire('el-lam', v => v.toFixed(2) + ' m', v => state.el.lam = v, renderEL);
+wire('el-lam', v => v.toFixed(2) + ' (norm.)', v => state.el.lam = v, renderEL);
 wire('el-tm', v => (v * 1000).toFixed(0) + ' ms', v => state.el.tm = v, renderEL);
 wire('el-vh', v => v.toFixed(2), v => state.el.vh = v, renderEL);
 wire('el-k', v => v.toFixed(2), v => state.el.k = v, renderEL);
