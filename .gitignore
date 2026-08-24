@@ -4,3 +4,9 @@ reference.pdf
 .DS_Store
 node_modules/
 .vercel
+
+# Local agent instructions
+AGENTS.md
+CLAUDE.md
+.claude/
+.impeccable/

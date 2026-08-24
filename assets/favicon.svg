@@ -1,0 +1,14 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Internet of Algae Lab">
+  <!-- Small-size variant of icon.svg: same tile grammar (TX cell → molecules → RX cell),
+       with the dashed capture ring, flagellum and two faint molecules dropped and the
+       remaining strokes thickened so the mark still reads at 16 px in a browser tab. -->
+  <defs>
+    <linearGradient id="ioa-sig" x1="8" y1="24" x2="40" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3ef2a0"/><stop offset="0.55" stop-color="#35e0d0"/><stop offset="1" stop-color="#6ea8ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="46" height="46" rx="11" fill="#020810" stroke="#35e0d0" stroke-opacity="0.55" stroke-width="2"/>
+  <circle cx="13" cy="24" r="5.4" stroke="#3ef2a0" stroke-width="3.2"/>
+  <circle cx="24" cy="24" r="2.3" fill="url(#ioa-sig)"/>
+  <circle cx="35" cy="24" r="5.4" stroke="#6ea8ff" stroke-width="3.2"/>
+</svg>

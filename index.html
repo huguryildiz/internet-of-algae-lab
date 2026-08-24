@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Interactive teaching simulations of the four algae communication channels — quorum sensing, VOC, electrical, and optical — from Akyildiz et al., IEEE TMBMC 2026.">
-<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="icon" href="assets/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/katex/katex.min.css">
 <script defer src="assets/katex/katex.min.js"></script>
 <script defer src="assets/katex/contrib/auto-render.min.js"
@@ -290,7 +292,9 @@ table.cmp td { font-variant-numeric: tabular-nums; }
 .chip { display: inline-block; font-family: var(--mono); font-size: 0.7rem; border-radius: 99px; padding: 2px 10px; border: 1px solid var(--border); }
 
 /* ── Footer / about ── */
-.about p { color: var(--text-dim); line-height: 1.65; max-width: 78ch; }
+.about p { color: var(--text-dim); line-height: 1.65; }
+.about .limitations { color: var(--text-dim); line-height: 1.55; margin: 0; padding-left: 1.25rem; }
+.about .limitations li + li { margin-top: 0.55rem; }
 .about .cite-block {
   font-family: var(--mono); font-size: 0.82rem; background: var(--canvas-bg);
   border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px;
@@ -751,6 +755,23 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       modeling, SNR and capacity analysis as open problems (§X); the BER layer here is a standard textbook assumption,
       clearly separated so students can tell model from extension.
     </p>
+    <div class="panel">
+      <h3 class="panel__title">Reproduction limitations</h3>
+      <ul class="limitations">
+        <li><b>Unreported flash train:</b> the paper does not tabulate the flash count \(N(\sigma)\), amplitudes \(A_i\),
+          times \(t_i\), or an absolute flash-start time. The optical driver therefore uses effective values inferred
+          from Figs.&nbsp;21–23.</li>
+        <li><b>Figure&nbsp;21 convention:</b> the stated \(\rho=0.5\) crossing does not reproduce the plotted delay levels
+          exactly under the continuous single-flash equation; the figure-calibrated effective threshold is 0.56.</li>
+        <li><b>Figures&nbsp;22 and 23 are not one joint dynamic calibration:</b> Figure&nbsp;22 uses a peak,
+          quasi-steady Hill response, while Figure&nbsp;23 asserts the paper's distance-independent normalized biochemical
+          rise time rather than deriving it from the same finite-time response.</li>
+        <li><b>No source plotting data:</b> the authors' original samples and plotting code are unavailable here, so the
+          simulation claims agreement within plot-reading tolerance, not point-by-point identity with the source data.</li>
+        <li><b>Digitization uncertainty:</b> reference values were read from the rasterized PDF figures. Regression
+          tolerances reflect the visible curve thickness and roughly half a minor grid interval where applicable.</li>
+      </ul>
+    </div>
     <div class="panel">
       <h3 class="panel__title">Reference</h3>
       <div class="cite-block">
