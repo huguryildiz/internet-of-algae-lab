@@ -58,7 +58,9 @@ latency shown in Figs. 21 and 23.
 
 - The deterministic channel/receiver equations, tabulated parameters, and the *channel-only vs.
   end-to-end* distinction follow the reference paper. No figures are copied from the publication;
-  every curve is recomputed.
+  every curve is recomputed. Optical end-to-end attenuation is shown as two explicitly different
+  quantities: the primary dynamic evaluation of Eqs. (47), (50), and (53), and a labelled
+  quasi-steady reconstruction of Fig. 22. They are not treated as interchangeable.
 - The paper does not tabulate every initial or source convention needed to regenerate its figures.
   The inverse-calibrated conventions are `N(0) = 0.003224 K` and a 1.47 boundary-cell source
   weight for QS; a `5e-8 M` reference concentration for the VOC impulse magnitude; and, for
@@ -67,10 +69,11 @@ latency shown in Figs. 21 and 23.
   both delay metrics use its stated ρ = 0.5, the emitted signal is the Eq. (42) flash train with
   Table IV's [1.0, 1.1] amplitudes, and the end-to-end delay is integrated at every distance — its
   flatness is a photoreceptor-saturation result rather than an assumption. The published
-  end-to-end *attenuation* still requires the quasi-steady Hill response; the finite-time
-  relaxation peak misses that curve by ~2e-2, so Figs. 22 and 23 remain two conventions. These are
-  numerical figure-reproduction conventions inferred from the plots, not independently measured
-  biological parameters.
+  end-to-end *attenuation* figure still requires the quasi-steady Hill response. At `K_R = 5e5`
+  and `d = 5 m`, the literal dynamic Eq. (53) value is approximately `0.923`, while the Fig. 22
+  reconstruction is approximately `0.973`. The interface and tests retain both rather than hiding
+  the difference in a calibration constant. These are numerical figure-reproduction conventions
+  inferred from the plots, not independently measured biological parameters.
 - Three blocks that the paper specifies but never plots are implemented here as documented
   reconstructions: the multi-species VOC encoder (Eqs. 13–21, including the stimulus vector,
   the coupling matrix and the bound-receptor codeword), the explicit ion-channel transmitter
@@ -83,6 +86,28 @@ latency shown in Figs. 21 and 23.
   *"extension — not in paper"* wherever it appears.
 - The animated particle counters are stochastic illustrations. They are not Monte Carlo estimates
   of the deterministic attenuation and delay curves and should not be used as validation data.
+
+## Parameter provenance
+
+The complete machine-readable ledger is
+[`provenance/model-parameters.json`](provenance/model-parameters.json). The most consequential
+non-tabulated values are summarized below.
+
+| Model item | Value or convention | Status | Evidence boundary |
+| --- | --- | --- | --- |
+| QS initial population | `N(0) = 0.003224 K` | Inferred from figure | Needed for Figs. 5–8; not reported |
+| QS boundary source | weight `1.47`, domain `12 mm` | Inferred / numerical | Boundary quadrature and domain not reported |
+| VOC impulse scale | `5e-8 M` | Inferred from figure | Needed for nonlinear Figs. 12–13 |
+| Multi-species VOC coefficients | three-phase cosine pattern | Illustrative reconstruction | Eqs. 13–21 give structure, not coefficients |
+| Electrical ion-channel parameters | normalized `g0`, leak, reversal potential | Illustrative reconstruction | Eqs. 28–29 give structure, not values |
+| Electrical junction geometry | equal daughters, default `M=1`, `x_J=0.3 m` | Illustrative reconstruction | Junction laws are given; geometry is not |
+| Optical flash timing | start `0.15 s`; 3 flashes, `0.30 s` spacing | Inferred / assumed | Eq. 42 gives neither count nor emission times |
+| Optical absolute scale | `0.2445` | Inferred from figure | Absolute emitted irradiance is not reported |
+| Optical `A_S`, paper path | dynamic Eq. 47 peak ratio | Paper equation | Canonical `As` output |
+| Optical `A_S`, figure path | quasi-steady Hill peak | Figure reconstruction | Matches Fig. 22; exposed as `AsFigure` |
+
+Numerical discretization controls are optional script-level arguments and do not alter the visible
+canonical defaults. Their convergence is checked separately by `tests/numerical-convergence.mjs`.
 
 ## Running
 

@@ -1,0 +1,385 @@
+{
+  "schema_version": "1.0.0",
+  "reference": {
+    "title": "The Internet of Algae: End-to-End Communication-Theoretic Models for Photosynthetic Molecular Networks",
+    "doi": "10.1109/TMBMC.2026.3711050",
+    "local_pdf_sha256": "51d62d59f8ead21e39bd86bd77318ea3c9acdc06e1d426ecc75582d86fc0aa3d"
+  },
+  "claim_boundary": {
+    "paper_equation": "Literal evaluation of the equations stated in the paper.",
+    "figure_reproduction": "A separately named convention needed to match a published raster figure.",
+    "teaching_extension": "A model or visualization not claimed by the paper."
+  },
+  "parameters": [
+    {
+      "id": "qs.mu",
+      "value": 0.1,
+      "unit": "h^-1",
+      "status": "paper_table",
+      "source": "Table I",
+      "code_anchor": "const mu = 0.10 / 3600;"
+    },
+    {
+      "id": "qs.K",
+      "value": 20000000,
+      "unit": "cells/mL",
+      "status": "paper_table",
+      "source": "Table I",
+      "code_anchor": "const K = 2e7;"
+    },
+    {
+      "id": "qs.alpha",
+      "value": 2e-12,
+      "unit": "a.u. m (cells/mL)^-1 s^-1",
+      "status": "paper_table",
+      "source": "Table I",
+      "code_anchor": "const alpha = 2e-12;"
+    },
+    {
+      "id": "qs.D_default",
+      "value": 5e-10,
+      "unit": "m^2/s",
+      "status": "paper_table",
+      "source": "Table I; Fig. 5 sweep",
+      "code_anchor": "qs: { d: 3, D: 5e-10"
+    },
+    {
+      "id": "qs.tau_loss_default",
+      "value": 2,
+      "unit": "h",
+      "status": "paper_table",
+      "source": "Table I; Fig. 6 sweep",
+      "code_anchor": "D: 5e-10, tauLoss: 2"
+    },
+    {
+      "id": "qs.v0",
+      "value": 15,
+      "unit": "um/s",
+      "status": "paper_table",
+      "source": "Table I",
+      "code_anchor": "const v0 = 15, vmax = 40;"
+    },
+    {
+      "id": "qs.vmax",
+      "value": 40,
+      "unit": "um/s",
+      "status": "paper_table",
+      "source": "Table I",
+      "code_anchor": "const v0 = 15, vmax = 40;"
+    },
+    {
+      "id": "qs.initial_fraction",
+      "value": 0.003224,
+      "unit": "fraction of K",
+      "status": "inferred_from_figure",
+      "source": "Inverse-calibrated against Figs. 5-8; not reported in the paper",
+      "code_anchor": "const initialFraction = 0.003224;"
+    },
+    {
+      "id": "qs.boundary_source_weight",
+      "value": 1.47,
+      "unit": "dimensionless",
+      "status": "inferred_from_figure",
+      "source": "Inverse-calibrated against Figs. 5-8; boundary quadrature not reported",
+      "code_anchor": "const boundarySourceWeight = 1.47;"
+    },
+    {
+      "id": "qs.domain_mm",
+      "value": 12,
+      "unit": "mm",
+      "status": "assumed_reconstruction",
+      "source": "6 mm plotted range plus 6 mm numerical guard band",
+      "code_anchor": "numerics.domainMm || 12"
+    },
+    {
+      "id": "voc.D",
+      "value": 1e-5,
+      "unit": "m^2/s",
+      "status": "paper_table",
+      "source": "Table II",
+      "code_anchor": "const D = 1e-5, v = p.v"
+    },
+    {
+      "id": "voc.v_default",
+      "value": 0.2,
+      "unit": "m/s",
+      "status": "paper_table",
+      "source": "Table II; Figs. 10-13 sweep",
+      "code_anchor": "voc: { d: 5, v: 0.2"
+    },
+    {
+      "id": "voc.tau_loss_default",
+      "value": 25,
+      "unit": "h",
+      "status": "paper_table",
+      "source": "Table II",
+      "code_anchor": "v: 0.2, tauLoss: 25"
+    },
+    {
+      "id": "voc.kon_default",
+      "value": 1000000,
+      "unit": "M^-1 s^-1",
+      "status": "paper_table",
+      "source": "Table II",
+      "code_anchor": "const kon = p.kon * 1e6"
+    },
+    {
+      "id": "voc.koff",
+      "value": 0.01,
+      "unit": "s^-1",
+      "status": "paper_table",
+      "source": "Table II",
+      "code_anchor": "koff = 1e-2"
+    },
+    {
+      "id": "voc.RT",
+      "value": 1,
+      "unit": "normalized",
+      "status": "paper_table",
+      "source": "Table II",
+      "code_anchor": "RT = 1;"
+    },
+    {
+      "id": "voc.reference_distance",
+      "value": 0.5,
+      "unit": "m",
+      "status": "figure_reproduction",
+      "source": "Reference distance used by Figs. 10 and 12",
+      "code_anchor": "const dRef = 0.5;"
+    },
+    {
+      "id": "voc.reference_concentration",
+      "value": 5e-8,
+      "unit": "M",
+      "status": "inferred_from_figure",
+      "source": "Inverse-calibrated against Figs. 12-13; M0 is not reported in concentration units",
+      "code_anchor": "const cScale = 5e-8;"
+    },
+    {
+      "id": "voc.multispecies_count_default",
+      "value": 6,
+      "unit": "species",
+      "status": "assumed_reconstruction",
+      "source": "Eqs. 13-21 specify structure but no N",
+      "code_anchor": "sigmaN: 0.2, N: 6"
+    },
+    {
+      "id": "voc.multispecies_coupling",
+      "value": "three cosine phases separated by 2pi/3",
+      "unit": "normalized",
+      "status": "assumed_reconstruction",
+      "source": "The paper does not tabulate a_i,s, a_i,l, a_i,n",
+      "code_anchor": "ph + TWO_PI / 3"
+    },
+    {
+      "id": "electrical.lambda_default",
+      "value": 0.12,
+      "unit": "normalized",
+      "status": "paper_table",
+      "source": "Table III",
+      "code_anchor": "el: { d: 0.4, lam: 0.12"
+    },
+    {
+      "id": "electrical.tau_m_default",
+      "value": 0.05,
+      "unit": "s",
+      "status": "paper_table",
+      "source": "Table III",
+      "code_anchor": "lam: 0.12, tm: 0.05"
+    },
+    {
+      "id": "electrical.V_half_default",
+      "value": 0.2,
+      "unit": "normalized",
+      "status": "paper_table",
+      "source": "Table III",
+      "code_anchor": "tm: 0.05, vh: 0.2"
+    },
+    {
+      "id": "electrical.k_default",
+      "value": 0.05,
+      "unit": "normalized",
+      "status": "paper_table",
+      "source": "Table III",
+      "code_anchor": "vh: 0.2, k: 0.05"
+    },
+    {
+      "id": "electrical.pulse",
+      "value": { "A0": 1, "t0_s": 0.05, "sigma_s": 0.01, "Vrest": 0, "rho": 0.5 },
+      "unit": "mixed",
+      "status": "paper_table",
+      "source": "Table III; Eq. 40",
+      "code_anchor": "const A0 = 1, t0 = 0.05, sig = 0.01;"
+    },
+    {
+      "id": "electrical.ion_channel_normalization",
+      "value": { "g0": 0.05, "gLeak": 1, "Edep": 1, "Cm": "tau_m" },
+      "unit": "normalized",
+      "status": "assumed_reconstruction",
+      "source": "Eqs. 28-29 give structure but no conductances, reversal potentials, or Cm",
+      "code_anchor": "const g0 = 0.05, gLeak = 1, Edep = 1, Cm = tm;"
+    },
+    {
+      "id": "electrical.branch_default",
+      "value": { "daughter_count": 1, "junction_m": 0.3 },
+      "unit": "mixed",
+      "status": "assumed_reconstruction",
+      "source": "Section VI-A-3 gives junction laws but no branch geometry",
+      "code_anchor": "branches: 1, xJunction: 0.3"
+    },
+    {
+      "id": "optical.wavelength",
+      "value": 470,
+      "unit": "nm",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "470e-9"
+    },
+    {
+      "id": "optical.aperture_area",
+      "value": 1e-10,
+      "unit": "m^2",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "const Ar = 1e-10;"
+    },
+    {
+      "id": "optical.quantum_efficiency",
+      "value": 0.6,
+      "unit": "dimensionless",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "gamma = 1e3, eta = 0.6"
+    },
+    {
+      "id": "optical.gamma",
+      "value": 1000,
+      "unit": "dimensionless",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "const gamma = 1e3"
+    },
+    {
+      "id": "optical.extinction_default",
+      "value": 0.305,
+      "unit": "m^-1",
+      "status": "paper_table",
+      "source": "Table IV; coastal ocean baseline",
+      "code_anchor": "op: { d: 2, cext: 0.305"
+    },
+    {
+      "id": "optical.tau_r_default",
+      "value": 0.01,
+      "unit": "s",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "cext: 0.305, taur: 0.010"
+    },
+    {
+      "id": "optical.tau_d",
+      "value": 0.08,
+      "unit": "s",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "taud = 0.08"
+    },
+    {
+      "id": "optical.tau_rec_default",
+      "value": 0.05,
+      "unit": "s",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "taur: 0.010, trec: 0.05"
+    },
+    {
+      "id": "optical.KR_default",
+      "value": 100000,
+      "unit": "activation-rate units",
+      "status": "paper_table",
+      "source": "Table IV",
+      "code_anchor": "logKR: 5"
+    },
+    {
+      "id": "optical.rho",
+      "value": 0.5,
+      "unit": "dimensionless",
+      "status": "paper_table",
+      "source": "Eqs. 52 and 54; Fig. 21 states rho=0.5",
+      "code_anchor": "const rho = 0.5;"
+    },
+    {
+      "id": "optical.flash_start",
+      "value": 0.15,
+      "unit": "s",
+      "status": "inferred_from_figure",
+      "source": "Timing origin inferred from Fig. 21; not tabulated",
+      "code_anchor": "const flashStart = 0.15;"
+    },
+    {
+      "id": "optical.irradiance_scale",
+      "value": 0.2445,
+      "unit": "effective emitted-power scale",
+      "status": "inferred_from_figure",
+      "source": "Inverse-calibrated against Fig. 22; absolute Itx is not reported",
+      "code_anchor": "const irradianceScale = 0.2445;"
+    },
+    {
+      "id": "optical.flash_train_default",
+      "value": { "count": 3, "spacing_s": 0.3, "amplitude_range": [1, 1.1] },
+      "unit": "mixed",
+      "status": "assumed_reconstruction",
+      "source": "Eq. 42 and Table IV give the form and amplitude range, but not N or emission times",
+      "code_anchor": "nFlash: 3, flashGap: 0.30"
+    },
+    {
+      "id": "optical.As_paper",
+      "value": "dynamic peak ratio Srx/Stx",
+      "unit": "dimensionless",
+      "status": "paper_equation",
+      "source": "Eqs. 47, 50, and 53",
+      "code_anchor": "const AsPaper = rxResponses.map"
+    },
+    {
+      "id": "optical.As_figure",
+      "value": "quasi-steady Hill peak normalized at 0.01 m",
+      "unit": "dimensionless",
+      "status": "figure_reproduction",
+      "source": "Convention required to match Fig. 22; not the literal dynamic Eq. 53 path",
+      "code_anchor": "const AsFigure = dArr.map"
+    },
+    {
+      "id": "extension.ber",
+      "value": "Q(A/(2 sigma))",
+      "unit": "probability",
+      "status": "teaching_extension",
+      "source": "Not in the paper; deterministic models leave noise analysis open",
+      "code_anchor": "const berFromAmp ="
+    }
+  ],
+  "numerical_defaults": [
+    {
+      "id": "qs.grid",
+      "value": { "nx": 120, "cfl": 0.35, "max_dt_s": 20, "records": 700 },
+      "status": "numerical_control",
+      "code_anchor": "numerics.nx || 120"
+    },
+    {
+      "id": "voc.binding_integrator",
+      "value": { "steps": 1320, "pre_peak_widths": 10, "post_peak_widths": 12 },
+      "status": "numerical_control",
+      "code_anchor": "numerics.steps || 1320"
+    },
+    {
+      "id": "electrical.grid",
+      "value": { "nx": 120, "cfl": 0.35, "max_dt_s": 0.002, "records": 500 },
+      "status": "numerical_control",
+      "code_anchor": "numerics.records || 500"
+    },
+    {
+      "id": "optical.grid",
+      "value": { "dt_s": 0.0005, "distance_points": 120, "decay_tail_constants": 12, "receiver_tail_constants": 8 },
+      "status": "numerical_control",
+      "code_anchor": "numerics.dt || 5e-4"
+    }
+  ]
+}

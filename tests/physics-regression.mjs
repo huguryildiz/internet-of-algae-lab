@@ -168,7 +168,19 @@ for (const [KR, expected] of [
   [1e5, [0.9998, 0.9989, 0.99389]], [5e5, [0.99964, 0.99385, 0.97423]],
 ]) {
   const result = context.computeOpt({ ...opticalBase, logKR: Math.log10(KR) });
-  closeCurve(result, 'As', opticalD, expected, 0.0012, `Fig. 22, K_R=${KR}`);
+  closeCurve(result, 'AsFigure', opticalD, expected, 0.0012, `Fig. 22 reconstruction, K_R=${KR}`);
+  assert.deepEqual(result.As, result.AsPaper, 'canonical optical attenuation must be literal Eq. (53)');
+}
+// Eq. (53) uses the dynamic Eq. (47) response at transmitter and receiver. It must remain
+// distinct from the quasi-steady convention needed to reproduce Fig. 22. At the least
+// saturated plotted case the distinction is material, not numerical noise.
+{
+  const result = context.computeOpt({ ...opticalBase, logKR: Math.log10(5e5) });
+  const paperAt5m = interp(result.dArr, result.AsPaper, 5);
+  const figureAt5m = interp(result.dArr, result.AsFigure, 5);
+  close(paperAt5m, 0.9225, 0.0015, 'Eq. (53) dynamic attenuation, K_R=5e5, d=5 m');
+  assert.ok(figureAt5m - paperAt5m > 0.045,
+    'Fig. 22 reconstruction must not silently collapse into the dynamic Eq. (53) path');
 }
 for (const [trec, expected] of [
   // Distance independence is now a result of the saturated receiver, not an assumption:
@@ -255,7 +267,7 @@ for (const params of sweepCases(
 )) {
   const result = context.computeOpt(params);
   const channelAttenuations = result.types.flatMap(cext => result.dArr.map(d => result.gain(d, cext)));
-  assertBounded('optical', [result.As, channelAttenuations]);
+  assertBounded('optical', [result.AsPaper, result.AsFigure, channelAttenuations]);
 }
 
 // ── Blocks the paper specifies but never plots. No digitized targets exist for these,
