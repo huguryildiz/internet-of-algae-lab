@@ -61,12 +61,22 @@ latency shown in Figs. 21 and 23.
   every curve is recomputed.
 - The paper does not tabulate every initial or source convention needed to regenerate its figures.
   The inverse-calibrated conventions are `N(0) = 0.003224 K` and a 1.47 boundary-cell source
-  weight for QS; a `5e-8 M` reference concentration for the VOC impulse magnitude; and a
-  0.15 s flash start with an effective 0.56 channel threshold for optical timing. The
-  published optical attenuation follows the peak quasi-steady Hill response (effective irradiance
-  scale 0.2805), whereas its reported biochemical delay is distance-independent. These are
+  weight for QS; a `5e-8 M` reference concentration for the VOC impulse magnitude; and, for
+  optical, a 0.15 s flash start plus a single `0.2445` scale standing in for the unreported
+  absolute emitted irradiance. Everything else in the optical chain follows the paper directly:
+  both delay metrics use its stated ρ = 0.5, the emitted signal is the Eq. (42) flash train with
+  Table IV's [1.0, 1.1] amplitudes, and the end-to-end delay is integrated at every distance — its
+  flatness is a photoreceptor-saturation result rather than an assumption. The published
+  end-to-end *attenuation* still requires the quasi-steady Hill response; the finite-time
+  relaxation peak misses that curve by ~2e-2, so Figs. 22 and 23 remain two conventions. These are
   numerical figure-reproduction conventions inferred from the plots, not independently measured
   biological parameters.
+- Three blocks that the paper specifies but never plots are implemented here as documented
+  reconstructions: the multi-species VOC encoder (Eqs. 13–21, including the stimulus vector,
+  the coupling matrix and the bound-receptor codeword), the explicit ion-channel transmitter
+  (Eqs. 28–29), and the branch-junction conditions (§VI-A-3). The paper tabulates no values for
+  any of them and publishes no figure to check them against, so the regression suite pins them by
+  structural invariants only, and their defaults leave the plotted curves untouched.
 - **The bit-error-rate panels are a teaching extension, not part of the paper.** The paper is
   deliberately deterministic and leaves noise/SNR/capacity analysis open (§X). The BER layer
   assumes on–off keying with additive Gaussian receiver noise, BER = Q(A/2σ), and is marked
