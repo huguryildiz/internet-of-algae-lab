@@ -1949,7 +1949,6 @@ const opAnim = makeAnim('op-canvas', {
     ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(x0, H / 2, glow * 2.4, 0, 7); ctx.fill();
     ctx.textAlign = 'center';
     drawCell(ctx, x0, H / 2, 16, C.cyan, 0, false, k);
-    ctx.fillStyle = C.text; centerLabel(ctx, 'TX (luciferase)', x0, H / 2 - 22 - 8 * k, W);
     // photons
     ctx.strokeStyle = C.cyan; ctx.lineWidth = k;
     for (const q of d.photons) {
@@ -1957,6 +1956,8 @@ const opAnim = makeAnim('op-canvas', {
       ctx.beginPath(); ctx.moveTo(q.x - q.vx * 0.8, q.y - q.vy * 0.8); ctx.lineTo(q.x, q.y); ctx.stroke();
     }
     ctx.globalAlpha = 1;
+    // caption after the photons, which stream straight across it at full flash
+    ctx.fillStyle = C.text; centerLabel(ctx, 'TX (luciferase)', x0, H / 2 - 22 - 8 * k, W);
     // RX eyespot
     drawCell(ctx, rxX, rxY, 15, C.blue, 0, false, k);
     ctx.beginPath(); ctx.arc(rxX - 8, rxY, 4, 0, 7); ctx.fillStyle = C.marker; ctx.fill();
@@ -1972,7 +1973,9 @@ const opAnim = makeAnim('op-canvas', {
     else ctx.fillText('S(t)', barX - 4 * k, rxY - 44 * k);
     // caption last: the gauge sits right beside the eyespot and would otherwise cover it
     ctx.textAlign = 'center';
-    ctx.fillStyle = C.text; centerLabel(ctx, 'RX (eyespot)', rxX, rxY + 26 + 11 * k, W);
+    // clear of the gauge, which is 36k tall either side of the eyespot; sitting beside it
+    // the caption had the bar running between its glyphs
+    ctx.fillStyle = C.text; centerLabel(ctx, 'RX (eyespot)', rxX, rxY + 36 * k + 14 + 11 * k, W);
     ctx.textAlign = 'left';
   },
 });
