@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
 <meta name="description" content="Interactive teaching simulations of the four algae communication channels — quorum sensing, VOC, electrical, and optical — from Akyildiz et al., IEEE TMBMC 2026.">
 <link rel="icon" href="assets/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
@@ -19,10 +20,11 @@
 <style>
 /* ============================================================
    CommSysLab visual language — glassmorphism + neon glow.
-   Dark-first: bare :root = dark tokens (site default), light
-   tokens under prefers-color-scheme:light and [data-theme=light].
+   Permanent dark theme: native controls and all site tokens use
+   the same deep-sea bioluminescent palette.
    ============================================================ */
 :root {
+  color-scheme: dark;
   /* Deep-sea night: bioluminescent greens/teals on blue-black water */
   --bg: #040a10;
   --bg-panel: rgba(8, 20, 30, 0.72);
@@ -60,36 +62,6 @@
           radial-gradient(ellipse 60% 40% at 85% 0%, rgba(53,224,208,0.05), transparent 60%);
   --hero-display: block;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #f7f9fc; --bg-panel: #ffffff; --surface: #ffffff; --surface-2: #f4f6fb;
-    --canvas-bg: #eef1f8; --scope-bg: #eef1f8;
-    --text: #161b2e; --text-dim: #4d5470; --text-faint: #868ca6;
-    --border: rgba(24, 34, 68, 0.12); --border-strong: rgba(44, 72, 180, 0.3);
-    --slider-track: rgba(24, 34, 68, 0.14);
-    --accent: #0a6428; --accent-2: #c2410c; --accent-blue: #3a4fd0; --accent-cyan: #0d9488;
-    --color-x: #0a6428; --color-h: #c2410c; --color-y: #3a4fd0; --color-marker: #d11d6b;
-    --ok: #0a6428; --err: #cc2b2b; --warn: #c2410c;
-    --shadow-card: 0 2px 10px rgba(30,45,90,0.07), 0 1px 2px rgba(30,45,90,0.05);
-    --shadow-lift: 0 16px 40px rgba(28,40,86,0.16);
-    --halo: none;
-    --hero-display: none;
-  }
-}
-:root[data-theme="light"] {
-  --bg: #f7f9fc; --bg-panel: #ffffff; --surface: #ffffff; --surface-2: #f4f6fb;
-  --canvas-bg: #eef1f8; --scope-bg: #eef1f8;
-  --text: #161b2e; --text-dim: #4d5470; --text-faint: #868ca6;
-  --border: rgba(24, 34, 68, 0.12); --border-strong: rgba(44, 72, 180, 0.3);
-  --slider-track: rgba(24, 34, 68, 0.14);
-  --accent: #0a6428; --accent-2: #c2410c; --accent-blue: #3a4fd0; --accent-cyan: #0d9488;
-  --color-x: #0a6428; --color-h: #c2410c; --color-y: #3a4fd0; --color-marker: #d11d6b;
-  --ok: #0a6428; --err: #cc2b2b; --warn: #c2410c;
-  --shadow-card: 0 2px 10px rgba(30,45,90,0.07), 0 1px 2px rgba(30,45,90,0.05);
-  --shadow-lift: 0 16px 40px rgba(28,40,86,0.16);
-  --halo: none;
-  --hero-display: none;
-}
 
 * { box-sizing: border-box; }
 html { font-size: 15px; scroll-behavior: smooth; scroll-padding-top: 72px; }
@@ -107,7 +79,7 @@ code, kbd { font-family: var(--mono); }
 
 .wrap { --gutter: 20px; max-width: 1280px; margin: 0 auto; padding: 24px var(--gutter) 64px; }
 
-/* ── Hero shader (dark theme only; hidden on light "paper lab") ── */
+/* ── Hero shader ── */
 .hero { position: relative; border-radius: var(--radius); overflow: clip; }
 .hero-canvas {
   position: absolute; inset: 0; width: 100%; height: 100%;
@@ -356,7 +328,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
   <div class="hero-fade" aria-hidden="true"></div>
   <header class="masthead">
     <div class="masthead__kicker">Interactive channel models · molecular communication</div>
-    <h1 class="masthead__title">The Internet of Algae Lab</h1>
+    <h1 class="masthead__title">Internet of Algae Lab</h1>
     <p class="masthead__sub">
       Algae colonies are nature's own molecular network. This page turns the end-to-end channel models of
       Akyildiz&nbsp;et&nbsp;al. into live simulations: press <b>Start</b> to watch molecules, voltage pulses and photons
@@ -2010,12 +1982,10 @@ state.op.cext = parseFloat($('op-water').value); // browsers may restore a previ
 state.el.txMode = $('el-tx').value;
 state.el.branches = parseInt($('el-br').value, 10);
 renderQS(); renderVOC(); renderEL(); renderOP(); renderCMP();
-// re-render charts on theme flips so CSS-var strokes stay in sync (they are var() refs, so mostly automatic)
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { renderQS(); renderVOC(); renderEL(); renderOP(); renderCMP(); });
 </script>
 <script>
 /* Hero background — adapted from Radiant Shaders “Bioluminescence” (https://radiant-shaders.com, MIT),
-   recolored from amber to this page's bioluminescent teal palette. Dark theme only. */
+   recolored from amber to this page's bioluminescent teal palette. */
 (function () {
   var canvas = document.getElementById('hero-canvas');
   if (!canvas) return;
