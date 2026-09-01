@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://algae-molecular-communication.vercel.app"><img src="https://img.shields.io/badge/algae--molecular--communication.vercel.app-020810?style=for-the-badge&logo=vercel&logoColor=3EF2A0" alt="The public page"></a>
+  <a href="https://internet-of-algae-lab.vercel.app"><img src="https://img.shields.io/badge/internet--of--algae--lab.vercel.app-020810?style=for-the-badge&logo=vercel&logoColor=3EF2A0" alt="The public page"></a>
   &nbsp;
   <a href="index.html"><img src="https://img.shields.io/badge/index.html-0F3040?style=for-the-badge&logo=html5&logoColor=FAF8F4" alt="The interactive page"></a>
   &nbsp;

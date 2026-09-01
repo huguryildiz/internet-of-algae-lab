@@ -52,7 +52,7 @@
     <path d="M37 28.6C36 30.8 38.2 31.4 37.3 33.6" stroke="url(#iconSignal)" stroke-width="1.6" stroke-linecap="round"/>
   </g>
 
-  <text x="176" y="93" fill="#C8D9E1" font-family="IBM Plex Mono, Menlo, monospace" font-size="15" font-weight="600" letter-spacing="2.6">ALGAE-MOLECULAR-COMMUNICATION</text>
+  <text x="176" y="93" fill="#C8D9E1" font-family="IBM Plex Mono, Menlo, monospace" font-size="15" font-weight="600" letter-spacing="2.6">INTERNET-OF-ALGAE-LAB</text>
   <text x="176" y="122" fill="#6F8B9A" font-family="IBM Plex Mono, Menlo, monospace" font-size="13" letter-spacing="1.5">INTERACTIVE RESEARCH EXPERIENCE</text>
 
   <g>

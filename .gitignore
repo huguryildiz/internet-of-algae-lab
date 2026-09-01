@@ -13,3 +13,4 @@ CLAUDE.md
 
 # Locally generated LinkedIn video composite and source copies
 assets/linkedin-video-2x2/
+.env.local
