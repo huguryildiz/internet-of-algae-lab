@@ -371,6 +371,14 @@ for (const params of sweepCases(
     close(s.bits, bits, 0.05, `Table 1 ${key} bits/symbol`);
     close(s.bps, bps, Math.max(0.6, 0.006 * bps), `Table 1 ${key} bps`);
   }
+  // Fig. 2: published range N = 10…200; at N = 100 the five curves read 200, 100, 198, log2 400, log2 100.
+  assert.equal(m.vsN.N[0], 10, 'Fig. 2 starts at N = 10');
+  assert.equal(m.vsN.N.at(-1), 200, 'Fig. 2 ends at N = 200');
+  const i100 = m.vsN.N.indexOf(100);
+  for (const [key, want] of [['mtdm', 200], ['mtdm2', 100], ['mrsk', 198], ['hybrid', Math.log2(400)], ['mosk', Math.log2(100)]]) {
+    close(m.vsN[key][i100], want, 1e-9, `Fig. 2 ${key} at N = 100`);
+  }
+  close(m.vsN.mtdm.at(-1), 400, 1e-9, 'Fig. 2 MTDM L=4 at N = 200');
   // Fig. 2 structure: MTDM leads MRSK by exactly log2 L, Hybrid leads MoSK by log2 L.
   for (let i = 0; i < m.vsN.N.length; i++) {
     close(m.vsN.mtdm[i] - m.vsN.mrsk[i], 2, 1e-9, 'MTDM − MRSK = log2 L');
@@ -391,41 +399,42 @@ for (const params of sweepCases(
   for (const v of flat.cir.ratio) close(v, 1, 1e-9, 'equal-D ratio must be constant');
 }
 
-// Fig. 3 reconstruction: structural invariants only (the paper omits the detector and ISI conventions).
+// Fig. 3. MTDM curves: digitized from the published figure (log10 BER). Tolerance 0.05 decades is about
+// half the plotted line width on its six-decade axis. MRSK curves: this page's reconstruction, pinned by
+// enumeration and structural checks only.
 {
   const b = context.computeMTDMBER({ N: 100, L: 4, MwMax: 204, rUm: 10 });
-  // L = 2 with a zero level: the only error is "1 sent, 0 counted", so BER = ½ e^{−n̄}.
-  for (let i = 0; i < b.snrDb.length; i += 5) {
-    const n = Math.pow(10, b.snrDb[i] / 10);
-    close(b.mtdm2[i], 0.5 * Math.exp(-n), 1e-12 + 1e-9 * Math.exp(-n), `MTDM L=2 closed form at ${b.snrDb[i]} dB`);
+  const fig3 = {
+    mtdm2: [[2.5, -0.598], [6, -0.797], [10, -1.240], [13, -1.891], [16, -3.097]],
+    mtdmL: [[4, -0.520], [9, -0.632], [16, -0.953], [20, -1.439], [24, -2.519], [27, -4.118]],
+  };
+  for (const [key, pts] of Object.entries(fig3)) {
+    for (const [db, logBer] of pts) {
+      close(Math.log10(interp(b.snrDb, b[key], db)), logBer, 0.05, `Fig. 3 ${key} at ${db} dB`);
+    }
   }
-  // Bounds hold everywhere. Monotonicity is only a property of this default configuration: symbol-ML
-  // thresholds do not minimize Gray-weighted bit errors (L = 8 MTDM rises locally), and a biased
-  // fixed decoder can approach its wrong decision as noise falls.
+  // The published MTDM curves are Gray PAM with constant Gaussian variance n̄_max; check the closed form.
+  for (const [L, n] of [[2, 1], [4, 300], [8, 50]]) {
+    const z = Math.sqrt(n) / (2 * (L - 1));
+    let q = 0;                                            // Q(z) by midpoint quadrature, independent of mtdmQ
+    for (let i = 0, h = 1e-4; i < 2e5; i++) { const x = z + (i + 0.5) * h; q += Math.exp(-x * x / 2) * h; }
+    q /= Math.sqrt(2 * Math.PI);
+    const want = 2 * (L - 1) / (L * Math.log2(L)) * q;
+    close(context.mtdmPaperBER(L, n) / want, 1, 1e-6, `MTDM paper BER closed form, L=${L}`);
+  }
+  // Bounds hold everywhere. The MTDM curves are a decreasing Q-function for every L. For the page's own
+  // ratio-keying reconstruction, monotonicity holds at these defaults only: a biased fixed decoder can
+  // approach its wrong decision as noise falls (and the paper's own MRSK-on-VOC curve is not monotone).
   for (const key of ['mtdm2', 'mtdmL', 'mrskIdeal', 'mrskVOC']) {
     for (let i = 0; i < b.snrDb.length; i++) {
       assert.ok(b[key][i] >= 0 && b[key][i] <= 0.5 + 1e-9, `${key} must stay a probability ≤ 0.5`);
       if (i > 0) assert.ok(b[key][i] <= b[key][i - 1] + 1e-9, `${key} should not rise with SNR at the defaults`);
     }
   }
-  // Independent brute-force enumeration over small counts.
+  // Independent brute-force enumeration of the ratio-keying reconstruction over small counts.
   const pois = (lam, k) => lam === 0 ? (k === 0 ? 1 : 0) : Math.exp(-lam + k * Math.log(lam) - lnFactorial(k));
   function lnFactorial(k) { let s = 0; for (let i = 2; i <= k; i++) s += Math.log(i); return s; }
   const grayBits = (u, v) => { let z = (u ^ (u >> 1)) ^ (v ^ (v >> 1)), c = 0; while (z) { c += z & 1; z >>= 1; } return c; };
-  for (const L of [4, 8]) {
-    for (const n of [2, 8]) {
-      let err = 0;
-      for (let s = 0; s < L; s++) {
-        for (let k = 0; k <= 120; k++) {
-          let best = 0, bestP = -1;                       // symbol ML, ties to the lower level
-          for (let m = 0; m < L; m++) { const pm = pois(n * m / (L - 1), k); if (pm > bestP) { bestP = pm; best = m; } }
-          err += pois(n * s / (L - 1), k) * grayBits(s, best);
-        }
-      }
-      const got = context.computeMTDMBER({ N: 2, L, MwMax: 204, rUm: 10, snrDb: [10 * Math.log10(n)] });
-      close(got.mtdmL[0], err / (L * Math.log2(L)), 1e-9, `MTDM L=${L} brute force at n̄=${n}`);
-    }
-  }
   {
     const L = 4, n = 3;
     const got = context.computeMTDMBER({ N: 2, L, MwMax: 204, rUm: 10, snrDb: [10 * Math.log10(n)] });

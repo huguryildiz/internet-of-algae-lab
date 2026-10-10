@@ -602,23 +602,25 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
 
         <div class="charts-grid">
           <div class="panel"><h3 class="panel__title">Bits per symbol vs \(N\) <span class="subnote">Fig. 2</span></h3><div class="chart-box" id="mt-chart-bits"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM</span><span><i style="background:var(--color-y)"></i>MRSK</span><span><i style="background:var(--color-h)"></i>Hybrid MoSK-CSK</span><span><i style="background:var(--color-marker)"></i>MoSK</span></div></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, current \(L\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-x) 0 4px,transparent 4px 6px)"></i>MTDM, \(L=2\)</span><span><i style="background:var(--color-y)"></i>MRSK</span><span><i style="background:var(--color-h)"></i>Hybrid MoSK-CSK</span><span><i style="background:var(--color-marker)"></i>MoSK</span></div></div>
           <div class="panel"><h3 class="panel__title">Sub-channel impulse responses <span class="subnote">Eq. (1), one molecule</span></h3><div class="chart-box" id="mt-chart-cir"></div>
             <div class="legend"><span><i style="background:var(--color-x)"></i>lightest (DMS)</span><span><i style="background:var(--color-h)"></i>heaviest</span></div></div>
           <div class="panel"><h3 class="panel__title">Ratio drift <span class="subnote">Eq. (2), equal release</span></h3><div class="chart-box" id="mt-chart-ratio"></div>
             <div class="legend"><span><i style="background:var(--color-y)"></i>\(h_{\text{light}}/h_{\text{heavy}}\)</span><span><i style="background:var(--text-faint)"></i>equal \(D\) (what MRSK assumes)</span></div>
             <p class="scope-caption">\(t_s\) marks the heaviest species' peak, the common sampling instant assumed for MRSK below.</p></div>
-          <div class="panel"><h3 class="panel__title">BER vs SNR <span class="badge-ext">reconstruction of Fig. 3</span></h3><div class="chart-box" id="mt-chart-ber"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:var(--color-y)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span></div>
+          <div class="panel"><h3 class="panel__title">BER vs SNR <span class="subnote">Fig. 3</span> <span class="badge-ext">MRSK curves: reconstruction</span></h3><div class="chart-box" id="mt-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-y) 0 4px,transparent 4px 6px)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span></div>
             <p class="scope-caption">SNR \(=\bar n_{\max}\), the expected absorbed count of the top level, treated as an abstract
             normalized count (Eq.&nbsp;1 is a rate and the paper names no counting window); every MTDM species is calibrated to
-            the same \(\bar n_{\max}\) at its own peak. The paper does not state its threshold rule, ISI treatment or MRSK level
-            map; assumed here: Poisson counts with ISI ignored, levels \(s/(L-1)\), Gray-mapped bits; MTDM uses per-receptor
-            symbol-ML thresholds. The comparison curves are a simplified <i>MRSK-style</i> ratio keying, not Kilic &amp; Akan's
-            canonical MRSK (which uses positive geometric ratio levels between adjacent species): the heaviest species is the
-            reference, all species are sampled at its peak, and \(n_j/n_{\mathrm{ref}}\) is rounded to the nearest level.
-            At the defaults its fixed decoder floors at a few&nbsp;% — the paper reports a floor near 0.5, which these
-            assumptions do not reproduce.</p></div>
+            the same \(\bar n_{\max}\) at its own peak; ISI is ignored. The paper does not state its detector. Its two MTDM
+            curves, digitized, agree with the nearest-neighbour approximation for Gray-mapped \(L\)-level PAM under
+            Gaussian noise of constant variance \(\bar n_{\max}\),
+            \(\mathrm{BER}=\tfrac{2(L-1)}{L\log_2 L}\,Q\!\bigl(\sqrt{\bar n_{\max}}/2(L-1)\bigr)\), which is what is plotted;
+            this is inferred from the figure, not a detector the paper states. Its two MRSK curves could not be matched by any stated decoder — including Kilic &amp; Akan's
+            canonical geometric-level MRSK — so the comparison curves here are this page's own <i>MRSK-style</i> ratio
+            keying under Poisson counts: the heaviest species is the reference, all species are sampled at its peak, and
+            \(n_j/n_{\mathrm{ref}}\) is rounded to the nearest of the levels \(s/(L-1)\). At the defaults its fixed decoder
+            floors at a few&nbsp;%; the paper's curve rises toward 0.5, which these assumptions do not reproduce.</p></div>
         </div>
       </div>
     </div>
@@ -903,13 +905,15 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           the bps column differs from Table&nbsp;1 by −2.3&nbsp;% to +0.4&nbsp;%, because Stokes–Einstein gives
           \(D_{\min}=6.72\times10^{-10}\)&nbsp;m²/s where the paper rounds to 6.7 and rounds its bps entries. The
           species masses between 62 and the heaviest species are spaced linearly, which the paper does not specify.
-          Fig.&nbsp;3 is a reconstruction: the paper states neither its detector, its ISI treatment nor its MRSK level map,
-          and the comparison curves use a simplified MRSK-style ratio keying rather than canonical MRSK. Under the
-          assumptions printed under that chart, the fixed-decoder curve floors at a few percent at the defaults rather
-          than near the 0.5 the paper reports; no stated decoder rule we found yields 0.5, so the gap is shown, not tuned.
+          Fig.&nbsp;3 is half reproduction, half reconstruction. The paper states no detector; its two MTDM curves were
+          inferred by digitizing the figure as the nearest-neighbour Gray-PAM approximation with Gaussian noise of
+          constant variance \(\bar n_{\max}\). Over the digitized samples this agrees to about 0.005 decades rms for
+          \(L=2\) and 0.03 for \(L=4\) (up to 0.1 on the steep tail, where reading a raster is least precise), and the
+          regression suite pins eleven of those points within 0.05 decades. Its two MRSK curves match no decoder we could derive from the paper or from Kilic &amp; Akan's MRSK, so the
+          page shows its own MRSK-style ratio keying instead; that curve floors at a few percent at the defaults where the
+          paper's rises toward 0.5. The gap is shown, not tuned.
           The paper's 5&nbsp;% ISI figure holds for a single earlier symbol; summed over all earlier symbols the
-          worst-case tail at \(\kappa=20\) is about 12&nbsp;%. The regression suite pins Fig.&nbsp;3 by closed forms, an
-          independent brute-force count enumeration and structural checks only.</li>
+          worst-case tail at \(\kappa=20\) is about 12&nbsp;%.</li>
         <li><b>No source plotting data:</b> the authors' original samples and plotting code are unavailable here, so the
           simulation claims agreement within plot-reading tolerance, not point-by-point identity with the source data.</li>
         <li><b>Digitization uncertainty:</b> reference values were read from the rasterized PDF figures. Regression
@@ -1476,11 +1480,11 @@ function computeMTDM(p) {
     { key: 'mtdm', name: 'MTDM', formula: 'N log2 L', bits: b[3], equalD: false },
   ];
   for (const s of schemes) s.bps = s.bits / Ts;
-  // Fig. 2: bits/symbol vs N.
-  const Ns = [], mosk = [], hybrid = [], mrsk = [], mtdm = [];
-  for (let N = 2; N <= 200; N++) {
+  // Fig. 2: bits/symbol vs N over the published range N = 10…200, with the paper's extra MTDM L = 2 line.
+  const Ns = [], mosk = [], hybrid = [], mrsk = [], mtdm = [], mtdm2 = [];
+  for (let N = 10; N <= 200; N++) {
     const v = bitsFor(N);
-    Ns.push(N); mosk.push(v[0]); hybrid.push(v[1]); mrsk.push(v[2]); mtdm.push(v[3]);
+    Ns.push(N); mosk.push(v[0]); hybrid.push(v[1]); mrsk.push(v[2]); mtdm.push(v[3]); mtdm2.push(N);
   }
   // Eq. (1) for the lightest and heaviest species, and the Eq. (2) ratio at equal release.
   const tLight = tPeak(Dmax), tHeavy = tPeak(Dmin);
@@ -1490,16 +1494,20 @@ function computeMTDM(p) {
   const ratio = t.map((tt, i) => light[i] / heavy[i]);
   return {
     Dmax, Dmin, spread: Dmax / Dmin, Ts, isi, isiAccum, tLight, tHeavy, schemes,
-    vsN: { N: Ns, mosk, hybrid, mrsk, mtdm }, cir: { t, light, heavy, ratio },
+    vsN: { N: Ns, mosk, hybrid, mrsk, mtdm, mtdm2 }, cir: { t, light, heavy, ratio },
   };
 }
-/* Fig. 3 (BER vs SNR) — a reconstruction. The paper defines SNR = n̄_max, the expected absorbed
-   count for the top level of a Poisson channel, but states no threshold rule, ISI treatment or
-   MRSK level map. Assumed here: Poisson counts, ISI ignored (an independent assumption — the
-   accumulated tail is not small, see computeMTDM), levels s/(L−1)·n̄_max, Gray-mapped bits, and
-   n̄_max an abstract normalized count (Eq. 1 is a rate; no counting window is specified).
-   MTDM: each receptor samples its own peak, where its count is calibrated to n̄_max, and decides
-   by symbol-ML thresholds between adjacent levels. Ratio keying ("MRSK-style", not Kilic & Akan's
+/* Fig. 3 (BER vs SNR). The paper defines SNR = n̄_max, the expected absorbed count of the top level,
+   but states no detector, ISI treatment or MRSK level map. Its two MTDM curves were identified by
+   digitizing the published figure: they are L-level PAM with Gray mapping, levels s/(L−1)·n̄_max,
+   midpoint thresholds and Gaussian noise of constant variance n̄_max (the Poisson variance of the top
+   level), in the nearest-neighbour approximation BER = 2(L−1)/(L log2 L) · Q(√n̄_max / (2(L−1))). This is
+   an inference from the plot, not the authors' stated detector: over the digitized samples it agrees to
+   about 0.005 decades rms (L = 2) and 0.03 rms (L = 4, up to 0.1 on the steep tail), while the exact
+   midpoint-detection BER would differ visibly at low SNR. ISI is ignored (the accumulated tail is not small, see computeMTDM)
+   and n̄_max is an abstract normalized count (Eq. 1 is a rate; no counting window is specified).
+   The two MRSK curves could not be identified from any stated decoder, so they remain this page's own
+   reconstruction under Poisson counts and Gray mapping. Ratio keying ("MRSK-style", not Kilic & Akan's
    canonical MRSK with positive geometric levels and adjacent-species ratios): the heaviest species
    is the reference, always released at Q_max; every other species carries s/(L−1) as its ratio to
    it; all are sampled at one common instant, the reference's peak; the fixed (equal-D) decoder
@@ -1511,8 +1519,21 @@ function mtdmRatioLevelStart(m, nr, L) {
   const den = 2 * (L - 1);
   return Math.floor(((2 * m - 1) * nr + den - 1) / den);
 }
+// Gaussian tail Q(x) = erfc(x/√2)/2 via the Numerical Recipes Chebyshev erfc (relative error < 1.2e-7
+// everywhere, so 1e-6 BER levels stay accurate). Local to this slice; the page's erfc lies outside it.
+function mtdmQ(x) {
+  const z = Math.abs(x) / Math.SQRT2, t = 1 / (1 + 0.5 * z);
+  const e = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418
+    + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587
+    + t * (-0.82215223 + t * 0.17087277)))))))));
+  return x >= 0 ? 0.5 * e : 1 - 0.5 * e;
+}
+// MTDM BER of the published Fig. 3 (see above).
+function mtdmPaperBER(L, n) {
+  return 2 * (L - 1) / (L * Math.log2(L)) * mtdmQ(Math.sqrt(n) / (2 * (L - 1)));
+}
 function computeMTDMBER(p) {
-  const snrDb = p.snrDb || linspace(0, 30, 31);
+  const snrDb = p.snrDb || linspace(-5, 30, 71);             // the published axis
   const r = (p.rUm || 10) * 1e-6, x = r - MTDM_A;
   const sp = mtdmSpecies(p.N, p.MwMax);
   const ref = sp[sp.length - 1], ts = x * x / (6 * ref.D);
@@ -1536,24 +1557,6 @@ function computeMTDMBER(p) {
   const gray = s => s ^ (s >> 1);
   const ham = (u, v) => { let z = gray(u) ^ gray(v), c = 0; while (z) { c += z & 1; z >>= 1; } return c; };
   const L = p.L;
-  function berMTDM(Lv, n) {
-    const lam = l => n * l / (Lv - 1);
-    const kth = [0];                                      // smallest count decoded as level ≥ l
-    for (let l = 1; l < Lv; l++) {
-      const a = lam(l - 1), b = lam(l);
-      kth.push(Math.floor(a > 0 ? (b - a) / Math.log(b / a) : 0) + 1);
-    }
-    let err = 0;
-    for (let s = 0; s < Lv; s++) {
-      const cdf = cdfOf(lam(s));
-      for (let m = 0; m < Lv; m++) {
-        if (m === s) continue;
-        const P = (m + 1 < Lv ? at(cdf, kth[m + 1] - 1) : 1) - at(cdf, kth[m] - 1);
-        err += P * ham(s, m);
-      }
-    }
-    return err / (Lv * Math.log2(Lv));
-  }
   function berMRSK(n, B, refCdf) {
     const w = 14 * Math.sqrt(n) + 40, nrLo = Math.max(0, Math.floor(n - w)), nrHi = Math.min(K, Math.ceil(n + w));
     let err = 0;
@@ -1579,8 +1582,8 @@ function computeMTDMBER(p) {
   const mtdm2 = [], mtdmL = [], mrskIdeal = [], mrskVOC = [];
   for (const db of snrDb) {
     const n = Math.pow(10, db / 10);
-    mtdm2.push(berMTDM(2, n));
-    mtdmL.push(berMTDM(L, n));
+    mtdm2.push(mtdmPaperBER(2, n));
+    mtdmL.push(mtdmPaperBER(L, n));
     const refCdf = cdfOf(n);                              // shared by every sub-channel
     mrskIdeal.push(berMRSK(n, 1, refCdf));
     let acc = 0;
@@ -1700,11 +1703,12 @@ function renderMTDM() {
   $('mt-gain').textContent = (m.schemes[3].bits / m.schemes[1].bits).toFixed(1) + '×';
   const v = m.vsN;
   drawChart($('mt-chart-bits'), { series: [
-      { x: v.N, y: v.mtdm, colorVar: '--color-x', label: 'MTDM' },
-      { x: v.N, y: v.mrsk, colorVar: '--color-y', label: 'MRSK', dash: '5 4' },
-      { x: v.N, y: v.hybrid, colorVar: '--color-h', label: 'Hybrid' },
+      { x: v.N, y: v.mtdm, colorVar: '--color-x', label: 'MTDM L=' + p.L },
+      { x: v.N, y: v.mtdm2, colorVar: '--color-x', label: 'MTDM L=2', dash: '6 4' },
+      { x: v.N, y: v.mrsk, colorVar: '--color-y', label: 'MRSK' },
+      { x: v.N, y: v.hybrid, colorVar: '--color-h', label: 'Hybrid', dash: '2 3' },
       { x: v.N, y: v.mosk, colorVar: '--color-marker', label: 'MoSK' }],
-    xlab: 'species N', ylab: 'bits / symbol', ylog: true, yfloor: 1, markers: [{ x: p.N, label: 'N' }] });
+    xlab: 'N (number of VOC types)', ylab: 'bits / symbol', ymin: 0, markers: [{ x: p.N, label: 'N' }] });
   const tms = m.cir.t.map(t => t * 1000);
   drawChart($('mt-chart-cir'), { series: [
       { x: tms, y: m.cir.light, colorVar: '--color-x', label: 'h_light' },
@@ -1719,13 +1723,15 @@ function renderMTDM() {
   const key = `${p.N}|${p.L}|${p.MwMax}`;
   if (!mtdmBerCache || mtdmBerCache.key !== key) mtdmBerCache = { key, b: computeMTDMBER(p) };
   const b = mtdmBerCache.b;
-  const fl = arr => arr.map(x => Math.max(x, 1e-300));   // exact zeros would break the log path
+  // Clip at the 1e-6 axis floor like the published figure: the first sub-floor point carries the curve to
+  // the bottom edge, later ones are dropped instead of being drawn as a flat tail along it.
+  const fl = arr => arr.map((x, i) => i > 0 && arr[i - 1] < 1e-6 ? NaN : Math.max(x, 1e-300));
   drawChart($('mt-chart-ber'), { series: [
       { x: b.snrDb, y: fl(b.mtdm2), colorVar: '--color-x', label: 'MTDM L=2' },
-      { x: b.snrDb, y: fl(b.mtdmL), colorVar: '--color-y', label: 'MTDM L=' + p.L },
-      { x: b.snrDb, y: fl(b.mrskIdeal), colorVar: '--color-h', label: 'ratio keying, equal D', dash: '5 4' },
+      { x: b.snrDb, y: fl(b.mtdmL), colorVar: '--color-y', label: 'MTDM L=' + p.L, dash: '6 4' },
+      { x: b.snrDb, y: fl(b.mrskIdeal), colorVar: '--color-h', label: 'ratio keying, equal D' },
       { x: b.snrDb, y: fl(b.mrskVOC), colorVar: '--color-marker', label: 'ratio keying, algae VOCs' }],
-    xlab: 'SNR = n̄_max (dB)', ylab: 'BER', ylog: true, yfloor: 1e-8, ymin: 1e-8, ymax: 0.5, tipfmt: fmtBER });
+    xlab: 'SNR = n̄_max (dB)', ylab: 'BER', ylog: true, yfloor: 1e-6, ymin: 1e-6, ymax: 1, tipfmt: fmtBER });
 }
 
 function renderEL() {
