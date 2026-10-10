@@ -9,7 +9,7 @@
 
 <p align="center">
   <strong>Interactive Channel Simulations for Photosynthetic Molecular Networks</strong><br>
-  <sub>A single static page that turns the end-to-end algae communication models of Akyildiz et al. (IEEE TMBMC 2026) into live, parameter-driven simulations. Press Start and watch the molecules arrive.</sub>
+  <sub>A single static page that turns the end-to-end algae communication models of Akyildiz et al. (IEEE TMBMC 2026), plus the MTDM modulation scheme from their NANOCOM ’26 paper, into live, parameter-driven simulations. Press Start and watch the molecules arrive.</sub>
 </p>
 
 <p align="center">
@@ -21,6 +21,7 @@
   <img src="https://img.shields.io/badge/KaTeX%20vendored-0F3040?style=for-the-badge&logo=latex&logoColor=white" alt="KaTeX vendored">
   <img src="https://img.shields.io/badge/WebGL%20hero-0F3040?style=for-the-badge&logo=webgl&logoColor=3EF2A0" alt="WebGL bioluminescence hero">
   <a href="https://doi.org/10.1109/TMBMC.2026.3711050"><img src="https://img.shields.io/badge/IEEE%20TMBMC%202026%20%C2%B7%20doi-0F3040?style=for-the-badge&logoColor=white" alt="Reference paper DOI"></a>
+  <a href="https://doi.org/10.1145/3818305.3830272"><img src="https://img.shields.io/badge/ACM%20NANOCOM%20%E2%80%9926%20%C2%B7%20doi-0F3040?style=for-the-badge&logoColor=white" alt="Companion paper DOI"></a>
   <img src="https://img.shields.io/badge/QS%20%C2%B7%20VOC%20%C2%B7%20Electrical%20%C2%B7%20Optical-0F3040?style=for-the-badge" alt="Four signaling modalities">
 </p>
 
@@ -36,9 +37,16 @@ colonies use — built as an educational companion to:
 > Transactions on Molecular, Biological, and Multi-Scale Communications*, vol. 12, pp. 796–816,
 > 2026. doi: [10.1109/TMBMC.2026.3711050](https://doi.org/10.1109/TMBMC.2026.3711050)
 
+A separate MTDM tab covers Molecular Type Division Multiplexing, taken from a
+second, shorter paper by the same authors:
+
+> I. F. Akyildiz, S. Sayin, E. I. Saygili, and B. D. Unluturk, **"Molecular Type Division
+> Multiplexing via Algae Volatile Organic Compounds,"** in *Proc. NANOCOM ’26*, St. John’s, NL,
+> Canada, 2026, pp. 127–128. doi: [10.1145/3818305.3830272](https://doi.org/10.1145/3818305.3830272)
+
 ## What it does
 
-One self-contained page (`index.html`) with a tab per signaling modality:
+One self-contained page (`index.html`) with a tab per signaling modality, plus Compare, MTDM and About tabs:
 
 | Tab | Physics simulated | Range / latency niche |
 | --- | --- | --- |
@@ -53,6 +61,16 @@ photons travel from the transmitter to the receiver, with arrival counters), plu
 paper's equations, parameter tables, and the figure-reproduction conventions documented below.
 A *Compare* tab reports both the paper's qualitative Table V category and the numerical optical
 latency shown in Figs. 21 and 23.
+
+The MTDM tab treats each of `N` VOC species as its own
+sub-channel with `L` concentration levels, for `N log2 L` bits per symbol. It recomputes the
+NANOCOM ’26 scheme comparison (Table 1), the bits-per-symbol scaling (Fig. 2) and the
+BER-vs-SNR curves (Fig. 3). This link is micrometre-scale free diffusion to an absorbing receiver
+and shares no parameter with the airborne channel on the VOC tab. Its live animation follows the
+paper's Fig. 1: each species' molecules random-walk with their own `D_i` toward one receptor each,
+and a toggle switches the receiver between MTDM (each species sampled at its own peak) and
+MRSK-style ratio keying (all sampled at the heaviest species' peak), so the ratio-drift penalty
+shows up in the running bit-error count.
 
 ## Faithfulness and scope
 
@@ -84,6 +102,18 @@ latency shown in Figs. 21 and 23.
   deliberately deterministic and leaves noise/SNR/capacity analysis open (§X). The BER layer
   assumes on–off keying with additive Gaussian receiver noise, BER = Q(A/2σ), and is marked
   *"extension — not in paper"* wherever it appears.
+- **MTDM follows the NANOCOM ’26 paper, not the journal paper.** Table 1, Fig. 2 and Eqs. (1)–(2)
+  are recomputed from their closed forms. At the defaults the bps column differs from Table 1 by
+  −2.3 % to +0.4 %, because Stokes–Einstein gives `D_min = 6.72e-10 m²/s` where the paper rounds
+  to 6.7; the species masses between 62 Da and the heaviest species are spaced linearly, which the
+  paper does not specify. The paper names no detector for Fig. 3. Its MTDM curves were identified by
+  digitizing the figure as Gray PAM with Gaussian noise of constant variance `n̄_max`, and the
+  regression suite pins eleven digitized points within 0.05 decades. Its MRSK curves match no
+  decoder derivable from the paper or from Kilic & Akan, so the page computes its own MRSK-style
+  ratio keying and overlays the published MRSK curves as digitized markers. On algae VOCs the
+  computed curve floors at a few percent at the defaults while the published one rises toward 0.5; the gap is shown, not
+  tuned. The paper's 5 % ISI figure holds for one earlier symbol; summed over all earlier symbols
+  the worst-case tail at `κ = 20` is about 12 %.
 - The animated particle counters are stochastic illustrations. They are not Monte Carlo estimates
   of the deterministic attenuation and delay curves and should not be used as validation data.
 
@@ -109,6 +139,9 @@ non-tabulated values are summarized below.
 Numerical discretization controls are optional script-level arguments and do not alter the visible
 canonical defaults. Their convergence is checked separately by `tests/numerical-convergence.mjs`.
 
+The ledger covers the journal paper only. The MTDM section has no entries in it; its one
+unreported convention (linear spacing of intermediate species masses) is stated on the page and above.
+
 ## Running
 
 It is a static site — no build step.
@@ -129,10 +162,12 @@ Opening `index.html` directly from the filesystem also works.
   recolored to this page's palette (inline in `index.html`).
 - Google Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (loaded from fonts.googleapis.com).
 
-The reference paper (`reference.pdf`) is **not** checked in — it is listed in `.gitignore` and
-kept only as a local comparison copy for numerical verification; access the paper via the DOI above.
+The reference papers (`docs/*.pdf`) are **not** checked in — they are listed in `.gitignore` and
+kept only as local comparison copies for numerical verification; access the papers via the DOIs above.
 
 ## License
 
-Code is released under the [MIT License](LICENSE). The reference paper is © IEEE and is not covered
-by this repository's MIT license; use the DOI above for the publisher version.
+Code is released under the [MIT License](LICENSE). Neither reference paper is covered by this
+repository's MIT license. The journal paper is © IEEE; use its DOI for the publisher version. The
+NANOCOM ’26 paper is published under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
+which is what allows the page to overlay its digitized Fig. 3 MRSK curves with attribution.

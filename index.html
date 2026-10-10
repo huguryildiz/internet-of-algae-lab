@@ -126,12 +126,12 @@ code, kbd { font-family: var(--mono); }
 }
 
 /* ── Tab bar ── */
-.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 20px; position: sticky; top: 0; z-index: 30;
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 22px 0 20px; position: sticky; top: 0; z-index: 30;
   padding: 10px 0; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); }
 .tab-btn {
   font-family: var(--mono); font-size: 0.8rem; cursor: pointer; color: var(--text-dim);
   background: var(--surface-2); border: 1px solid var(--border); border-radius: 99px;
-  padding: 8px 16px; transition: all var(--transition);
+  padding: 8px 14px; transition: all var(--transition);
 }
 .tab-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 .tab-btn[aria-selected="true"] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
@@ -209,6 +209,11 @@ button {
 button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 .transport { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 .transport .btn-start { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.seg { display: inline-flex; }
+.seg button { border-radius: 0; }
+.seg button:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.seg button:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-left: -1px; }
+.seg button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); position: relative; }
 .sim-clock { font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim); margin-left: auto; }
 .sim-clock b { color: var(--accent-cyan); font-weight: 500; }
 
@@ -353,6 +358,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="elec">Electrical · Cable</button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="opt">Optical · Bioluminescence</button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="cmp">Compare</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="mtdm">MTDM</button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="about">About &amp; Citation</button>
   </nav>
 
@@ -537,93 +543,6 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <h2 class="module-title" style="margin-top:36px">Molecular Type Division Multiplexing</h2>
-    <p class="module-sub">
-      A companion model from a second paper: Akyildiz, Sayin, Saygili and Unluturk, NANOCOM&nbsp;’26,
-      doi <a href="https://doi.org/10.1145/3818305.3830272" target="_blank" rel="noopener">10.1145/3818305.3830272</a>.
-      Every one of \(N\) VOC species is released at once and carries its own \(L\)-level concentration symbol, so a
-      symbol vector holds \(N\log_2 L\) bits. <b>This is a separate, micrometre-scale link</b> — free 3-D diffusion
-      to a fully absorbing receiver — and shares no parameter with the airborne channel above.
-    </p>
-    <details class="theory-box">
-      <summary>Model equations (NANOCOM ’26, Eqs. 1–2)</summary>
-      <div class="eq">\[ h_i(t)=\frac{Q_i\,a\,(r-a)}{r\sqrt{4\pi D_i t^{3}}}\exp\!\Bigl(-\frac{(r-a)^{2}}{4D_i t}\Bigr) \qquad t_{i,\mathrm{peak}}=\frac{(r-a)^2}{6D_i} \qquad T_s=\kappa\,\frac{(r-a)^2}{6D_{\min}} \]</div>
-      <div class="eq">\[ \frac{h_i(t)}{h_j(t)}=\frac{Q_i}{Q_j}\sqrt{\frac{D_j}{D_i}}\,\exp\!\Bigl[-\frac{(r-a)^2}{4t}\Bigl(\frac{1}{D_i}-\frac{1}{D_j}\Bigr)\Bigr] \]</div>
-      <p>Each receptor samples its own species at \(t_{i,\mathrm{peak}}\), where \(dh_i/dt=0\). MRSK encodes in the ratio
-      \(h_i/h_j\), which is time-invariant only when \(D_i=D_j\). Diffusion coefficients follow Stokes–Einstein,
-      \(D\propto M_w^{-1/3}\), from DMS (62&nbsp;Da, \(D_{\max}=10^{-9}\)&nbsp;m²/s) to the heaviest species; \(a=0.1\)&nbsp;µm.
-      The paper does not say how intermediate masses are distributed, so they are spaced linearly.</p>
-    </details>
-
-    <div class="mod-grid">
-      <div>
-        <div class="panel">
-          <h3 class="panel__title">Parameters <span class="subnote">defaults = paper §3</span></h3>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Species \(N\)</span><span class="ctl-slider__val" id="mt-n-val"></span></span>
-            <input type="range" id="mt-n" min="2" max="200" step="1" value="100"></label>
-          <label class="ctl-select"><span class="ctl-slider__label">Levels per species \(L\)</span>
-            <select id="mt-l"><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option></select></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">ISI guard \(\kappa\)</span><span class="ctl-slider__val" id="mt-k-val"></span></span>
-            <input type="range" id="mt-k" min="5" max="40" step="1" value="20"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">TX–RX distance \(r\)</span><span class="ctl-slider__val" id="mt-r-val"></span></span>
-            <input type="range" id="mt-r" min="2" max="50" step="1" value="10"></label>
-          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Heaviest species \(M_w\)</span><span class="ctl-slider__val" id="mt-mw-val"></span></span>
-            <input type="range" id="mt-mw" min="80" max="400" step="2" value="204"></label>
-        </div>
-      </div>
-
-      <div style="min-width:0">
-        <div class="panel">
-          <h3 class="panel__title">Scheme comparison <span class="subnote">NANOCOM ’26, Table 1</span></h3>
-          <div class="tbl-wrap"><table class="cmp">
-            <thead><tr><th>Scheme</th><th>bits/symbol</th><th>b/sym</th><th>bps</th><th>needs equal \(D\)?</th></tr></thead>
-            <tbody id="mt-table"></tbody>
-          </table></div>
-          <div class="readouts">
-            <div class="readout"><div class="readout__label">Symbol period \(T_s\)</div><div class="readout__value" id="mt-ts">–</div></div>
-            <div class="readout"><div class="readout__label">\(D_{\min}\)</div><div class="readout__value" id="mt-dmin">–</div></div>
-            <div class="readout"><div class="readout__label">\(D\) spread \(D_{\max}/D_{\min}\)</div><div class="readout__value" id="mt-spread">–</div></div>
-            <div class="readout"><div class="readout__label">One-symbol tail at next sample</div><div class="readout__value" id="mt-isi">–</div></div>
-            <div class="readout"><div class="readout__label">Accumulated tail, all earlier symbols</div><div class="readout__value" id="mt-isi-acc">–</div></div>
-            <div class="readout"><div class="readout__label">MTDM / Hybrid MoSK-CSK</div><div class="readout__value" id="mt-gain">–</div></div>
-          </div>
-          <p class="scope-caption">Rates use the unrounded Stokes–Einstein \(D_{\min}\) (\(6.72\times10^{-10}\)&nbsp;m²/s at the defaults);
-          the paper rounds it to 6.7 and \(T_s\) to 0.49&nbsp;s and rounds its bps entries, so at the defaults the bps column
-          differs from Table&nbsp;1 by −2.3&nbsp;% to +0.4&nbsp;% (412 vs 410 for MTDM).
-          The linear \(N\log_2 L\) growth assumes \(N\) orthogonal VOC–receptor pairs and a fixed budget <i>per species</i>;
-          under a fixed total budget each species' SNR falls as \(1/N\) (paper §2). The paper's “below 5&nbsp;% of peak” is
-          the single-symbol tail; because that tail decays as \(t^{-3/2}\), the worst-case sum over all earlier symbols
-          is larger, as the second readout shows.</p>
-        </div>
-
-        <div class="charts-grid">
-          <div class="panel"><h3 class="panel__title">Bits per symbol vs \(N\) <span class="subnote">Fig. 2</span></h3><div class="chart-box" id="mt-chart-bits"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, current \(L\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-x) 0 4px,transparent 4px 6px)"></i>MTDM, \(L=2\)</span><span><i style="background:var(--color-y)"></i>MRSK</span><span><i style="background:var(--color-h)"></i>Hybrid MoSK-CSK</span><span><i style="background:var(--color-marker)"></i>MoSK</span></div></div>
-          <div class="panel"><h3 class="panel__title">Sub-channel impulse responses <span class="subnote">Eq. (1), one molecule</span></h3><div class="chart-box" id="mt-chart-cir"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>lightest (DMS)</span><span><i style="background:var(--color-h)"></i>heaviest</span></div></div>
-          <div class="panel"><h3 class="panel__title">Ratio drift <span class="subnote">Eq. (2), equal release</span></h3><div class="chart-box" id="mt-chart-ratio"></div>
-            <div class="legend"><span><i style="background:var(--color-y)"></i>\(h_{\text{light}}/h_{\text{heavy}}\)</span><span><i style="background:var(--text-faint)"></i>equal \(D\) (what MRSK assumes)</span></div>
-            <p class="scope-caption">\(t_s\) marks the heaviest species' peak, the common sampling instant assumed for MRSK below.</p></div>
-          <div class="panel"><h3 class="panel__title">BER vs SNR <span class="subnote">Fig. 3</span> <span class="badge-ext">MRSK: reconstruction + digitized paper</span></h3><div class="chart-box" id="mt-chart-ber"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-y) 0 4px,transparent 4px 6px)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span><span><i style="width:7px;height:7px;border-radius:50%;border:1.4px solid var(--color-h)"></i>paper, MRSK uniform \(D\)</span><span><i style="width:7px;height:7px;border-radius:50%;border:1.4px solid var(--color-marker)"></i>paper, MRSK algae VOCs</span></div>
-            <p class="scope-caption">SNR \(=\bar n_{\max}\), the expected absorbed count of the top level, treated as an abstract
-            normalized count (Eq.&nbsp;1 is a rate and the paper names no counting window); every MTDM species is calibrated to
-            the same \(\bar n_{\max}\) at its own peak; ISI is ignored. The paper does not state its detector. Its two MTDM
-            curves, digitized, agree with the nearest-neighbour approximation for Gray-mapped \(L\)-level PAM under
-            Gaussian noise of constant variance \(\bar n_{\max}\),
-            \(\mathrm{BER}=\tfrac{2(L-1)}{L\log_2 L}\,Q\!\bigl(\sqrt{\bar n_{\max}}/2(L-1)\bigr)\), which is what is plotted;
-            this is inferred from the figure, not a detector the paper states. Its two MRSK curves could not be matched by any stated decoder — including Kilic &amp; Akan's
-            canonical geometric-level MRSK — so the solid MRSK curves here are this page's own <i>MRSK-style</i> ratio
-            keying under Poisson counts: the heaviest species is the reference, all species are sampled at its peak, and
-            \(n_j/n_{\mathrm{ref}}\) is rounded to the nearest of the levels \(s/(L-1)\). On algae VOCs at the defaults its fixed decoder
-            floors at a few&nbsp;%, whereas the paper's algae-VOC curve rises toward 0.5; the uniform-\(D\) curves also differ.
-            The hollow markers are the paper's two MRSK curves, digitized from the published Fig.&nbsp;3 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a>) at 1&nbsp;dB
-            steps. They are fixed reference data for the paper's configuration (\(N=100\), \(L=4\), 62–204&nbsp;Da) and do
-            not follow the controls.</p></div>
         </div>
       </div>
     </div>
@@ -852,6 +771,131 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
     </div>
   </section>
 
+  <!-- ══════════════════ MTDM TAB ══════════════════ -->
+  <section class="tab-panel" id="tab-mtdm" role="tabpanel">
+    <h2 class="module-title">Molecular Type Division Multiplexing</h2>
+    <p class="module-sub">
+      A companion model from a second paper: Akyildiz, Sayin, Saygili and Unluturk, NANOCOM&nbsp;’26,
+      doi <a href="https://doi.org/10.1145/3818305.3830272" target="_blank" rel="noopener">10.1145/3818305.3830272</a>.
+      Every one of \(N\) VOC species is released at once and carries its own \(L\)-level concentration symbol, so a
+      symbol vector holds \(N\log_2 L\) bits. <b>This is a separate, micrometre-scale link</b> — free 3-D diffusion
+      to a fully absorbing receiver — and shares no parameter with the airborne channel on the VOC tab.
+    </p>
+    <details class="theory-box">
+      <summary>Model equations (NANOCOM ’26, Eqs. 1–2)</summary>
+      <div class="eq">\[ h_i(t)=\frac{Q_i\,a\,(r-a)}{r\sqrt{4\pi D_i t^{3}}}\exp\!\Bigl(-\frac{(r-a)^{2}}{4D_i t}\Bigr) \qquad t_{i,\mathrm{peak}}=\frac{(r-a)^2}{6D_i} \qquad T_s=\kappa\,\frac{(r-a)^2}{6D_{\min}} \]</div>
+      <div class="eq">\[ \frac{h_i(t)}{h_j(t)}=\frac{Q_i}{Q_j}\sqrt{\frac{D_j}{D_i}}\,\exp\!\Bigl[-\frac{(r-a)^2}{4t}\Bigl(\frac{1}{D_i}-\frac{1}{D_j}\Bigr)\Bigr] \]</div>
+      <p>Each receptor samples its own species at \(t_{i,\mathrm{peak}}\), where \(dh_i/dt=0\). MRSK encodes in the ratio
+      \(h_i/h_j\), which is time-invariant only when \(D_i=D_j\). Diffusion coefficients follow Stokes–Einstein,
+      \(D\propto M_w^{-1/3}\), from DMS (62&nbsp;Da, \(D_{\max}=10^{-9}\)&nbsp;m²/s) to the heaviest species; \(a=0.1\)&nbsp;µm.
+      The paper does not say how intermediate masses are distributed, so they are spaced linearly.</p>
+    </details>
+
+    <div class="mod-grid">
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Parameters <span class="subnote">defaults = paper §3</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Species \(N\)</span><span class="ctl-slider__val" id="mt-n-val"></span></span>
+            <input type="range" id="mt-n" min="2" max="200" step="1" value="100"></label>
+          <label class="ctl-select"><span class="ctl-slider__label">Levels per species \(L\)</span>
+            <select id="mt-l"><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option></select></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">ISI guard \(\kappa\)</span><span class="ctl-slider__val" id="mt-k-val"></span></span>
+            <input type="range" id="mt-k" min="5" max="40" step="1" value="20"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">TX–RX distance \(r\)</span><span class="ctl-slider__val" id="mt-r-val"></span></span>
+            <input type="range" id="mt-r" min="2" max="50" step="1" value="10"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Heaviest species \(M_w\)</span><span class="ctl-slider__val" id="mt-mw-val"></span></span>
+            <input type="range" id="mt-mw" min="80" max="400" step="2" value="204"></label>
+        </div>
+        <div class="panel">
+          <h3 class="panel__title">Live link <span class="badge-ext">stochastic illustration</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">SNR \(\bar n_{\max}\)</span><span class="ctl-slider__val" id="mt-snr-val"></span></span>
+            <input type="range" id="mt-snr" min="0" max="30" step="1" value="24"></label>
+          <p class="scope-caption">Drives only the animation's decisions: each sub-channel count is Poisson with mean
+          \(\bar n_{\max}\,s/(L-1)\), drawn for all \(N\) species every symbol.</p>
+        </div>
+      </div>
+
+      <div style="min-width:0">
+        <div class="panel">
+          <h3 class="panel__title">Live link <span class="subnote">N species released at once, one receptor each</span></h3>
+          <div class="transport">
+            <button class="btn-start" data-anim="mtdm" data-act="start">▶ Start</button>
+            <button data-anim="mtdm" data-act="pause">⏸ Pause</button>
+            <button data-anim="mtdm" data-act="reset">↺ Reset</button>
+            <span class="seg" role="group" aria-label="Receiver">
+              <button data-mtmode="mtdm" aria-pressed="true">MTDM</button><button data-mtmode="mrsk" aria-pressed="false">MRSK-style</button>
+            </span>
+            <span class="sim-clock">t = <b id="mt-clock">0.0 ms</b></span>
+          </div>
+          <canvas id="mt-canvas" class="scope" width="860" height="300"></canvas>
+          <p class="scope-caption" id="mt-anim-cap">Each dot is a VOC molecule taking a random walk with its own Stokes–Einstein
+          \(D_i\) at true scale, so the heavy species visibly lags. Each lane is a 1-D projection toward the receiver: the
+          first-arrival time then has exactly the time dependence of Eq.&nbsp;(1), and its histogram (right) peaks at
+          \(t_{i,\mathrm{peak}}=(r-a)^2/6D_i\). The absorbed fraction \(a/r\) of the 3-D sphere is not drawn. Dashed
+          lines are the sampling instants: each species' own peak for MTDM, the reference (heaviest) species' peak for
+          MRSK-style ratio keying. Decisions come from the Poisson counts set by the SNR control, not from the dots; the
+          counters are a stochastic illustration, not a validation of the Fig.&nbsp;3 curves.</p>
+          <div class="readouts">
+            <div class="readout readout--live"><div class="readout__label">Symbols sent</div><div class="readout__value" id="mt-a-sym">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Bits sent</div><div class="readout__value" id="mt-a-bits">0</div></div>
+            <div class="readout readout--live"><div class="readout__label">Bit errors</div><div class="readout__value" id="mt-a-err">0</div></div>
+            <div class="readout readout--warn"><div class="readout__label">Running BER</div><div class="readout__value" id="mt-a-ber">–</div></div>
+            <div class="readout"><div class="readout__label">Ratio at \(t_s\), lightest / ref (equal \(D\): 1)</div><div class="readout__value" id="mt-a-bias">–</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel__title">Scheme comparison <span class="subnote">NANOCOM ’26, Table 1</span></h3>
+          <div class="tbl-wrap"><table class="cmp">
+            <thead><tr><th>Scheme</th><th>bits/symbol</th><th>b/sym</th><th>bps</th><th>needs equal \(D\)?</th></tr></thead>
+            <tbody id="mt-table"></tbody>
+          </table></div>
+          <div class="readouts">
+            <div class="readout"><div class="readout__label">Symbol period \(T_s\)</div><div class="readout__value" id="mt-ts">–</div></div>
+            <div class="readout"><div class="readout__label">\(D_{\min}\)</div><div class="readout__value" id="mt-dmin">–</div></div>
+            <div class="readout"><div class="readout__label">\(D\) spread \(D_{\max}/D_{\min}\)</div><div class="readout__value" id="mt-spread">–</div></div>
+            <div class="readout"><div class="readout__label">One-symbol tail at next sample</div><div class="readout__value" id="mt-isi">–</div></div>
+            <div class="readout"><div class="readout__label">Accumulated tail, all earlier symbols</div><div class="readout__value" id="mt-isi-acc">–</div></div>
+            <div class="readout"><div class="readout__label">MTDM / Hybrid MoSK-CSK</div><div class="readout__value" id="mt-gain">–</div></div>
+          </div>
+          <p class="scope-caption">Rates use the unrounded Stokes–Einstein \(D_{\min}\) (\(6.72\times10^{-10}\)&nbsp;m²/s at the defaults);
+          the paper rounds it to 6.7 and \(T_s\) to 0.49&nbsp;s and rounds its bps entries, so at the defaults the bps column
+          differs from Table&nbsp;1 by −2.3&nbsp;% to +0.4&nbsp;% (412 vs 410 for MTDM).
+          The linear \(N\log_2 L\) growth assumes \(N\) orthogonal VOC–receptor pairs and a fixed budget <i>per species</i>;
+          under a fixed total budget each species' SNR falls as \(1/N\) (paper §2). The paper's “below 5&nbsp;% of peak” is
+          the single-symbol tail; because that tail decays as \(t^{-3/2}\), the worst-case sum over all earlier symbols
+          is larger, as the second readout shows.</p>
+        </div>
+
+        <div class="charts-grid">
+          <div class="panel"><h3 class="panel__title">Bits per symbol vs \(N\) <span class="subnote">Fig. 2</span></h3><div class="chart-box" id="mt-chart-bits"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, current \(L\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-x) 0 4px,transparent 4px 6px)"></i>MTDM, \(L=2\)</span><span><i style="background:var(--color-y)"></i>MRSK</span><span><i style="background:var(--color-h)"></i>Hybrid MoSK-CSK</span><span><i style="background:var(--color-marker)"></i>MoSK</span></div></div>
+          <div class="panel"><h3 class="panel__title">Sub-channel impulse responses <span class="subnote">Eq. (1), one molecule</span></h3><div class="chart-box" id="mt-chart-cir"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>lightest (DMS)</span><span><i style="background:var(--color-h)"></i>heaviest</span></div></div>
+          <div class="panel"><h3 class="panel__title">Ratio drift <span class="subnote">Eq. (2), equal release</span></h3><div class="chart-box" id="mt-chart-ratio"></div>
+            <div class="legend"><span><i style="background:var(--color-y)"></i>\(h_{\text{light}}/h_{\text{heavy}}\)</span><span><i style="background:var(--text-faint)"></i>equal \(D\) (what MRSK assumes)</span></div>
+            <p class="scope-caption">\(t_s\) marks the heaviest species' peak, the common sampling instant assumed for MRSK below.</p></div>
+          <div class="panel"><h3 class="panel__title">BER vs SNR <span class="subnote">Fig. 3</span> <span class="badge-ext">MRSK: reconstruction + digitized paper</span></h3><div class="chart-box" id="mt-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-y) 0 4px,transparent 4px 6px)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span><span><i style="width:7px;height:7px;border-radius:50%;border:1.4px solid var(--color-h)"></i>paper, MRSK uniform \(D\)</span><span><i style="width:7px;height:7px;border-radius:50%;border:1.4px solid var(--color-marker)"></i>paper, MRSK algae VOCs</span></div>
+            <p class="scope-caption">SNR \(=\bar n_{\max}\), the expected absorbed count of the top level, treated as an abstract
+            normalized count (Eq.&nbsp;1 is a rate and the paper names no counting window); every MTDM species is calibrated to
+            the same \(\bar n_{\max}\) at its own peak; ISI is ignored. The paper does not state its detector. Its two MTDM
+            curves, digitized, agree with the nearest-neighbour approximation for Gray-mapped \(L\)-level PAM under
+            Gaussian noise of constant variance \(\bar n_{\max}\),
+            \(\mathrm{BER}=\tfrac{2(L-1)}{L\log_2 L}\,Q\!\bigl(\sqrt{\bar n_{\max}}/2(L-1)\bigr)\), which is what is plotted;
+            this is inferred from the figure, not a detector the paper states. Its two MRSK curves could not be matched by any stated decoder — including Kilic &amp; Akan's
+            canonical geometric-level MRSK — so the solid MRSK curves here are this page's own <i>MRSK-style</i> ratio
+            keying under Poisson counts: the heaviest species is the reference, all species are sampled at its peak, and
+            \(n_j/n_{\mathrm{ref}}\) is rounded to the nearest of the levels \(s/(L-1)\). On algae VOCs at the defaults its fixed decoder
+            floors at a few&nbsp;%, whereas the paper's algae-VOC curve rises toward 0.5; the uniform-\(D\) curves also differ.
+            The hollow markers are the paper's two MRSK curves, digitized from the published Fig.&nbsp;3 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a>) at 1&nbsp;dB
+            steps. They are fixed reference data for the paper's configuration (\(N=100\), \(L=4\), 62–204&nbsp;Da) and do
+            not follow the controls.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ══════════════════ ABOUT TAB ══════════════════ -->
   <section class="tab-panel about" id="tab-about" role="tabpanel">
     <h2 class="module-title">About This Page</h2>
@@ -902,7 +946,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           scale; the separation is visible rather than absorbed into a hidden calibration.</li>
         <li><b>Unreported absolute irradiance:</b> Eq.&nbsp;(42) gives flash shape and relative amplitude but no
           absolute \(I_{\mathrm{tx}}\), so the single 0.2445 scale above is identified from Fig.&nbsp;22.</li>
-        <li><b>MTDM is a second, separate model.</b> The Molecular Type Division Multiplexing section on the VOC tab
+        <li><b>MTDM is a second, separate model.</b> The Molecular Type Division Multiplexing tab
           follows the NANOCOM&nbsp;’26 paper below, a micrometre-scale absorbing-receiver link unrelated to Table&nbsp;II.
           Table&nbsp;1's bits/symbol, Fig.&nbsp;2 and Eqs.&nbsp;(1)–(2) are recomputed from their closed forms; at the defaults
           the bps column differs from Table&nbsp;1 by −2.3&nbsp;% to +0.4&nbsp;%, because Stokes–Einstein gives
@@ -1629,6 +1673,7 @@ const state = {
   el: { d: 0.4, lam: 0.12, tm: 0.05, vh: 0.2, k: 0.05, txMode: 'pulse', dg: 30, branches: 1, xJunction: 0.3, sg: 0.03 },
   op: { d: 2, cext: 0.305, taur: 0.010, trec: 0.05, logKR: 5, nFlash: 3, flashGap: 0.30, logsg: -12 },
   mt: { N: 100, L: 4, kappa: 20, rUm: 10, MwMax: 204 },
+  mtLive: { snrDb: 24, mode: 'mtdm' },   // animation only; kept out of state.mt, which feeds computeMTDMBER
 };
 let cacheQS, cacheVOC, cacheEL, cacheOP;
 
@@ -1899,6 +1944,7 @@ wire('mt-k', v => v.toFixed(0), v => state.mt.kappa = v, renderMTDM);
 wire('mt-r', v => v + ' µm', v => state.mt.rUm = v, renderMTDM);
 wire('mt-mw', v => v + ' Da', v => state.mt.MwMax = v, renderMTDM);
 $('mt-l').addEventListener('change', e => { state.mt.L = parseInt(e.target.value, 10); renderMTDM(); });
+wire('mt-snr', v => v.toFixed(0) + ' dB', v => state.mtLive.snrDb = v, () => {});
 wire('el-d', v => (v * 100).toFixed(0) + ' cm', v => state.el.d = v, renderEL);
 wire('el-lam', v => v.toFixed(2) + ' (norm.)', v => state.el.lam = v, renderEL);
 wire('el-tm', v => (v * 1000).toFixed(0) + ' ms', v => state.el.tm = v, renderEL);
@@ -2328,7 +2374,276 @@ const opAnim = makeAnim('op-canvas', {
   },
 });
 
-const anims = { qs: qsAnim, voc: vocAnim, elec: elAnim, opt: opAnim };
+/* ── MTDM animation: N species released at once, one absorbing receptor each (NANOCOM '26 Fig. 1) ──
+   Dots random-walk at true scale with each species' own Stokes–Einstein D_i along a 1-D lane toward the
+   receiver, so their first-arrival time has the t^(-3/2) exp(-(r-a)^2/4Dt) form of Eq. (1) and peaks at
+   t_peak = (r-a)^2/6D_i. Decisions do not come from the dots: every symbol draws Poisson counts for all N
+   species from the SNR control, and the fixed decoders mirror computeMTDMBER (nearest level for MTDM;
+   reference-ratio levels sampled at the heaviest species' peak for MRSK-style keying). */
+const MT_VIS_TOP = 220;   // dots released per lane at the top level
+const MT_BINS = 24;       // arrival-histogram bins over the slow-motion window [0, 3 t_peak,heavy]
+const MT_SLOW_FRAMES = 420, MT_FAST_FRAMES = 80;
+function mtLiveKey() {
+  const p = state.mt, l = state.mtLive;
+  return [p.N, p.L, p.kappa, p.rUm, p.MwMax, l.mode, l.snrDb].join();
+}
+function mtLiveSetup() {
+  const p = state.mt, r = p.rUm * 1e-6, x = r - MTDM_A, N = p.N;
+  const sp = mtdmSpecies(N, p.MwMax);
+  const tPk = sp.map(s => x * x / (6 * s.D));
+  const tH = tPk[N - 1], refD = sp[N - 1].D;
+  const bias = sp.map(s => mtdmCIR(tH, r, s.D) / mtdmCIR(tH, r, refD));   // Eq. (2) at equal release
+  const rows = N >= 4 ? [0, Math.round((N - 1) / 3), Math.round(2 * (N - 1) / 3), N - 1] : sp.map((_, i) => i);
+  return { key: mtLiveKey(), sp, tPk, tH, Ts: p.kappa * tH, bias, rows, L: p.L, N, x };
+}
+function mtGauss() { return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random()); }
+function mtPoisson(lam) {
+  if (lam <= 0) return 0;
+  if (lam > 40) return Math.max(0, Math.round(lam + Math.sqrt(lam) * mtGauss()));   // ample for an illustration
+  const lim = Math.exp(-lam);
+  let k = 0, prod = Math.random();
+  while (prod > lim) { k++; prod *= Math.random(); }
+  return k;
+}
+function mtBitErrs(u, v) { let z = (u ^ (u >> 1)) ^ (v ^ (v >> 1)), c = 0; while (z) { c += z & 1; z >>= 1; } return c; }
+function mtNewSymbol(d) {
+  const S = d.S, L = S.L, N = S.N, nbar = Math.pow(10, state.mtLive.snrDb / 10);
+  const mrsk = state.mtLive.mode === 'mrsk';
+  const s = new Int32Array(N), m = new Int32Array(N);
+  for (let j = 0; j < N; j++) s[j] = Math.floor(Math.random() * L);
+  if (mrsk) {
+    s[N - 1] = m[N - 1] = L - 1;                         // the reference always carries the top level
+    const nr = mtPoisson(nbar);
+    for (let j = 0; j < N - 1; j++) {
+      const nj = mtPoisson(nbar * S.bias[j] * s[j] / (L - 1));
+      if (nr === 0) { m[j] = Math.floor(Math.random() * L); continue; }
+      let lv = 0;
+      while (lv + 1 < L && nj >= mtdmRatioLevelStart(lv + 1, nr, L)) lv++;
+      m[j] = lv;
+    }
+  } else {
+    for (let j = 0; j < N; j++) {
+      const nj = mtPoisson(nbar * s[j] / (L - 1));
+      m[j] = Math.max(0, Math.min(L - 1, Math.round(nj * (L - 1) / nbar)));
+    }
+  }
+  d.symId++;
+  d.emitFrame = d.frame;
+  d.cur = { id: d.symId, s, m, mrsk, hist: S.rows.map(() => new Float64Array(MT_BINS)),
+    sampled: S.rows.map(() => false), tallied: false };
+  d.tSym = 0;
+  // Older dots past the previous symbol are dropped to bound the population.
+  d.parts = d.parts.filter(q => q.sym >= d.symId - 1);
+  S.rows.forEach((j, li) => {
+    const n = Math.round(MT_VIS_TOP * s[j] / (L - 1));
+    for (let q = 0; q < n; q++) d.parts.push({ lane: li, u: 0, v: Math.random() * 2 - 1, sym: d.symId });
+  });
+}
+function mtLiveReadouts(d) {
+  const st = d.stats;
+  $('mt-a-sym').textContent = st.syms;
+  $('mt-a-bits').textContent = st.bits.toLocaleString('en-US');
+  $('mt-a-err').textContent = st.errs;
+  $('mt-a-ber').textContent = st.bits ? (st.errs ? (st.errs / st.bits).toExponential(1) : '0') : '–';
+  $('mt-a-bias').textContent = d.S.N > 1 ? d.S.bias[0].toFixed(2) : '–';
+}
+function mtLayout(a, S) {
+  const W = a.cv.width, H = a.cv.height, k = a.k, tall = k > 1.35, n = S.rows.length;
+  const top = 24 * k, bot = 30 * k, laneH = (H - top - bot) / n, txtH = tall ? 16 * k : 0;
+  const trW = tall ? 150 : 130, traceX = tall ? W - 10 - trW : W - 76 - trW;
+  const xa = tall ? 8 : 112;                               // left edge of the diffusion field
+  const cy = (top + H - bot) / 2, ry = (H - top - bot) / 2 - 3 * k;
+  const rx = Math.min(ry * 0.4, 64 * k), cx = traceX - 14 * k - rx;
+  const lanes = S.rows.map((_, li) => {
+    const y0 = top + li * laneH, band = laneH - txtH, yc = y0 + txtH + band / 2;
+    const e = (yc - cy) / ry, xAbs = cx - rx * Math.sqrt(Math.max(0, 1 - e * e));   // sphere surface at this lane
+    return { y0, yc, half: band * 0.34, trH: tall ? band * 0.72 : Math.min(38, laneH - 12), xAbs };
+  });
+  const x0 = xa + 0.3 * (Math.min(...lanes.map(l => l.xAbs)) - xa);               // release point, free space behind it
+  return { W, H, k, tall, top, bot, trW, traceX, xa, cx, cy, rx, ry, x0, lanes };
+}
+const mtAnim = makeAnim('mt-canvas', {
+  init(a) {
+    a.t = 0;
+    const d = { S: mtLiveSetup(), parts: [], symId: 0, tSym: 0, cur: null, frame: 0, emitFrame: 0, flash: [],
+      stats: { syms: 0, bits: 0, errs: 0 } };
+    d.flash = d.S.rows.map(() => -99);
+    mtNewSymbol(d);
+    mtLiveReadouts(d);
+    $('mt-clock').textContent = '0.0 ms';
+    return d;
+  },
+  step(a) {
+    let d = a.data;
+    if (d.S.key !== mtLiveKey()) { a.data = d = this.init(a); }   // controls moved: restart the tally
+    const S = d.S, cur = d.cur, slowEnd = 3 * S.tH;
+    const dt = d.tSym < slowEnd ? slowEnd / MT_SLOW_FRAMES : Math.max(slowEnd / MT_SLOW_FRAMES, (S.Ts - slowEnd) / MT_FAST_FRAMES);
+    d.tSym += dt; a.t += dt; d.frame++;
+    const binW = slowEnd / MT_BINS;
+    for (let i = d.parts.length - 1; i >= 0; i--) {
+      const q = d.parts[i], D = S.sp[S.rows[q.lane]].D;
+      q.u += Math.sqrt(2 * D * dt) / S.x * mtGauss();       // exact free-diffusion increment, in units of r − a
+      q.v += 0.09 * mtGauss();
+      if (q.v > 1) q.v = 2 - q.v; else if (q.v < -1) q.v = -2 - q.v;
+      if (q.u >= 1) {                                       // absorbed by the receptor
+        if (q.sym === cur.id) {
+          const b = Math.floor(d.tSym / binW);
+          if (b < MT_BINS) cur.hist[q.lane][b]++;
+        }
+        d.flash[q.lane] = d.frame;
+        d.parts.splice(i, 1);
+      } else if (q.u < -0.45) d.parts.splice(i, 1);
+    }
+    S.rows.forEach((j, li) => {
+      if (!cur.sampled[li] && d.tSym >= (cur.mrsk ? S.tH : S.tPk[j])) cur.sampled[li] = true;
+    });
+    if (!cur.tallied && d.tSym >= S.tH) {                   // every sampling instant has passed
+      cur.tallied = true;
+      const carriers = cur.mrsk ? S.N - 1 : S.N;
+      let e = 0;
+      for (let j = 0; j < carriers; j++) e += mtBitErrs(cur.s[j], cur.m[j]);
+      d.stats.syms++; d.stats.bits += carriers * Math.log2(S.L); d.stats.errs += e;
+      mtLiveReadouts(d);
+    }
+    if (d.tSym >= S.Ts) mtNewSymbol(d);
+    $('mt-clock').textContent = (d.tSym * 1e3).toFixed(1) + ' ms · #' + d.cur.id + (d.tSym > slowEnd ? ' ⏩' : '');
+  },
+  draw(a) {
+    const d = a.data, S = d.S, cur = d.cur, ctx = a.ctx, C = scopeColors();
+    const G = mtLayout(a, S), k = G.k, n = S.rows.length, slowEnd = 3 * S.tH;
+    const pal = n >= 4 ? [C.acc, C.cyan, C.blue, C.acc2] : n === 3 ? [C.acc, C.cyan, C.acc2] : [C.acc, C.acc2];
+    const font = px => (px * k) + 'px IBM Plex Mono, monospace';
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, G.W, G.H);
+    ctx.font = font(11); ctx.textBaseline = 'alphabetic';
+    // header
+    ctx.fillStyle = C.faint; ctx.textAlign = 'left';
+    ctx.fillText(n < S.N ? (G.tall ? `${n} of ${S.N} species shown` : `${n} of ${S.N} species shown · tally uses all ${S.N}`) : `${S.N} species`, 10, 15 * k);
+    const slowMo = Math.round(1 / (slowEnd / MT_SLOW_FRAMES * 60));
+    ctx.textAlign = 'right';
+    ctx.fillText(G.tall ? `×1/${slowMo}` : `arrivals · slow motion ×1/${slowMo}`, G.W - 10, 15 * k);
+    // absorbing spherical receiver, drawn first so the lanes and receptors sit on it
+    const grd = ctx.createRadialGradient(G.cx + G.rx * 0.35, G.cy - G.ry * 0.45, 2, G.cx, G.cy, G.ry);
+    grd.addColorStop(0, C.text + '55'); grd.addColorStop(0.55, C.faint + '30'); grd.addColorStop(1, C.faint + '12');
+    ctx.beginPath(); ctx.ellipse(G.cx, G.cy, G.rx, G.ry, 0, 0, 7);
+    ctx.fillStyle = grd; ctx.fill();
+    ctx.strokeStyle = C.border; ctx.lineWidth = 1.2 * k; ctx.stroke();
+    ctx.fillStyle = C.faint; ctx.textAlign = 'center';
+    if (!G.tall) ctx.fillText('RX', G.cx + G.rx * 0.25, G.cy + 4);
+    // lane guides and transmitting cells
+    const pulse = Math.max(0, 1 - (d.frame - d.emitFrame) / 40);
+    S.rows.forEach((j, li) => {
+      const L = G.lanes[li], col = pal[li];
+      ctx.strokeStyle = col; ctx.globalAlpha = 0.18; ctx.lineWidth = k; ctx.setLineDash([2 * k, 5 * k]);
+      ctx.beginPath(); ctx.moveTo(G.x0, L.yc); ctx.lineTo(L.xAbs, L.yc); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      if (pulse > 0 && cur.s[j] > 0) {
+        ctx.beginPath(); ctx.arc(G.x0, L.yc, (8 + (1 - pulse) * 26) * k, 0, 7);
+        ctx.strokeStyle = col; ctx.globalAlpha = pulse * 0.6; ctx.lineWidth = 1.5 * k; ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      drawCell(ctx, G.x0, L.yc, 8 * k, col, a.t * 900 + li, false, k);
+    });
+    // molecules: additive glow, current symbol bright, the previous symbol's tail dim
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const pr = 1.3 * Math.min(k, 1.8), halo = G.tall ? 0.06 : 0.12;
+    for (const q of d.parts) {
+      const L = G.lanes[q.lane], px = G.x0 + q.u * (L.xAbs - G.x0);
+      if (px < G.xa) continue;
+      const py = L.yc + q.v * L.half, fresh = q.sym === cur.id;
+      ctx.fillStyle = pal[q.lane];
+      ctx.globalAlpha = fresh ? halo : halo / 3;
+      ctx.beginPath(); ctx.arc(px, py, pr * 2.4, 0, 7); ctx.fill();
+      ctx.globalAlpha = fresh ? 0.95 : 0.3;
+      ctx.beginPath(); ctx.arc(px, py, pr, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+    const scale = MT_VIS_TOP * 0.154 * (slowEnd / MT_BINS) / S.tPk[0] * 1.15;   // expected top-level peak bin, lightest
+    S.rows.forEach((j, li) => {
+      const L = G.lanes[li], col = pal[li], isRef = cur.mrsk && j === S.N - 1;
+      const sLabel = isRef ? 'ref' : 's = ' + cur.s[j];
+      // transmitter label and symbol
+      ctx.font = font(11);
+      if (G.tall) {
+        ctx.textAlign = 'left'; ctx.fillStyle = col;
+        ctx.fillText(`V${j + 1}`, 10, L.y0 + 12 * k);
+        const w = ctx.measureText(`V${j + 1} `).width;
+        ctx.fillStyle = C.faint; ctx.fillText(`${Math.round(S.sp[j].Mw)} Da · `, 10 + w, L.y0 + 12 * k);
+        const w2 = ctx.measureText(`${Math.round(S.sp[j].Mw)} Da · `).width;
+        ctx.fillStyle = C.text; ctx.fillText(sLabel, 10 + w + w2, L.y0 + 12 * k);
+      } else {
+        ctx.textAlign = 'left';
+        ctx.fillStyle = col; ctx.fillText('V' + (j + 1), 10, L.yc - 6);
+        ctx.fillStyle = C.faint; ctx.fillText(Math.round(S.sp[j].Mw) + ' Da', 10 + ctx.measureText('V' + (j + 1) + ' ').width, L.yc - 6);
+        const pw = 48, pxl = 10, pyl = L.yc + 1;
+        ctx.beginPath(); ctx.roundRect(pxl, pyl, pw, 18, 9);
+        ctx.fillStyle = col + (pulse > 0 ? Math.round(0x22 + pulse * 0x50).toString(16) : '22'); ctx.fill();
+        ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = C.text; ctx.textAlign = 'center'; ctx.fillText(sLabel, pxl + pw / 2, pyl + 13);
+      }
+      // receptor on the sphere surface, flashing on each absorption
+      const fl = Math.max(0, 1 - (d.frame - d.flash[li]) / 10), rr = 7 * k;
+      if (fl > 0) {
+        ctx.beginPath(); ctx.arc(L.xAbs, L.yc, rr * (1.6 + fl), 0, 7);
+        ctx.fillStyle = col; ctx.globalAlpha = 0.18 * fl; ctx.fill(); ctx.globalAlpha = 1;
+      }
+      ctx.beginPath(); ctx.arc(L.xAbs, L.yc, rr, 0, 7);
+      ctx.fillStyle = C.bg; ctx.fill();
+      ctx.fillStyle = col + Math.round(0x22 + fl * 0x88).toString(16).padStart(2, '0'); ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5 * k; ctx.stroke();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.2 * k; ctx.beginPath();          // the "Y" receptor glyph
+      ctx.moveTo(L.xAbs, L.yc + 3.6 * k); ctx.lineTo(L.xAbs, L.yc);
+      ctx.lineTo(L.xAbs - 3 * k, L.yc - 3.4 * k); ctx.moveTo(L.xAbs, L.yc); ctx.lineTo(L.xAbs + 3 * k, L.yc - 3.4 * k);
+      ctx.stroke();
+      // arrival trace for the current symbol: bars plus a [1 2 1]-smoothed envelope of the same counts
+      const bx = G.traceX, by = L.yc - L.trH / 2, bw = G.trW / MT_BINS, h0 = L.trH - 2;
+      ctx.fillStyle = col + '0d'; ctx.fillRect(bx, by, G.trW, L.trH);
+      ctx.strokeStyle = C.border; ctx.lineWidth = k; ctx.strokeRect(bx, by, G.trW, L.trH);
+      const hist = cur.hist[li], yOf = c => by + L.trH - 1 - Math.min(h0, c / scale * h0);
+      ctx.fillStyle = col; ctx.globalAlpha = 0.35;
+      hist.forEach((c, b) => { if (c) { const y = yOf(c); ctx.fillRect(bx + b * bw + 0.5, y, bw - 1, by + L.trH - 1 - y); } });
+      ctx.globalAlpha = 1;
+      const nowBin = Math.min(MT_BINS, Math.ceil(d.tSym / (slowEnd / MT_BINS)));
+      if (nowBin > 1) {
+        ctx.beginPath();
+        for (let b = 0; b < nowBin; b++) {
+          const sm = ((hist[b - 1] || 0) + 2 * hist[b] + (hist[b + 1] || 0)) / 4;
+          const X = bx + (b + 0.5) * bw, Y = yOf(sm);
+          b ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+        }
+        ctx.strokeStyle = col; ctx.lineWidth = 1.6 * k; ctx.stroke();
+      }
+      const tS = cur.mrsk ? S.tH : S.tPk[j], xm = bx + tS / slowEnd * G.trW;
+      ctx.strokeStyle = cur.mrsk ? C.marker : col; ctx.lineWidth = 1.2 * k; ctx.setLineDash([3 * k, 2 * k]);
+      ctx.beginPath(); ctx.moveTo(xm, by - 3 * k); ctx.lineTo(xm, by + L.trH + 3 * k); ctx.stroke(); ctx.setLineDash([]);
+      if (cur.sampled[li]) { ctx.beginPath(); ctx.arc(xm, by - 3 * k, 2.2 * k, 0, 7); ctx.fillStyle = cur.mrsk ? C.marker : col; ctx.fill(); }
+      if (d.tSym < slowEnd) {
+        const xn = bx + d.tSym / slowEnd * G.trW;
+        ctx.strokeStyle = C.text; ctx.globalAlpha = 0.35; ctx.lineWidth = k;
+        ctx.beginPath(); ctx.moveTo(xn, by); ctx.lineTo(xn, by + L.trH); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      // decision
+      let txt = 'ŝ …', tc = C.faint;
+      if (isRef) txt = 'ref';
+      else if (cur.sampled[li]) {
+        const ok = cur.m[j] === cur.s[j];
+        txt = 'ŝ = ' + cur.m[j] + (ok ? ' ✓' : ' ✗'); tc = ok ? col : C.marker;
+      }
+      ctx.font = font(G.tall ? 11 : 12); ctx.fillStyle = tc;
+      if (G.tall) { ctx.textAlign = 'right'; ctx.fillText(txt, G.W - 10, L.y0 + 12 * k); }
+      else { ctx.textAlign = 'left'; ctx.fillText(txt, bx + G.trW + 10, L.yc + 4); }
+    });
+    // symbol clock: the slow-motion window, then the fast-forwarded ISI guard
+    ctx.font = font(11);
+    const yb = G.H - 20 * k, frac = Math.min(1, d.tSym / S.Ts), bx0 = G.xa + (G.tall ? 2 : 0), barW = G.traceX - 14 * k - bx0;
+    ctx.fillStyle = C.border; ctx.fillRect(bx0, yb, barW, 3 * k);
+    ctx.fillStyle = C.acc; ctx.fillRect(bx0, yb, barW * frac, 3 * k);
+    ctx.fillStyle = C.text; ctx.fillRect(bx0 + barW * slowEnd / S.Ts - k / 2, yb - 3 * k, k, 9 * k);
+    ctx.textAlign = 'left'; ctx.fillStyle = C.faint;
+    const fmtMs = v => (v * 1e3).toFixed(v >= 0.1 ? 0 : 1) + ' ms';
+    ctx.fillText(`symbol period T_s = ${fmtMs(S.Ts)} (κ = ${state.mt.kappa})` + (d.tSym > slowEnd ? '  ⏩ ISI guard' : ''), bx0, G.H - 4 * k);
+  },
+});
+
+const anims = { qs: qsAnim, voc: vocAnim, elec: elAnim, opt: opAnim, mtdm: mtAnim };
 refitScopes();
 document.querySelectorAll('[data-anim]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2338,6 +2653,13 @@ document.querySelectorAll('[data-anim]').forEach(btn => {
     else a.reset();
   });
 });
+document.querySelectorAll('[data-mtmode]').forEach(btn => btn.addEventListener('click', () => {
+  state.mtLive.mode = btn.dataset.mtmode;
+  document.querySelectorAll('[data-mtmode]').forEach(x => x.setAttribute('aria-pressed', x === btn ? 'true' : 'false'));
+  const was = mtAnim.running;
+  mtAnim.reset();
+  if (was) mtAnim.start();
+}));
 
 /* ════════════════════════════ boot ════════════════════════════ */
 state.op.cext = parseFloat($('op-water').value); // browsers may restore a previous form state

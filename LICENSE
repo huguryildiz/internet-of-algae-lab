@@ -17,6 +17,11 @@ Third-party components retain their own licenses:
 - "Bioluminescence" shader adapted from Radiant Shaders
   (https://github.com/pbakaus/radiant, MIT)
 
+The reference papers are not part of the Software and are not covered by this
+license: Akyildiz et al., IEEE TMBMC 2026 (doi 10.1109/TMBMC.2026.3711050,
+© IEEE) and Akyildiz et al., NANOCOM '26 (doi 10.1145/3818305.3830272,
+CC BY 4.0).
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE

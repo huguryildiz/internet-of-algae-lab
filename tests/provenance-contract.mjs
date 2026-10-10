@@ -43,11 +43,11 @@ assert.notEqual(
   'paper-equation and figure-reproduction paths must carry different provenance statuses',
 );
 
-const localPdf = new URL('reference.pdf', root);
+const localPdf = new URL('docs/akyildiz2026-tmbmc-algae-channels.pdf', root);
 if (fs.existsSync(localPdf)) {
   const digest = crypto.createHash('sha256').update(fs.readFileSync(localPdf)).digest('hex');
   assert.equal(digest, ledger.reference.local_pdf_sha256,
-    'reference.pdf changed; re-audit the paper and update provenance deliberately');
+    'docs/akyildiz2026-tmbmc-algae-channels.pdf changed; re-audit the paper and update provenance deliberately');
 }
 
 console.log(`provenance contract checks passed (${entries.length} records)`);

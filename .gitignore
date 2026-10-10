@@ -1,5 +1,5 @@
-# IEEE-copyrighted paper — do not publish
-reference.pdf
+# Reference papers, local comparison copies only — do not publish (TMBMC is © IEEE; NANOCOM '26 is CC BY 4.0)
+docs/*.pdf
 
 .DS_Store
 node_modules/
