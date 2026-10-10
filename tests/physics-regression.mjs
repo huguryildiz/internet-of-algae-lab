@@ -485,21 +485,38 @@ for (const params of sweepCases(
 // Published-reference contract: the digitized MRSK curves of NANOCOM '26 Fig. 3 are presentation data
 // below the BER banner, so they are read separately from the physics slice.
 {
-  const startRef = html.indexOf('const MTDM_FIG3_MRSK = {');
-  const endRef = html.indexOf('};', startRef);
-  assert.ok(startRef > html.indexOf('/* ════════════════════════════ BER'), 'reference data must stay outside the physics slice');
-  const ref = vm.runInNewContext(`(${html.slice(startRef + 'const MTDM_FIG3_MRSK = '.length, endRef + 1)})`);
+  // Exactly one declaration may start a line (a commented copy would start with // or *), and its
+  // initializer runs to the first line that is just "};".
+  const decl = [...html.matchAll(/^const MTDM_FIG3_MRSK\s*=\s*(\{[\s\S]*?\n\});$/gm)];
+  assert.equal(decl.length, 1, 'MTDM_FIG3_MRSK must be declared exactly once at line start');
+  assert.ok(decl[0].index > html.indexOf('/* ════════════════════════════ BER'), 'reference data must stay outside the physics slice');
+  const ref = vm.runInNewContext(`(${decl[0][1]})`);
   const spec = { uniformD: [33, -4, 28], algaeVOC: [34, -4, 29] };
   for (const [key, [len, first, last]] of Object.entries(spec)) {
     const pts = ref[key];
     assert.equal(pts.length, len, `${key} sample count`);
     assert.equal(pts[0][0], first, `${key} first SNR`);
     assert.equal(pts.at(-1)[0], last, `${key} last SNR`);
-    pts.forEach(([db, y], i) => {
+    pts.forEach((pt, i) => {
+      assert.ok(Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite), `${key} sample ${i} must be two finite numbers`);
+      const [db, y] = pt;
       if (i) assert.equal(db - pts[i - 1][0], 1, `${key} samples must be consecutive 1-dB steps`);
       assert.ok(y <= 0 && y >= -6, `${key} must lie on the published six-decade axis`);
     });
   }
+  // Tooltip sample selection (chart helper above the QS banner, extracted on its own).
+  const tipSrc = html.match(/^function tipSampleIndex[\s\S]*?\n\}$/m);
+  assert.ok(tipSrc, 'tipSampleIndex must exist');
+  const tip = vm.runInNewContext(`(${tipSrc[0]})`, { Math });
+  const xs = [-4, -3, -2, 26, 27, 28];
+  assert.equal(tip(xs, 28, true, 35), 5, 'dots: the last sample at its own SNR');
+  assert.equal(tip(xs, 28.25, true, 35), -1, 'dots: nothing beyond the sampled domain');
+  assert.equal(tip(xs, -5, true, 35), -1, 'dots: nothing before the sampled domain');
+  assert.equal(tip(xs, -3.4, true, 35), 1, 'dots: nearest sample within half a step');
+  assert.equal(tip([0, 1, 10], 6, true, 35), 2, 'dots: non-uniform spacing uses the local gap');
+  assert.equal(tip([10], 10.3, true, 35), 0, 'dots: a single sample within 1.5% of the span');
+  assert.equal(tip([10], 11, true, 35), -1, 'dots: a single sample not reported far away');
+  assert.equal(tip(xs, 40, false, 35), 5, 'lines: always the nearest sample');
   // Ordinates independently re-measured from the raster during review (log10 BER, ±0.01).
   const checks = { uniformD: [[-4, -0.374], [15, -0.972], [20, -1.692], [28, -5.694]],
     algaeVOC: [[0, -0.355], [15, -0.472], [26, -0.331], [29, -0.304]] };

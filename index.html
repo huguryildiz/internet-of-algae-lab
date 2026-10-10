@@ -1059,10 +1059,8 @@ function drawChart(el, cfg) {
     const xv = xmin + (fx - ml) / pw * (xmax - xmin);
     let html = `<b>${cfg.xlab.split('(')[0].trim()}: ${trimNum(xv)}</b>`;
     for (const s of cfg.series) {
-      let bi = 0, bd = Infinity;
-      for (let i = 0; i < s.x.length; i++) { const dd = Math.abs(s.x[i] - xv); if (dd < bd) { bd = dd; bi = i; } }
-      // Sampled data: only report a sample within half a step, and say where it was taken.
-      if (s.dots && bd > 0.5 * (s.x[s.x.length - 1] - s.x[0]) / Math.max(1, s.x.length - 1)) continue;
+      const bi = tipSampleIndex(s.x, xv, !!s.dots, xmax - xmin);
+      if (bi < 0) continue;
       const v = s.y[bi];
       html += `<br><span style="color:var(${s.colorVar})">●</span> ${s.label}: ${isFinite(v) ? (cfg.tipfmt ? cfg.tipfmt(v) : trimNum(v)) : '–'}${s.dots ? ` (at ${trimNum(s.x[bi])})` : ''}`;
     }
@@ -1073,6 +1071,19 @@ function drawChart(el, cfg) {
   svg.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
   svg.addEventListener('pointercancel', () => { tip.style.display = 'none'; });
   svg.addEventListener('touchend', () => { setTimeout(() => { tip.style.display = 'none'; }, 1800); });
+}
+/* Index of the sample a hover at xv reports, or −1 for none. Lines report their nearest sample. Sampled
+   reference data (dots, x ascending) report a sample only inside their own domain and within half the gap
+   to its neighbours; a single sample within 1.5 % of the chart's x span. */
+function tipSampleIndex(xs, xv, dots, span) {
+  let bi = 0, bd = Infinity;
+  for (let i = 0; i < xs.length; i++) { const dd = Math.abs(xs[i] - xv); if (dd < bd) { bd = dd; bi = i; } }
+  if (!dots) return bi;
+  if (xs.length === 1) return bd <= 0.015 * span ? 0 : -1;
+  if (xv < xs[0] || xv > xs[xs.length - 1]) return -1;
+  const right = bi + 1 < xs.length ? xs[bi + 1] - xs[bi] : xs[bi] - xs[bi - 1];
+  const left = bi > 0 ? xs[bi] - xs[bi - 1] : right;
+  return bd <= (xv >= xs[bi] ? right : left) / 2 + 1e-12 ? bi : -1;
 }
 function trimNum(v) {
   if (!isFinite(v)) return '–';
