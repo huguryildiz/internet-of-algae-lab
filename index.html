@@ -540,6 +540,88 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
         </div>
       </div>
     </div>
+
+    <h2 class="module-title" style="margin-top:36px">Molecular Type Division Multiplexing</h2>
+    <p class="module-sub">
+      A companion model from a second paper: Akyildiz, Sayin, Saygili and Unluturk, NANOCOM&nbsp;’26,
+      doi <a href="https://doi.org/10.1145/3818305.3830272" target="_blank" rel="noopener">10.1145/3818305.3830272</a>.
+      Every one of \(N\) VOC species is released at once and carries its own \(L\)-level concentration symbol, so a
+      symbol vector holds \(N\log_2 L\) bits. <b>This is a separate, micrometre-scale link</b> — free 3-D diffusion
+      to a fully absorbing receiver — and shares no parameter with the airborne channel above.
+    </p>
+    <details class="theory-box">
+      <summary>Model equations (NANOCOM ’26, Eqs. 1–2)</summary>
+      <div class="eq">\[ h_i(t)=\frac{Q_i\,a\,(r-a)}{r\sqrt{4\pi D_i t^{3}}}\exp\!\Bigl(-\frac{(r-a)^{2}}{4D_i t}\Bigr) \qquad t_{i,\mathrm{peak}}=\frac{(r-a)^2}{6D_i} \qquad T_s=\kappa\,\frac{(r-a)^2}{6D_{\min}} \]</div>
+      <div class="eq">\[ \frac{h_i(t)}{h_j(t)}=\frac{Q_i}{Q_j}\sqrt{\frac{D_j}{D_i}}\,\exp\!\Bigl[-\frac{(r-a)^2}{4t}\Bigl(\frac{1}{D_i}-\frac{1}{D_j}\Bigr)\Bigr] \]</div>
+      <p>Each receptor samples its own species at \(t_{i,\mathrm{peak}}\), where \(dh_i/dt=0\). MRSK encodes in the ratio
+      \(h_i/h_j\), which is time-invariant only when \(D_i=D_j\). Diffusion coefficients follow Stokes–Einstein,
+      \(D\propto M_w^{-1/3}\), from DMS (62&nbsp;Da, \(D_{\max}=10^{-9}\)&nbsp;m²/s) to the heaviest species; \(a=0.1\)&nbsp;µm.
+      The paper does not say how intermediate masses are distributed, so they are spaced linearly.</p>
+    </details>
+
+    <div class="mod-grid">
+      <div>
+        <div class="panel">
+          <h3 class="panel__title">Parameters <span class="subnote">defaults = paper §3</span></h3>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Species \(N\)</span><span class="ctl-slider__val" id="mt-n-val"></span></span>
+            <input type="range" id="mt-n" min="2" max="200" step="1" value="100"></label>
+          <label class="ctl-select"><span class="ctl-slider__label">Levels per species \(L\)</span>
+            <select id="mt-l"><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option></select></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">ISI guard \(\kappa\)</span><span class="ctl-slider__val" id="mt-k-val"></span></span>
+            <input type="range" id="mt-k" min="5" max="40" step="1" value="20"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">TX–RX distance \(r\)</span><span class="ctl-slider__val" id="mt-r-val"></span></span>
+            <input type="range" id="mt-r" min="2" max="50" step="1" value="10"></label>
+          <label class="ctl-slider"><span class="ctl-slider__row"><span class="ctl-slider__label">Heaviest species \(M_w\)</span><span class="ctl-slider__val" id="mt-mw-val"></span></span>
+            <input type="range" id="mt-mw" min="80" max="400" step="2" value="204"></label>
+        </div>
+      </div>
+
+      <div style="min-width:0">
+        <div class="panel">
+          <h3 class="panel__title">Scheme comparison <span class="subnote">NANOCOM ’26, Table 1</span></h3>
+          <div class="tbl-wrap"><table class="cmp">
+            <thead><tr><th>Scheme</th><th>bits/symbol</th><th>b/sym</th><th>bps</th><th>needs equal \(D\)?</th></tr></thead>
+            <tbody id="mt-table"></tbody>
+          </table></div>
+          <div class="readouts">
+            <div class="readout"><div class="readout__label">Symbol period \(T_s\)</div><div class="readout__value" id="mt-ts">–</div></div>
+            <div class="readout"><div class="readout__label">\(D_{\min}\)</div><div class="readout__value" id="mt-dmin">–</div></div>
+            <div class="readout"><div class="readout__label">\(D\) spread \(D_{\max}/D_{\min}\)</div><div class="readout__value" id="mt-spread">–</div></div>
+            <div class="readout"><div class="readout__label">One-symbol tail at next sample</div><div class="readout__value" id="mt-isi">–</div></div>
+            <div class="readout"><div class="readout__label">Accumulated tail, all earlier symbols</div><div class="readout__value" id="mt-isi-acc">–</div></div>
+            <div class="readout"><div class="readout__label">MTDM / Hybrid MoSK-CSK</div><div class="readout__value" id="mt-gain">–</div></div>
+          </div>
+          <p class="scope-caption">Rates use the unrounded Stokes–Einstein \(D_{\min}\) (\(6.72\times10^{-10}\)&nbsp;m²/s at the defaults);
+          the paper rounds it to 6.7 and \(T_s\) to 0.49&nbsp;s and rounds its bps entries, so at the defaults the bps column
+          differs from Table&nbsp;1 by −2.3&nbsp;% to +0.4&nbsp;% (412 vs 410 for MTDM).
+          The linear \(N\log_2 L\) growth assumes \(N\) orthogonal VOC–receptor pairs and a fixed budget <i>per species</i>;
+          under a fixed total budget each species' SNR falls as \(1/N\) (paper §2). The paper's “below 5&nbsp;% of peak” is
+          the single-symbol tail; because that tail decays as \(t^{-3/2}\), the worst-case sum over all earlier symbols
+          is larger, as the second readout shows.</p>
+        </div>
+
+        <div class="charts-grid">
+          <div class="panel"><h3 class="panel__title">Bits per symbol vs \(N\) <span class="subnote">Fig. 2</span></h3><div class="chart-box" id="mt-chart-bits"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM</span><span><i style="background:var(--color-y)"></i>MRSK</span><span><i style="background:var(--color-h)"></i>Hybrid MoSK-CSK</span><span><i style="background:var(--color-marker)"></i>MoSK</span></div></div>
+          <div class="panel"><h3 class="panel__title">Sub-channel impulse responses <span class="subnote">Eq. (1), one molecule</span></h3><div class="chart-box" id="mt-chart-cir"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>lightest (DMS)</span><span><i style="background:var(--color-h)"></i>heaviest</span></div></div>
+          <div class="panel"><h3 class="panel__title">Ratio drift <span class="subnote">Eq. (2), equal release</span></h3><div class="chart-box" id="mt-chart-ratio"></div>
+            <div class="legend"><span><i style="background:var(--color-y)"></i>\(h_{\text{light}}/h_{\text{heavy}}\)</span><span><i style="background:var(--text-faint)"></i>equal \(D\) (what MRSK assumes)</span></div>
+            <p class="scope-caption">\(t_s\) marks the heaviest species' peak, the common sampling instant assumed for MRSK below.</p></div>
+          <div class="panel"><h3 class="panel__title">BER vs SNR <span class="badge-ext">reconstruction of Fig. 3</span></h3><div class="chart-box" id="mt-chart-ber"></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:var(--color-y)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span></div>
+            <p class="scope-caption">SNR \(=\bar n_{\max}\), the expected absorbed count of the top level, treated as an abstract
+            normalized count (Eq.&nbsp;1 is a rate and the paper names no counting window); every MTDM species is calibrated to
+            the same \(\bar n_{\max}\) at its own peak. The paper does not state its threshold rule, ISI treatment or MRSK level
+            map; assumed here: Poisson counts with ISI ignored, levels \(s/(L-1)\), Gray-mapped bits; MTDM uses per-receptor
+            symbol-ML thresholds. The comparison curves are a simplified <i>MRSK-style</i> ratio keying, not Kilic &amp; Akan's
+            canonical MRSK (which uses positive geometric ratio levels between adjacent species): the heaviest species is the
+            reference, all species are sampled at its peak, and \(n_j/n_{\mathrm{ref}}\) is rounded to the nearest level.
+            At the defaults its fixed decoder floors at a few&nbsp;% — the paper reports a floor near 0.5, which these
+            assumptions do not reproduce.</p></div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ══════════════════ ELECTRICAL TAB ══════════════════ -->
@@ -791,8 +873,8 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
       parameters. <b>What is added for teaching:</b> (1)&nbsp;the particle
       animations are
       stochastic visualizations of the same transport physics — individual molecules and photons are drawn so the
-      channel becomes visible, and the counters count those simulated particles; (2)&nbsp;the bit-error-rate panels
-      assume on–off keying with additive Gaussian receiver noise, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). The paper deliberately leaves noise
+      channel becomes visible, and the counters count those simulated particles; (2)&nbsp;the bit-error-rate-vs-distance
+      panels of the four channel tabs assume on–off keying with additive Gaussian receiver noise, \(\mathrm{BER}=Q\!\left(A/2\sigma\right)\). The paper deliberately leaves noise
       modeling, SNR and capacity analysis as open problems (§X); the BER layer here is a standard textbook assumption,
       clearly separated so students can tell model from extension.
     </p>
@@ -815,6 +897,19 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           scale; the separation is visible rather than absorbed into a hidden calibration.</li>
         <li><b>Unreported absolute irradiance:</b> Eq.&nbsp;(42) gives flash shape and relative amplitude but no
           absolute \(I_{\mathrm{tx}}\), so the single 0.2445 scale above is identified from Fig.&nbsp;22.</li>
+        <li><b>MTDM is a second, separate model.</b> The Molecular Type Division Multiplexing section on the VOC tab
+          follows the NANOCOM&nbsp;’26 paper below, a micrometre-scale absorbing-receiver link unrelated to Table&nbsp;II.
+          Table&nbsp;1's bits/symbol, Fig.&nbsp;2 and Eqs.&nbsp;(1)–(2) are recomputed from their closed forms; at the defaults
+          the bps column differs from Table&nbsp;1 by −2.3&nbsp;% to +0.4&nbsp;%, because Stokes–Einstein gives
+          \(D_{\min}=6.72\times10^{-10}\)&nbsp;m²/s where the paper rounds to 6.7 and rounds its bps entries. The
+          species masses between 62 and the heaviest species are spaced linearly, which the paper does not specify.
+          Fig.&nbsp;3 is a reconstruction: the paper states neither its detector, its ISI treatment nor its MRSK level map,
+          and the comparison curves use a simplified MRSK-style ratio keying rather than canonical MRSK. Under the
+          assumptions printed under that chart, the fixed-decoder curve floors at a few percent at the defaults rather
+          than near the 0.5 the paper reports; no stated decoder rule we found yields 0.5, so the gap is shown, not tuned.
+          The paper's 5&nbsp;% ISI figure holds for a single earlier symbol; summed over all earlier symbols the
+          worst-case tail at \(\kappa=20\) is about 12&nbsp;%. The regression suite pins Fig.&nbsp;3 by closed forms, an
+          independent brute-force count enumeration and structural checks only.</li>
         <li><b>No source plotting data:</b> the authors' original samples and plotting code are unavailable here, so the
           simulation claims agreement within plot-reading tolerance, not point-by-point identity with the source data.</li>
         <li><b>Digitization uncertainty:</b> reference values were read from the rasterized PDF figures. Regression
@@ -828,6 +923,12 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
         Communication-Theoretic Models for Photosynthetic Molecular Networks,” <i>IEEE Transactions on Molecular,
         Biological, and Multi-Scale Communications</i>, vol. 12, pp. 796–816, 2026, doi:
         <a href="https://doi.org/10.1109/TMBMC.2026.3711050" target="_blank" rel="noopener">10.1109/TMBMC.2026.3711050</a>.
+      </div>
+      <div class="cite-block" style="margin-top:10px">
+        I. F. Akyildiz, S. Sayin, E. I. Saygili, and B. D. Unluturk, “Molecular Type Division Multiplexing via Algae
+        Volatile Organic Compounds,” in <i>Proc. NANOCOM ’26</i>, St. John’s, NL, Canada, 2026, pp. 127–128, doi:
+        <a href="https://doi.org/10.1145/3818305.3830272" target="_blank" rel="noopener">10.1145/3818305.3830272</a>
+        (CC BY 4.0). Source of the MTDM section only.
       </div>
     </div>
     <footer>
@@ -908,11 +1009,13 @@ function drawChart(el, cfg) {
   // axes labels
   g += `<text x="${ml + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="10.5" fill="var(--text-dim)" font-family="var(--font)">${cfg.xlab}</text>`;
   g += `<text x="12" y="${mt + ph / 2}" text-anchor="middle" font-size="10.5" fill="var(--text-dim)" font-family="var(--font)" transform="rotate(-90 12 ${mt + ph / 2})">${cfg.ylab}</text>`;
-  // marker (current distance)
-  if (cfg.marker !== undefined && isFinite(cfg.marker)) {
-    const x = sx(cfg.marker);
+  // markers (current distance by default)
+  const markers = cfg.markers || (cfg.marker !== undefined ? [{ x: cfg.marker, label: 'd' }] : []);
+  for (const mk of markers) {
+    if (!isFinite(mk.x)) continue;
+    const x = sx(mk.x);
     g += `<line x1="${x}" y1="${mt}" x2="${x}" y2="${mt + ph}" stroke="var(--accent-cyan)" stroke-width="1" stroke-dasharray="4 3" opacity="0.85"/>`;
-    g += `<text x="${x + 4}" y="${mt + 11}" font-size="9.5" fill="var(--accent-cyan)" font-family="var(--mono)">d</text>`;
+    g += `<text x="${x + 4}" y="${mt + 11}" font-size="9.5" fill="var(--accent-cyan)" font-family="var(--mono)">${mk.label}</text>`;
   }
   // series
   for (const s of cfg.series) {
@@ -1327,6 +1430,166 @@ function computeOpt(p) {
   return { dArr, gdB, types, As: AsPaper, AsPaper, AsFigure, tI, tS, gain, Itx, fpk, flashStart };
 }
 
+/* ════════════════════════════ MTDM physics (companion paper, NANOCOM '26) ════════════════════════════ */
+/* Molecular Type Division Multiplexing — Akyildiz, Sayin, Saygili, Unluturk, NANOCOM '26,
+   doi 10.1145/3818305.3830272. A separate micrometre-scale model: 3-D free diffusion to a fully
+   absorbing sphere of radius a, one VOC species per sub-channel. It shares no parameter with the
+   airborne Table II channel above. Section 3's values are used as stated (a = 0.1 µm,
+   62 Da DMS with D_max = 1e-9 m²/s, D ∝ Mw^(-1/3)); the paper does not say how the N species
+   fill the 62–204 Da span, so their masses are spaced linearly between the two endpoints. */
+const MTDM_A = 0.1e-6, MTDM_MW_MIN = 62, MTDM_D_MAX = 1e-9;
+function mtdmSpecies(N, MwMax) {
+  const sp = [];
+  for (let i = 0; i < N; i++) {
+    const Mw = N > 1 ? MTDM_MW_MIN + (MwMax - MTDM_MW_MIN) * i / (N - 1) : MTDM_MW_MIN;
+    sp.push({ Mw, D: MTDM_D_MAX * Math.pow(MTDM_MW_MIN / Mw, 1 / 3) });   // Stokes–Einstein
+  }
+  return sp;   // lightest (fastest) first, heaviest (slowest) last
+}
+// Eq. (1): absorption rate per released molecule (Q_i = 1), s^-1.
+function mtdmCIR(t, r, D) {
+  if (t <= 0) return 0;
+  const x = r - MTDM_A;
+  return MTDM_A * x / (r * Math.sqrt(4 * Math.PI * D * t * t * t)) * Math.exp(-x * x / (4 * D * t));
+}
+function computeMTDM(p) {
+  const r = p.rUm * 1e-6, x = r - MTDM_A, L = p.L, lb = Math.log2(L);
+  const sp = mtdmSpecies(p.N, p.MwMax);
+  const Dmax = sp[0].D, Dmin = sp[sp.length - 1].D;
+  const tPeak = D => x * x / (6 * D);
+  const Ts = p.kappa * tPeak(Dmin);                       // symbol period set by the slowest species
+  // Section 2's claim read literally: one symbol's tail at the slowest sub-channel's next sampling
+  // instant, relative to its peak. The t^(-3/2) tail also accumulates over every earlier symbol;
+  // isiAccum is that worst case (all earlier symbols at full level), summed exactly to k = 2000 and
+  // closed with the asymptotic remainder e^(3/2) κ^(-3/2) · 2/√(2000.5).
+  const tp = tPeak(Dmin), hp = mtdmCIR(tp, r, Dmin);
+  const isi = mtdmCIR(Ts + tp, r, Dmin) / hp;
+  let isiAccum = 0;
+  for (let k = 1; k <= 2000; k++) isiAccum += mtdmCIR(k * Ts + tp, r, Dmin) / hp;
+  isiAccum += Math.exp(1.5) * Math.pow(p.kappa, -1.5) * 2 / Math.sqrt(2000.5);
+  const bitsFor = N => [Math.log2(N), Math.log2(N * L), (N - 1) * lb, N * lb];   // Table 1 column order
+  const b = bitsFor(p.N);
+  const schemes = [
+    { key: 'mosk', name: 'MoSK', formula: 'log2 N', bits: b[0], equalD: false },
+    { key: 'hybrid', name: 'Hybrid MoSK-CSK', formula: 'log2 (N L)', bits: b[1], equalD: false },
+    { key: 'mrsk', name: 'MRSK', formula: '(N−1) log2 L', bits: b[2], equalD: true },
+    { key: 'mtdm', name: 'MTDM', formula: 'N log2 L', bits: b[3], equalD: false },
+  ];
+  for (const s of schemes) s.bps = s.bits / Ts;
+  // Fig. 2: bits/symbol vs N.
+  const Ns = [], mosk = [], hybrid = [], mrsk = [], mtdm = [];
+  for (let N = 2; N <= 200; N++) {
+    const v = bitsFor(N);
+    Ns.push(N); mosk.push(v[0]); hybrid.push(v[1]); mrsk.push(v[2]); mtdm.push(v[3]);
+  }
+  // Eq. (1) for the lightest and heaviest species, and the Eq. (2) ratio at equal release.
+  const tLight = tPeak(Dmax), tHeavy = tPeak(Dmin);
+  const t = linspace(0.25 * tLight, 4 * tHeavy, 400);
+  const light = t.map(tt => mtdmCIR(tt, r, Dmax));
+  const heavy = t.map(tt => mtdmCIR(tt, r, Dmin));
+  const ratio = t.map((tt, i) => light[i] / heavy[i]);
+  return {
+    Dmax, Dmin, spread: Dmax / Dmin, Ts, isi, isiAccum, tLight, tHeavy, schemes,
+    vsN: { N: Ns, mosk, hybrid, mrsk, mtdm }, cir: { t, light, heavy, ratio },
+  };
+}
+/* Fig. 3 (BER vs SNR) — a reconstruction. The paper defines SNR = n̄_max, the expected absorbed
+   count for the top level of a Poisson channel, but states no threshold rule, ISI treatment or
+   MRSK level map. Assumed here: Poisson counts, ISI ignored (an independent assumption — the
+   accumulated tail is not small, see computeMTDM), levels s/(L−1)·n̄_max, Gray-mapped bits, and
+   n̄_max an abstract normalized count (Eq. 1 is a rate; no counting window is specified).
+   MTDM: each receptor samples its own peak, where its count is calibrated to n̄_max, and decides
+   by symbol-ML thresholds between adjacent levels. Ratio keying ("MRSK-style", not Kilic & Akan's
+   canonical MRSK with positive geometric levels and adjacent-species ratios): the heaviest species
+   is the reference, always released at Q_max; every other species carries s/(L−1) as its ratio to
+   it; all are sampled at one common instant, the reference's peak; the fixed (equal-D) decoder
+   rounds n_j/n_ref to the nearest ratio level, guessing uniformly when n_ref = 0. With
+   heterogeneous D the ratio at that instant is biased by B_j = h_j/h_ref (Eq. 2). */
+// First count n_j that the fixed ratio decoder maps to level m ≥ 1, i.e. n_j/n_ref ≥ (m − ½)/(L − 1).
+// Integer ceiling division, so an exact midpoint goes to the upper level without float drift.
+function mtdmRatioLevelStart(m, nr, L) {
+  const den = 2 * (L - 1);
+  return Math.floor(((2 * m - 1) * nr + den - 1) / den);
+}
+function computeMTDMBER(p) {
+  const snrDb = p.snrDb || linspace(0, 30, 31);
+  const r = (p.rUm || 10) * 1e-6, x = r - MTDM_A;
+  const sp = mtdmSpecies(p.N, p.MwMax);
+  const ref = sp[sp.length - 1], ts = x * x / (6 * ref.D);
+  const bias = sp.slice(0, -1).map(s => mtdmCIR(ts, r, s.D) / mtdmCIR(ts, r, ref.D));
+  const nTop = Math.pow(10, Math.max(...snrDb) / 10) * Math.max(1, ...bias);
+  const K = Math.ceil(nTop + 14 * Math.sqrt(nTop) + 40);
+  const lnFact = new Float64Array(K + 1);
+  for (let k = 1; k <= K; k++) lnFact[k] = lnFact[k - 1] + Math.log(k);
+  // Poisson CDF on 0..K; the pmf is evaluated only where it is non-negligible.
+  function cdfOf(lam) {
+    const cdf = new Float64Array(K + 1);
+    if (lam <= 0) { cdf.fill(1); return cdf; }
+    const w = 14 * Math.sqrt(lam) + 40, lo = Math.max(0, Math.floor(lam - w)), hi = Math.min(K, Math.ceil(lam + w));
+    const ll = Math.log(lam);
+    let acc = 0;
+    for (let k = lo; k <= hi; k++) { acc += Math.exp(-lam + k * ll - lnFact[k]); cdf[k] = Math.min(1, acc); }
+    cdf.fill(Math.min(1, acc), hi + 1);
+    return cdf;
+  }
+  const at = (cdf, k) => k < 0 ? 0 : (k >= K ? 1 : cdf[k]);
+  const gray = s => s ^ (s >> 1);
+  const ham = (u, v) => { let z = gray(u) ^ gray(v), c = 0; while (z) { c += z & 1; z >>= 1; } return c; };
+  const L = p.L;
+  function berMTDM(Lv, n) {
+    const lam = l => n * l / (Lv - 1);
+    const kth = [0];                                      // smallest count decoded as level ≥ l
+    for (let l = 1; l < Lv; l++) {
+      const a = lam(l - 1), b = lam(l);
+      kth.push(Math.floor(a > 0 ? (b - a) / Math.log(b / a) : 0) + 1);
+    }
+    let err = 0;
+    for (let s = 0; s < Lv; s++) {
+      const cdf = cdfOf(lam(s));
+      for (let m = 0; m < Lv; m++) {
+        if (m === s) continue;
+        const P = (m + 1 < Lv ? at(cdf, kth[m + 1] - 1) : 1) - at(cdf, kth[m] - 1);
+        err += P * ham(s, m);
+      }
+    }
+    return err / (Lv * Math.log2(Lv));
+  }
+  function berMRSK(n, B, refCdf) {
+    const w = 14 * Math.sqrt(n) + 40, nrLo = Math.max(0, Math.floor(n - w)), nrHi = Math.min(K, Math.ceil(n + w));
+    let err = 0;
+    for (let s = 0; s < L; s++) {
+      const cdf = cdfOf(n * B * s / (L - 1));
+      let guess = 0;
+      for (let m = 0; m < L; m++) guess += ham(s, m) / L;
+      for (let nr = nrLo; nr <= nrHi; nr++) {
+        const pr = at(refCdf, nr) - at(refCdf, nr - 1);
+        if (pr < 1e-18) continue;
+        if (nr === 0) { err += pr * guess; continue; }
+        for (let m = 0; m < L; m++) {
+          if (m === s) continue;
+          const lo = m === 0 ? 0 : mtdmRatioLevelStart(m, nr, L);
+          const hi = m + 1 < L ? mtdmRatioLevelStart(m + 1, nr, L) : Infinity;
+          const P = (hi === Infinity ? 1 : at(cdf, hi - 1)) - at(cdf, lo - 1);
+          err += pr * P * ham(s, m);
+        }
+      }
+    }
+    return err / (L * Math.log2(L));
+  }
+  const mtdm2 = [], mtdmL = [], mrskIdeal = [], mrskVOC = [];
+  for (const db of snrDb) {
+    const n = Math.pow(10, db / 10);
+    mtdm2.push(berMTDM(2, n));
+    mtdmL.push(berMTDM(L, n));
+    const refCdf = cdfOf(n);                              // shared by every sub-channel
+    mrskIdeal.push(berMRSK(n, 1, refCdf));
+    let acc = 0;
+    for (const B of bias) acc += berMRSK(n, B, refCdf);
+    mrskVOC.push(acc / bias.length);
+  }
+  return { snrDb, mtdm2, mtdmL, mrskIdeal, mrskVOC, bias };
+}
+
 /* ════════════════════════════ BER (teaching extension) ════════════════════════════ */
 const berFromAmp = (ampArr, sigma) => ampArr.map(a => isFinite(a) ? Q(a / (2 * sigma)) : NaN);
 
@@ -1336,6 +1599,7 @@ const state = {
   voc: { d: 5, v: 0.2, tauLoss: 25, kon: 1, sg: 0.06, sigmaS: 1, sigmaL: 0.3, sigmaN: 0.2, N: 6, gamma: 0.01 },
   el: { d: 0.4, lam: 0.12, tm: 0.05, vh: 0.2, k: 0.05, txMode: 'pulse', dg: 30, branches: 1, xJunction: 0.3, sg: 0.03 },
   op: { d: 2, cext: 0.305, taur: 0.010, trec: 0.05, logKR: 5, nFlash: 3, flashGap: 0.30, logsg: -12 },
+  mt: { N: 100, L: 4, kappa: 20, rUm: 10, MwMax: 204 },
 };
 let cacheQS, cacheVOC, cacheEL, cacheOP;
 
@@ -1421,6 +1685,47 @@ function renderVOCSpecies() {
   $('voc-dom').textContent = r.dominant >= 0 ? '#' + (r.dominant + 1) : '–';
   $('voc-pocc').textContent = r.peakOccupancy.toFixed(4);
   $('voc-y').textContent = r.detected ? '1 — detected' : '0 — below γ';
+}
+let mtdmBerCache = null;
+function renderMTDM() {
+  const p = state.mt;
+  const m = computeMTDM(p);
+  $('mt-table').innerHTML = m.schemes.map(s => `<tr${s.key === 'mtdm' ? ' style="color:var(--accent)"' : ''}><td>${s.name}</td>`
+    + `<td>${s.formula}</td><td>${s.bits.toFixed(1)}</td><td>${s.bps.toFixed(s.bps < 100 ? 1 : 0)}</td><td>${s.equalD ? 'yes' : 'no'}</td></tr>`).join('');
+  $('mt-ts').textContent = fmtSI(m.Ts, 's');
+  $('mt-dmin').textContent = m.Dmin.toExponential(2) + ' m²/s';
+  $('mt-spread').textContent = m.spread.toFixed(2) + '×';
+  $('mt-isi').textContent = (m.isi * 100).toFixed(2) + ' % of peak';
+  $('mt-isi-acc').textContent = (m.isiAccum * 100).toFixed(1) + ' % of peak';
+  $('mt-gain').textContent = (m.schemes[3].bits / m.schemes[1].bits).toFixed(1) + '×';
+  const v = m.vsN;
+  drawChart($('mt-chart-bits'), { series: [
+      { x: v.N, y: v.mtdm, colorVar: '--color-x', label: 'MTDM' },
+      { x: v.N, y: v.mrsk, colorVar: '--color-y', label: 'MRSK', dash: '5 4' },
+      { x: v.N, y: v.hybrid, colorVar: '--color-h', label: 'Hybrid' },
+      { x: v.N, y: v.mosk, colorVar: '--color-marker', label: 'MoSK' }],
+    xlab: 'species N', ylab: 'bits / symbol', ylog: true, yfloor: 1, markers: [{ x: p.N, label: 'N' }] });
+  const tms = m.cir.t.map(t => t * 1000);
+  drawChart($('mt-chart-cir'), { series: [
+      { x: tms, y: m.cir.light, colorVar: '--color-x', label: 'h_light' },
+      { x: tms, y: m.cir.heavy, colorVar: '--color-h', label: 'h_heavy' }],
+    xlab: 'time t (ms)', ylab: 'absorption rate (1/s)', ymin: 0,
+    markers: [{ x: m.tLight * 1000, label: 't₁' }, { x: m.tHeavy * 1000, label: 't_N' }], tipfmt: v => v.toExponential(2) });
+  drawChart($('mt-chart-ratio'), { series: [
+      { x: tms, y: m.cir.ratio, colorVar: '--color-y', label: 'ratio' },
+      { x: tms, y: tms.map(() => 1), colorVar: '--text-faint', label: 'equal D', dash: '5 4' }],
+    xlab: 'time t (ms)', ylab: 'h_light / h_heavy', ylog: true, yfloor: 0.1, markers: [{ x: m.tHeavy * 1000, label: 't_s' }] });
+  // The BER curves depend only on N, L and the mass span; κ and r leave them unchanged.
+  const key = `${p.N}|${p.L}|${p.MwMax}`;
+  if (!mtdmBerCache || mtdmBerCache.key !== key) mtdmBerCache = { key, b: computeMTDMBER(p) };
+  const b = mtdmBerCache.b;
+  const fl = arr => arr.map(x => Math.max(x, 1e-300));   // exact zeros would break the log path
+  drawChart($('mt-chart-ber'), { series: [
+      { x: b.snrDb, y: fl(b.mtdm2), colorVar: '--color-x', label: 'MTDM L=2' },
+      { x: b.snrDb, y: fl(b.mtdmL), colorVar: '--color-y', label: 'MTDM L=' + p.L },
+      { x: b.snrDb, y: fl(b.mrskIdeal), colorVar: '--color-h', label: 'ratio keying, equal D', dash: '5 4' },
+      { x: b.snrDb, y: fl(b.mrskVOC), colorVar: '--color-marker', label: 'ratio keying, algae VOCs' }],
+    xlab: 'SNR = n̄_max (dB)', ylab: 'BER', ylog: true, yfloor: 1e-8, ymin: 1e-8, ymax: 0.5, tipfmt: fmtBER });
 }
 
 function renderEL() {
@@ -1537,6 +1842,11 @@ wire('voc-sn', v => v.toFixed(2), v => state.voc.sigmaN = v, renderVOCSpecies);
 wire('voc-n', v => v + ' species', v => state.voc.N = v, renderVOCSpecies);
 wire('voc-gm', v => v.toFixed(3), v => state.voc.gamma = v, renderVOCSpecies);
 wire('voc-sg', v => v.toFixed(2), v => state.voc.sg = v, renderVOC);
+wire('mt-n', v => v + ' species', v => state.mt.N = v, renderMTDM);
+wire('mt-k', v => v.toFixed(0), v => state.mt.kappa = v, renderMTDM);
+wire('mt-r', v => v + ' µm', v => state.mt.rUm = v, renderMTDM);
+wire('mt-mw', v => v + ' Da', v => state.mt.MwMax = v, renderMTDM);
+$('mt-l').addEventListener('change', e => { state.mt.L = parseInt(e.target.value, 10); renderMTDM(); });
 wire('el-d', v => (v * 100).toFixed(0) + ' cm', v => state.el.d = v, renderEL);
 wire('el-lam', v => v.toFixed(2) + ' (norm.)', v => state.el.lam = v, renderEL);
 wire('el-tm', v => (v * 1000).toFixed(0) + ' ms', v => state.el.tm = v, renderEL);
@@ -1981,7 +2291,8 @@ document.querySelectorAll('[data-anim]').forEach(btn => {
 state.op.cext = parseFloat($('op-water').value); // browsers may restore a previous form state
 state.el.txMode = $('el-tx').value;
 state.el.branches = parseInt($('el-br').value, 10);
-renderQS(); renderVOC(); renderEL(); renderOP(); renderCMP();
+state.mt.L = parseInt($('mt-l').value, 10);
+renderQS(); renderVOC(); renderMTDM(); renderEL(); renderOP(); renderCMP();
 </script>
 <script>
 /* Hero background — adapted from Radiant Shaders “Bioluminescence” (https://radiant-shaders.com, MIT),

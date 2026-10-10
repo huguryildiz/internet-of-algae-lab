@@ -344,4 +344,133 @@ for (const params of sweepCases(
   }
 }
 
+// MTDM companion paper (Akyildiz et al., NANOCOM '26, doi 10.1145/3818305.3830272).
+{
+  const base = { N: 100, L: 4, kappa: 20, rUm: 10, MwMax: 204 };
+  const m = context.computeMTDM(base);
+  // Section 3: D_min ≈ 6.7e-10 m²/s from Stokes–Einstein, a 1.49× spread, T_s ≈ 0.49 s.
+  close(m.Dmin, 6.7e-10, 0.05e-10, 'MTDM D_min (paper rounds to two figures)');
+  close(m.spread, 1.49, 0.005, 'MTDM D spread');
+  close(m.Ts, 0.49, 0.005, 'MTDM symbol period');
+  // Section 2: kappa = 20 keeps one symbol's tail at the next sampling instant below 5% of peak.
+  // From Eq. (1), h(t)/h(t_pk) = (t/t_pk)^(-3/2) e^{1.5(1 - t_pk/t)} with t = (k kappa + 1) t_pk.
+  const tailRatio = u => Math.pow(u, -1.5) * Math.exp(1.5 * (1 - 1 / u));
+  close(m.isi, tailRatio(21), 1e-12, 'MTDM one-symbol tail closed form');
+  assert.ok(m.isi < 0.05, 'kappa = 20 must keep the one-symbol tail below 5%');
+  // The worst-case sum over all earlier symbols is not small; check it against a much longer direct sum.
+  let accum = 0;
+  for (let k = 1; k <= 200000; k++) accum += tailRatio(20 * k + 1);
+  accum += Math.exp(1.5) * Math.pow(20, -1.5) * 2 / Math.sqrt(200000.5);
+  close(m.isiAccum, accum, 1e-4, 'MTDM accumulated worst-case tail');
+  close(m.isiAccum, 0.1214, 0.001, 'MTDM accumulated tail at kappa = 20');
+  // Table 1, bits/symbol (exact) and bps. The paper's bps use D_min rounded to 6.7e-10;
+  // Stokes–Einstein gives 6.72e-10, so the tolerance is 0.6% of each value.
+  const table = [['mosk', 6.6, 14], ['hybrid', 8.6, 18], ['mrsk', 198, 406], ['mtdm', 200, 410]];
+  for (const [key, bits, bps] of table) {
+    const s = m.schemes.find(x => x.key === key);
+    close(s.bits, bits, 0.05, `Table 1 ${key} bits/symbol`);
+    close(s.bps, bps, Math.max(0.6, 0.006 * bps), `Table 1 ${key} bps`);
+  }
+  // Fig. 2 structure: MTDM leads MRSK by exactly log2 L, Hybrid leads MoSK by log2 L.
+  for (let i = 0; i < m.vsN.N.length; i++) {
+    close(m.vsN.mtdm[i] - m.vsN.mrsk[i], 2, 1e-9, 'MTDM − MRSK = log2 L');
+    close(m.vsN.hybrid[i] - m.vsN.mosk[i], 2, 1e-9, 'Hybrid − MoSK = log2 L');
+  }
+  // Eq. (1) peaks at (r−a)²/(6D); Eq. (2) closed form matches the ratio of Eq. (1) curves.
+  const { t, light, heavy, ratio } = m.cir;
+  const argmax = arr => arr.reduce((bi, v, i) => v > arr[bi] ? i : bi, 0);
+  close(t[argmax(light)], m.tLight, 2 * (t[1] - t[0]), 'Eq. (1) peak time, lightest species');
+  close(t[argmax(heavy)], m.tHeavy, 2 * (t[1] - t[0]), 'Eq. (1) peak time, heaviest species');
+  const x = 10e-6 - 0.1e-6;
+  for (let i = 0; i < t.length; i += 37) {
+    const eq2 = Math.sqrt(m.Dmin / m.Dmax) * Math.exp(-(x * x) / (4 * t[i]) * (1 / m.Dmax - 1 / m.Dmin));
+    close(ratio[i] / eq2, 1, 1e-9, 'Eq. (2) ratio');
+  }
+  // Equal diffusion makes the ratio time-invariant.
+  const flat = context.computeMTDM({ ...base, MwMax: 62 });
+  for (const v of flat.cir.ratio) close(v, 1, 1e-9, 'equal-D ratio must be constant');
+}
+
+// Fig. 3 reconstruction: structural invariants only (the paper omits the detector and ISI conventions).
+{
+  const b = context.computeMTDMBER({ N: 100, L: 4, MwMax: 204, rUm: 10 });
+  // L = 2 with a zero level: the only error is "1 sent, 0 counted", so BER = ½ e^{−n̄}.
+  for (let i = 0; i < b.snrDb.length; i += 5) {
+    const n = Math.pow(10, b.snrDb[i] / 10);
+    close(b.mtdm2[i], 0.5 * Math.exp(-n), 1e-12 + 1e-9 * Math.exp(-n), `MTDM L=2 closed form at ${b.snrDb[i]} dB`);
+  }
+  // Bounds hold everywhere. Monotonicity is only a property of this default configuration: symbol-ML
+  // thresholds do not minimize Gray-weighted bit errors (L = 8 MTDM rises locally), and a biased
+  // fixed decoder can approach its wrong decision as noise falls.
+  for (const key of ['mtdm2', 'mtdmL', 'mrskIdeal', 'mrskVOC']) {
+    for (let i = 0; i < b.snrDb.length; i++) {
+      assert.ok(b[key][i] >= 0 && b[key][i] <= 0.5 + 1e-9, `${key} must stay a probability ≤ 0.5`);
+      if (i > 0) assert.ok(b[key][i] <= b[key][i - 1] + 1e-9, `${key} should not rise with SNR at the defaults`);
+    }
+  }
+  // Independent brute-force enumeration over small counts.
+  const pois = (lam, k) => lam === 0 ? (k === 0 ? 1 : 0) : Math.exp(-lam + k * Math.log(lam) - lnFactorial(k));
+  function lnFactorial(k) { let s = 0; for (let i = 2; i <= k; i++) s += Math.log(i); return s; }
+  const grayBits = (u, v) => { let z = (u ^ (u >> 1)) ^ (v ^ (v >> 1)), c = 0; while (z) { c += z & 1; z >>= 1; } return c; };
+  for (const L of [4, 8]) {
+    for (const n of [2, 8]) {
+      let err = 0;
+      for (let s = 0; s < L; s++) {
+        for (let k = 0; k <= 120; k++) {
+          let best = 0, bestP = -1;                       // symbol ML, ties to the lower level
+          for (let m = 0; m < L; m++) { const pm = pois(n * m / (L - 1), k); if (pm > bestP) { bestP = pm; best = m; } }
+          err += pois(n * s / (L - 1), k) * grayBits(s, best);
+        }
+      }
+      const got = context.computeMTDMBER({ N: 2, L, MwMax: 204, rUm: 10, snrDb: [10 * Math.log10(n)] });
+      close(got.mtdmL[0], err / (L * Math.log2(L)), 1e-9, `MTDM L=${L} brute force at n̄=${n}`);
+    }
+  }
+  {
+    const L = 4, n = 3;
+    const got = context.computeMTDMBER({ N: 2, L, MwMax: 204, rUm: 10, snrDb: [10 * Math.log10(n)] });
+    const B = got.bias[0];
+    let err = 0;
+    for (let s = 0; s < L; s++) {
+      for (let nr = 0; nr <= 60; nr++) {
+        const pr = pois(n, nr);
+        if (nr === 0) { for (let m = 0; m < L; m++) err += pr * grayBits(s, m) / L; continue; }
+        for (let nj = 0; nj <= 80; nj++) {
+          let m = 0;                                      // largest level with nj/nr ≥ (m − ½)/(L − 1)
+          for (let l = 1; l < L; l++) if (2 * (L - 1) * nj >= (2 * l - 1) * nr) m = l;
+          err += pr * pois(n * B * s / (L - 1), nj) * grayBits(s, m);
+        }
+      }
+    }
+    close(got.mrskVOC[0], err / (L * Math.log2(L)), 1e-9, 'ratio keying brute force, one biased pair');
+  }
+  // High-SNR limit: noise vanishes and each biased pair follows the deterministic decision map
+  // n_j/n_ref → B·s/(L−1). Convergence is slow for species whose biased ratio sits near a boundary,
+  // so the 50 dB value is compared with the analytic limit to within 0.004.
+  for (const L of [4, 8]) {
+    const hi = context.computeMTDMBER({ N: 12, L, MwMax: 204, rUm: 10, snrDb: [50] });
+    let limit = 0;
+    for (const B of hi.bias) {
+      for (let s = 0; s < L; s++) {
+        let m = 0;
+        for (let l = 1; l < L; l++) if (2 * (L - 1) * B * s / (L - 1) >= 2 * l - 1) m = l;
+        limit += grayBits(s, m);
+      }
+    }
+    limit /= hi.bias.length * L * Math.log2(L);
+    close(hi.mrskVOC[0], limit, 0.004, `ratio keying high-SNR decision-map limit, L=${L}`);
+  }
+  // Exact midpoints go to the upper level without float drift: (4.5/7)·42 = 27.
+  assert.equal(context.mtdmRatioLevelStart(5, 42, 8), 27, 'ratio boundary must use exact integer ceiling');
+  const last = b.snrDb.length - 1, at20 = b.snrDb.indexOf(20);
+  // Equal-D MRSK keeps improving; the fixed decoder on heterogeneous VOCs flattens into a floor.
+  assert.ok(b.mrskIdeal[last] < 1e-4, 'equal-D MRSK must reach low BER at 30 dB');
+  assert.ok(b.mrskVOC[last] > 1e-2, 'heterogeneous-D MRSK with a fixed decoder must floor');
+  assert.ok(b.mrskVOC[at20] / b.mrskVOC[last] < 3, 'the heterogeneous-D floor must be nearly flat from 20 to 30 dB');
+  assert.ok(b.mtdmL[last] < b.mrskVOC[last] * 1e-3, 'MTDM must not inherit the ratio bias');
+  // Equal diffusion removes the bias: the two MRSK curves coincide.
+  const eq = context.computeMTDMBER({ N: 12, L: 4, MwMax: 62, rUm: 10 });
+  for (let i = 0; i < eq.snrDb.length; i++) close(eq.mrskVOC[i], eq.mrskIdeal[i], 1e-12, 'equal-D MRSK curves must coincide');
+}
+
 console.log('physics regression checks passed');
