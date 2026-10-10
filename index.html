@@ -609,7 +609,7 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             <div class="legend"><span><i style="background:var(--color-y)"></i>\(h_{\text{light}}/h_{\text{heavy}}\)</span><span><i style="background:var(--text-faint)"></i>equal \(D\) (what MRSK assumes)</span></div>
             <p class="scope-caption">\(t_s\) marks the heaviest species' peak, the common sampling instant assumed for MRSK below.</p></div>
           <div class="panel"><h3 class="panel__title">BER vs SNR <span class="subnote">Fig. 3</span> <span class="badge-ext">MRSK curves: reconstruction</span></h3><div class="chart-box" id="mt-chart-ber"></div>
-            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-y) 0 4px,transparent 4px 6px)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span></div>
+            <div class="legend"><span><i style="background:var(--color-x)"></i>MTDM, \(L=2\)</span><span><i style="background:repeating-linear-gradient(90deg,var(--color-y) 0 4px,transparent 4px 6px)"></i>MTDM, current \(L\)</span><span><i style="background:var(--color-h)"></i>ratio keying, equal \(D\)</span><span><i style="background:var(--color-marker)"></i>ratio keying on algae VOCs</span><span><i style="width:7px;height:7px;border-radius:50%;border:1.4px solid var(--color-h)"></i>paper, MRSK uniform \(D\)</span><span><i style="width:7px;height:7px;border-radius:50%;border:1.4px solid var(--color-marker)"></i>paper, MRSK algae VOCs</span></div>
             <p class="scope-caption">SNR \(=\bar n_{\max}\), the expected absorbed count of the top level, treated as an abstract
             normalized count (Eq.&nbsp;1 is a rate and the paper names no counting window); every MTDM species is calibrated to
             the same \(\bar n_{\max}\) at its own peak; ISI is ignored. The paper does not state its detector. Its two MTDM
@@ -620,7 +620,9 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
             canonical geometric-level MRSK — so the comparison curves here are this page's own <i>MRSK-style</i> ratio
             keying under Poisson counts: the heaviest species is the reference, all species are sampled at its peak, and
             \(n_j/n_{\mathrm{ref}}\) is rounded to the nearest of the levels \(s/(L-1)\). At the defaults its fixed decoder
-            floors at a few&nbsp;%; the paper's curve rises toward 0.5, which these assumptions do not reproduce.</p></div>
+            floors at a few&nbsp;%; the paper's curve rises toward 0.5, which these assumptions do not reproduce. The hollow
+            markers are the paper's two MRSK curves, digitized from the published Fig.&nbsp;3 (CC&nbsp;BY&nbsp;4.0) at 1&nbsp;dB
+            steps — reference data shown for comparison, not computed here.</p></div>
         </div>
       </div>
     </div>
@@ -911,7 +913,8 @@ footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border
           \(L=2\) and 0.03 for \(L=4\) (up to 0.1 on the steep tail, where reading a raster is least precise), and the
           regression suite pins eleven of those points within 0.05 decades. Its two MRSK curves match no decoder we could derive from the paper or from Kilic &amp; Akan's MRSK, so the
           page shows its own MRSK-style ratio keying instead; that curve floors at a few percent at the defaults where the
-          paper's rises toward 0.5. The gap is shown, not tuned.
+          paper's rises toward 0.5. The gap is shown, not tuned: the published MRSK curves are overlaid as digitized
+          reference markers (the paper is CC&nbsp;BY&nbsp;4.0), so the two can be compared directly.
           The paper's 5&nbsp;% ISI figure holds for a single earlier symbol; summed over all earlier symbols the
           worst-case tail at \(\kappa=20\) is about 12&nbsp;%.</li>
         <li><b>No source plotting data:</b> the authors' original samples and plotting code are unavailable here, so the
@@ -1023,6 +1026,14 @@ function drawChart(el, cfg) {
   }
   // series
   for (const s of cfg.series) {
+    if (s.dots) {   // sampled reference data: hollow markers, no connecting line
+      for (let i = 0; i < s.x.length; i++) {
+        const v = s.y[i];
+        if (!isFinite(v) || (cfg.ylog && v <= 0)) continue;
+        g += `<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${Math.max(mt, Math.min(mt + ph, sy(v))).toFixed(1)}" r="2.6" fill="var(--canvas-bg)" stroke="var(${s.colorVar})" stroke-width="1.4"/>`;
+      }
+      continue;
+    }
     let dp = '', pen = false;
     for (let i = 0; i < s.x.length; i++) {
       const v = s.y[i];
@@ -1690,6 +1701,21 @@ function renderVOCSpecies() {
   $('voc-y').textContent = r.detected ? '1 — detected' : '0 — below γ';
 }
 let mtdmBerCache = null;
+/* The two MRSK curves of NANOCOM '26 Fig. 3 (Akyildiz et al., CC BY 4.0), digitized from the published raster
+   at 1-dB steps as log10 BER. No decoder stated in the paper or in Kilic & Akan's MRSK reproduces them, so they
+   are drawn as published reference points beside this page's own ratio-keying reconstruction, not computed. */
+const MTDM_FIG3_MRSK = {
+  uniformD: [[-4, -0.374], [-3, -0.379], [-2, -0.384], [-1, -0.394], [0, -0.404], [1, -0.408], [2, -0.423],
+    [3, -0.433], [4, -0.447], [5, -0.462], [6, -0.491], [7, -0.515], [8, -0.549], [9, -0.583], [10, -0.627],
+    [11, -0.676], [12, -0.729], [13, -0.797], [14, -0.875], [15, -0.972], [16, -1.075], [17, -1.201],
+    [18, -1.342], [19, -1.498], [20, -1.692], [21, -1.921], [22, -2.193], [23, -2.504], [24, -2.908],
+    [25, -3.399], [26, -3.987], [27, -4.746], [28, -5.694]],
+  algaeVOC: [[-4, -0.335], [-3, -0.335], [-2, -0.345], [-1, -0.345], [0, -0.355], [1, -0.365], [2, -0.374],
+    [3, -0.374], [4, -0.384], [5, -0.394], [6, -0.413], [7, -0.423], [8, -0.433], [9, -0.442], [10, -0.452],
+    [11, -0.462], [12, -0.472], [13, -0.472], [14, -0.472], [15, -0.472], [16, -0.462], [17, -0.452],
+    [18, -0.442], [19, -0.433], [20, -0.413], [21, -0.404], [22, -0.384], [23, -0.374], [24, -0.355],
+    [25, -0.345], [26, -0.340], [27, -0.326], [28, -0.316], [29, -0.304]],
+};
 function renderMTDM() {
   const p = state.mt;
   const m = computeMTDM(p);
@@ -1730,7 +1756,10 @@ function renderMTDM() {
       { x: b.snrDb, y: fl(b.mtdm2), colorVar: '--color-x', label: 'MTDM L=2' },
       { x: b.snrDb, y: fl(b.mtdmL), colorVar: '--color-y', label: 'MTDM L=' + p.L, dash: '6 4' },
       { x: b.snrDb, y: fl(b.mrskIdeal), colorVar: '--color-h', label: 'ratio keying, equal D' },
-      { x: b.snrDb, y: fl(b.mrskVOC), colorVar: '--color-marker', label: 'ratio keying, algae VOCs' }],
+      { x: b.snrDb, y: fl(b.mrskVOC), colorVar: '--color-marker', label: 'ratio keying, algae VOCs' },
+      ...[['uniformD', '--color-h', 'paper MRSK, uniform D'], ['algaeVOC', '--color-marker', 'paper MRSK, algae VOCs']]
+        .map(([k, c, label]) => ({ x: MTDM_FIG3_MRSK[k].map(q => q[0]), y: MTDM_FIG3_MRSK[k].map(q => Math.pow(10, q[1])),
+          colorVar: c, label, dots: true }))],
     xlab: 'SNR = n̄_max (dB)', ylab: 'BER', ylog: true, yfloor: 1e-6, ymin: 1e-6, ymax: 1, tipfmt: fmtBER });
 }
 
