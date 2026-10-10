@@ -482,4 +482,30 @@ for (const params of sweepCases(
   for (let i = 0; i < eq.snrDb.length; i++) close(eq.mrskVOC[i], eq.mrskIdeal[i], 1e-12, 'equal-D MRSK curves must coincide');
 }
 
+// Published-reference contract: the digitized MRSK curves of NANOCOM '26 Fig. 3 are presentation data
+// below the BER banner, so they are read separately from the physics slice.
+{
+  const startRef = html.indexOf('const MTDM_FIG3_MRSK = {');
+  const endRef = html.indexOf('};', startRef);
+  assert.ok(startRef > html.indexOf('/* ════════════════════════════ BER'), 'reference data must stay outside the physics slice');
+  const ref = vm.runInNewContext(`(${html.slice(startRef + 'const MTDM_FIG3_MRSK = '.length, endRef + 1)})`);
+  const spec = { uniformD: [33, -4, 28], algaeVOC: [34, -4, 29] };
+  for (const [key, [len, first, last]] of Object.entries(spec)) {
+    const pts = ref[key];
+    assert.equal(pts.length, len, `${key} sample count`);
+    assert.equal(pts[0][0], first, `${key} first SNR`);
+    assert.equal(pts.at(-1)[0], last, `${key} last SNR`);
+    pts.forEach(([db, y], i) => {
+      if (i) assert.equal(db - pts[i - 1][0], 1, `${key} samples must be consecutive 1-dB steps`);
+      assert.ok(y <= 0 && y >= -6, `${key} must lie on the published six-decade axis`);
+    });
+  }
+  // Ordinates independently re-measured from the raster during review (log10 BER, ±0.01).
+  const checks = { uniformD: [[-4, -0.374], [15, -0.972], [20, -1.692], [28, -5.694]],
+    algaeVOC: [[0, -0.355], [15, -0.472], [26, -0.331], [29, -0.304]] };
+  for (const [key, pts] of Object.entries(checks)) {
+    for (const [db, y] of pts) close(ref[key].find(p => p[0] === db)[1], y, 0.01, `${key} at ${db} dB`);
+  }
+}
+
 console.log('physics regression checks passed');
